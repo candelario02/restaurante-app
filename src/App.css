@@ -7,6 +7,47 @@
   --text-dark: #1e293b;
   --text-light: #64748b;
 }
+/* Contenedor principal para centrar en PC */
+.cliente-container {
+  max-width: 500px; /* Tamaño máximo tipo celular en PC */
+  margin: 0 auto;   /* Centra la app en la pantalla */
+  background: white;
+  min-height: 100vh;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+/* Ajuste de la cuadrícula de categorías */
+.grid-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas siempre */
+  gap: 15px;
+  padding: 15px;
+}
+
+/* Estilo de los iconos circulares (como tus capturas) */
+.cat-circle {
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 50%; /* Los hace redondos como pediste */
+  aspect-ratio: 1/1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.cat-circle:hover {
+  transform: translateY(-5px);
+}
+
+.cat-circle span {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-top: 8px;
+  color: #333;
+}
 
 body {
   margin: 0;
