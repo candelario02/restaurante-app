@@ -17,27 +17,29 @@ import {
 } from 'lucide-react';
 
 function App() {
-  // 🔐 Estado ÚNICO de auth + UI
+  // 🔐 Estado único de auth
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
-    isAdmin: false, // ⚠️ SOLO UI
+    isAdmin: false
   });
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [mensajeBienvenida, setMensajeBienvenida] = useState('');
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [seccion, setSeccion] = useState('menu');
+  const [bienvenidaMostrada, setBienvenidaMostrada] = useState(false); // 🔒 evita el loop
 
-  // 🔥 Listener Firebase
+  // 🔥 Listener Firebase → SOLO UNA VEZ
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
         setAuthState({
           loading: false,
           user: null,
-          isAdmin: false,
+          isAdmin: false
         });
+        setBienvenidaMostrada(false);
         return;
       }
 
@@ -45,32 +47,37 @@ function App() {
         ...prev,
         loading: false,
         user: usuario,
+        isAdmin: true // 🔥 al loguear entra directo a admin
       }));
 
-      if (!mensajeBienvenida) {
+      // 👋 Mostrar bienvenida SOLO UNA VEZ
+      if (!bienvenidaMostrada) {
         const hora = new Date().toLocaleTimeString([], {
           hour: '2-digit',
-          minute: '2-digit',
+          minute: '2-digit'
         });
+
         setMensajeBienvenida(`¡Sesión Activa!\n${usuario.email}\n${hora}`);
+        setBienvenidaMostrada(true);
+
         setTimeout(() => setMensajeBienvenida(''), 3000);
       }
     });
 
-    return unsubscribe;
-  }, [mensajeBienvenida]);
+    return () => unsubscribe();
+  }, [bienvenidaMostrada]);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
     setAuthState({
       loading: false,
       user: null,
-      isAdmin: false,
+      isAdmin: false
     });
     setConfirmarSalida(false);
+    setSeccion('menu');
   };
 
-  // ⛔ No renderizar hasta resolver auth
   if (authState.loading) return null;
 
   return (
@@ -80,7 +87,6 @@ function App() {
         {authState.user ? (
           authState.isAdmin && (
             <div className="admin-buttons">
-              {/* 🔙 Volver a vista cliente */}
               <button
                 className="btn-back-inline"
                 onClick={() =>
@@ -90,48 +96,35 @@ function App() {
                 <ArrowLeft size={20} />
               </button>
 
-              {/* 🍔 Gestión Menú */}
               <button
                 className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`}
-                onClick={() => {
-                  setSeccion('menu');
-                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
-                }}
+                onClick={() => setSeccion('menu')}
               >
                 <Settings size={18} /> Menú
               </button>
 
-              {/* 👥 Usuarios */}
               <button
                 className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
                 style={{
                   background: seccion === 'usuarios' ? '#10b981' : 'white',
-                  color: seccion === 'usuarios' ? 'white' : '#1e293b',
+                  color: seccion === 'usuarios' ? 'white' : '#1e293b'
                 }}
-                onClick={() => {
-                  setSeccion('usuarios');
-                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
-                }}
+                onClick={() => setSeccion('usuarios')}
               >
                 <Users size={18} /> Usuarios
               </button>
 
-              {/* 📦 Pedidos */}
               <button
                 className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`}
                 style={{
                   background: seccion === 'pedidos' ? '#6366f1' : 'white',
-                  color: seccion === 'pedidos' ? 'white' : '#1e293b',
+                  color: seccion === 'pedidos' ? 'white' : '#1e293b'
                 }}
-                onClick={() => {
-                  setSeccion('pedidos');
-                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
-                }}
+                onClick={() => setSeccion('pedidos')}
               >
                 <Package size={18} /> Pedidos
               </button>
 
-              {/* 🚪 Cerrar sesión */}
               <button
                 className="btn-top-admin"
                 onClick={() => setConfirmarSalida(true)}
@@ -150,7 +143,7 @@ function App() {
         )}
       </div>
 
-      {/* 🔐 LOGIN MODAL */}
+      {/* 🔐 LOGIN */}
       {mostrarLogin && !authState.user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
@@ -160,12 +153,7 @@ function App() {
             >
               <X size={20} />
             </button>
-            <Login
-              alCerrar={() => setMostrarLogin(false)}
-              activarAdmin={() =>
-                setAuthState((prev) => ({ ...prev, isAdmin: true }))
-              }
-            />
+            <Login alCerrar={() => setMostrarLogin(false)} />
           </div>
         </div>
       )}
@@ -203,7 +191,7 @@ function App() {
         </div>
       )}
 
-      {/* ✅ RENDER PRINCIPAL */}
+      {/* 🧠 RENDER PRINCIPAL */}
       {authState.user && authState.isAdmin ? (
         <div className="admin-container">
           <Admin seccion={seccion} />
