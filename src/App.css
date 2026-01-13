@@ -18,11 +18,10 @@ body {
 /* CONTENEDOR MAESTRO: Centra la app en PC para que no se vea gigante */
 .cliente-container, .admin-view {
   width: 100%;
-  max-width: 500px; /* Tamaño tipo celular en PC */
+  max-width: 100%; /* Ahora ocupa toda la pantalla en PC */
   margin: 0 auto;
   background: var(--white);
   min-height: 100vh;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
   position: relative;
 }
 
@@ -32,11 +31,71 @@ body {
   text-align: center;
 }
 
+/* AJUSTE GRILLA PARA PC: Más columnas en pantallas grandes */
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  padding: 10px;
+  grid-template-columns: repeat(2, 1fr); /* Por defecto 2 */
+  gap: 30px;
+  padding: 40px;
+  max-width: 1000px; /* Evita que los círculos se separen demasiado */
+  margin: 0 auto;
+}
+/* Si la pantalla es muy grande (PC), mostramos 4 columnas */
+@media (min-width: 1024px) {
+  .grid-menu {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+/* Botones de Admin arriba */
+.admin-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-top-gestion {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* Iconos de inicio más grandes */
+.cat-circle {
+  background: var(--white);
+  border: none;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.cat-circle:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.cat-circle svg {
+  width: 80px; /* Tamaño mucho más grande para PC */
+  height: 80px;
+}
+
+@media (max-width: 600px) {
+  .cat-circle svg {
+    width: 60px; /* Un poco más pequeño en celular */
+    height: 60px;
+  }
 }
 
 .cat-circle {

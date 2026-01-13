@@ -5,20 +5,23 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogIn, LogOut, X, Clock } from 'lucide-react';
+import { LogIn, LogOut, Settings, Utensils, Clock } from 'lucide-react';
 
 function App() {
   const [user, setUser] = useState(null);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
+  const [vistaAdmin, setVistaAdmin] = useState(false); // Nuevo estado
 
   useEffect(() => {
     return onAuthStateChanged(auth, (usuario) => {
       if (usuario) {
         const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         setMensajeBienvenida(`¡Bienvenido Administrador! \n Ingreso: ${hora}`);
-        setTimeout(() => setMensajeBienvenida(""), 3000); // Se borra en 3 seg
+        setTimeout(() => setMensajeBienvenida(""), 3000);
+      } else {
+        setVistaAdmin(false); // Resetear vista si no hay usuario
       }
       setUser(usuario);
     });
@@ -35,12 +38,18 @@ function App() {
 
   return (
     <div className="App">
-      {/* Botón de Ingreso/Salida arriba a la derecha */}
       <div className="top-bar">
         {user ? (
-          <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
-            <LogOut size={18} /> Salir
-          </button>
+          <div className="admin-buttons">
+            {/* Botón para entrar/salir de la gestión sin desloguearse */}
+            <button className="btn-top-gestion" onClick={() => setVistaAdmin(!vistaAdmin)}>
+              {vistaAdmin ? <Utensils size={18} /> : <Settings size={18} />}
+              {vistaAdmin ? " Ver Menú" : " Gestión"}
+            </button>
+            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
+              <LogOut size={18} />
+            </button>
+          </div>
         ) : (
           <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
             <LogIn size={18} /> Admin
@@ -48,7 +57,6 @@ function App() {
         )}
       </div>
 
-      {/* Mensaje de Bienvenida Central */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -58,7 +66,6 @@ function App() {
         </div>
       )}
 
-      {/* Modal Confirmación de Salida */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm">
@@ -71,13 +78,14 @@ function App() {
         </div>
       )}
 
-      {user ? (
+      {/* Si vistaAdmin es true, muestra el panel, si no, el menú principal */}
+      {vistaAdmin ? (
         <div className="admin-container">
           <Admin />
         </div>
       ) : (
         <div className="cliente-container">
-          <MenuCliente esAdmin={false} />
+          <MenuCliente esAdmin={!!user} />
         </div>
       )}
     </div>
