@@ -13,6 +13,7 @@ function App() {
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   
+  // 1. Priorizamos siempre lo que diga el localStorage para evitar el parpadeo de 2 segundos
   const [vistaAdmin, setVistaAdmin] = useState(localStorage.getItem('esAdmin') === 'true');
   const [seccion, setSeccion] = useState('menu');
   const [cargandoAuth, setCargandoAuth] = useState(true);
@@ -21,21 +22,30 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (usuario) {
         setUser(usuario);
-        // Si el usuario existe pero no tenemos mensaje, lo mostramos
+        
+        // 2. Si hay un usuario logueado, verificamos si debe estar en vista Admin
+        const eraAdmin = localStorage.getItem('esAdmin') === 'true';
+        if (eraAdmin) {
+          setVistaAdmin(true);
+        }
+
+        // 3. Lógica de bienvenida mejorada
         if (!mensajeBienvenida) {
             const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             setMensajeBienvenida(`¡Sesión Activa! \n ${usuario.email} \n ${hora}`);
             setTimeout(() => setMensajeBienvenida(""), 3000);
         }
       } else {
+        // Si no hay usuario en Firebase, limpiamos todo por seguridad
         setUser(null);
         setVistaAdmin(false);
         localStorage.removeItem('esAdmin');
       }
       setCargandoAuth(false);
     });
+    
     return () => unsubscribe();
-  }, [user, mensajeBienvenida]); // Agregamos dependencias para estabilidad
+  }, [mensajeBienvenida]); 
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
@@ -87,10 +97,12 @@ function App() {
         <div className="overlay-msg">
           <div className="msg-box login-modal">
             <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}><X size={20} /></button>
-            {/* PASAMOS LA FUNCIÓN PARA ACTIVAR LA VISTA */}
             <Login 
               alCerrar={() => setMostrarLogin(false)} 
-              activarAdmin={() => setVistaAdmin(true)} 
+              activarAdmin={() => {
+                setVistaAdmin(true);
+                localStorage.setItem('esAdmin', 'true');
+              }} 
             />
           </div>
         </div>
@@ -118,6 +130,7 @@ function App() {
         </div>
       )}
 
+      {/* RENDERIZADO PRINCIPAL: Si es admin y está logueado, se queda aquí */}
       {vistaAdmin && user ? (
         <div className="admin-container">
           <Admin seccion={seccion} />
