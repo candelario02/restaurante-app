@@ -11,7 +11,7 @@ const ADMIN_EMAILS = [
   'huamancarrioncande24@gmail.com'
 ];
 
-function Login({ alCerrar, activarAdmin }) {
+function Login({ alCerrar }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,11 +36,12 @@ function Login({ alCerrar, activarAdmin }) {
         setError(
           'Acceso denegado: este usuario no tiene permisos de administrador.'
         );
+        setCargando(false);
         return;
       }
 
-      // 3️⃣ Admin válido → activar modo admin
-      activarAdmin();
+      // 3️⃣ Si es admin válido solo cerramos el modal
+      // App.js se encargará de activar la vista admin cuando Firebase confirme
       alCerrar();
 
     } catch (err) {
