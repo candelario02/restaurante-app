@@ -45,23 +45,26 @@ const Admin = ({ seccion }) => {
 
   return (
     <div className="admin-container">
+      {/* SECCIÓN PRODUCTOS */}
       {seccion === 'menu' && (
-        <>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <form onSubmit={subirProducto} className="login-form">
             <h2>Nuevo Producto</h2>
             <div className="input-group"><input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" required /></div>
             <div className="input-group"><input type="number" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio" required /></div>
-            <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
+            <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)} style={{width: '100%', marginBottom: '15px'}}>
               <option value="Menu">Comidas</option>
               <option value="Cafeteria">Cafetería</option>
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
             </select>
-            <label className="btn-top-login">
+            <label className="btn-top-login" style={{width: '100%', justifyContent: 'center', marginBottom: '15px'}}>
               <ImageIcon size={18}/> {imagen ? imagen.name : 'Imagen'}
               <input type="file" hidden onChange={e => setImagen(e.target.files[0])}/>
             </label>
-            <button className="btn-login-submit" disabled={cargando}>{cargando ? '...' : 'Guardar'}</button>
+            <button className="btn-login-submit" disabled={cargando} style={{width: '100%'}}>
+              <Save size={18}/> {cargando ? '...' : 'Guardar'}
+            </button>
           </form>
 
           <table className="tabla-admin">
@@ -76,7 +79,7 @@ const Admin = ({ seccion }) => {
             <tbody>
               {productos.map(p => (
                 <tr key={p.id}>
-                  <td>{p.nombre}</td>
+                  <td style={{fontWeight: '600'}}>{p.nombre}</td>
                   <td>S/ {p.precio.toFixed(2)}</td>
                   <td>
                     <button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>
@@ -92,18 +95,19 @@ const Admin = ({ seccion }) => {
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
+      {/* SECCIÓN USUARIOS */}
       {seccion === 'usuarios' && (
-        <>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <form onSubmit={registrarAdmin} className="login-form">
             <h2>Registrar Admin</h2>
             <div className="input-group">
               <Mail className="input-icon"/>
               <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email" required />
             </div>
-            <button className="btn-login-submit"><UserPlus size={18}/> Agregar</button>
+            <button className="btn-login-submit" style={{width: '100%'}}><UserPlus size={18}/> Agregar</button>
           </form>
           <table className="tabla-admin">
             <thead><tr><th>Email</th><th>Eliminar</th></tr></thead>
@@ -120,22 +124,23 @@ const Admin = ({ seccion }) => {
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
+      {/* SECCIÓN PEDIDOS */}
       {seccion === 'pedidos' && (
-        <div className="productos-grid">
+        <div className="productos-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
           {pedidos.map(p => (
             <div key={p.id} className="producto-card">
-              <div className="msg-box">
-                <h3>{p.cliente.nombre}</h3>
-                <p className="text-muted">{p.cliente.direccion}</p>
+              <div className="msg-box" style={{boxShadow: 'none', border: 'none', padding: '10px'}}>
+                <h3 style={{margin: '0 0 5px 0'}}>{p.cliente.nombre}</h3>
+                <p className="text-muted" style={{fontSize: '0.9rem'}}>{p.cliente.direccion}</p>
                 <div className="precio-tag">Total: S/ {p.total.toFixed(2)}</div>
-                <p>Estado: <strong>{p.estado}</strong></p>
-                <div className="modal-buttons">
-                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={16}/> Cocina</button>
-                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={16}/> Ruta</button>
-                  <button className="btn-yes" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={16}/> OK</button>
+                <p style={{marginTop: '10px'}}>Estado: <strong>{p.estado}</strong></p>
+                <div className="modal-buttons" style={{marginTop: '15px'}}>
+                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'preparando')} title="Cocina"><ChefHat size={16}/></button>
+                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'enviado')} title="Ruta"><Truck size={16}/></button>
+                  <button className="btn-yes" style={{background: 'var(--success)'}} onClick={() => cambiarEstado(p.id, 'entregado')} title="OK"><CheckCircle size={16}/></button>
                 </div>
               </div>
             </div>
