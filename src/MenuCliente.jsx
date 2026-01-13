@@ -54,6 +54,13 @@ const MenuCliente = ({ esAdmin }) => {
             <div className="icon-wrapper"><Utensils size={35} color="#ec4899" /></div>
             <span>Entradas</span>
           </button>
+
+          {/* Flecha de regresar estilizada */}
+<button className="btn-back-circle" onClick={() => setCategoriaSeleccionada(null)}>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M19 12H5M12 19l-7-7 7-7" />
+  </svg>
+</button>
         </div>
         
         {carrito.length > 0 && (

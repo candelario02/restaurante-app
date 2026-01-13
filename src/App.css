@@ -48,12 +48,13 @@ body {
   text-align: center;
 }
 
+/* GRILLA 2x2 PARA PC Y CELULAR */
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas siempre */
   gap: 30px;
-  padding: 20px;
-  max-width: 1000px;
+  padding: 40px;
+  max-width: 800px; /* Reducido un poco para que se vea más compacto al centro */
   margin: 0 auto;
 }
 
@@ -63,8 +64,10 @@ body {
   }
 }
 
+/* Iconos más grandes en PC */
 .cat-circle {
   background: var(--white);
+  border: none;
   border-radius: 50%;
   aspect-ratio: 1/1;
   display: flex;
@@ -72,17 +75,16 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
-
 .cat-circle:hover {
   transform: translateY(-10px);
 }
 
 .cat-circle svg {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
 }
 
 .cat-circle span {
@@ -125,6 +127,39 @@ body {
   background: var(--primary);
   color: white;
   border: none;
+}
+/* ESTILO PARA LA FLECHA DE REGRESAR */
+.btn-back-circle {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: var(--white);
+  border: 1px solid #e2e8f0;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 150; /* Para que esté por encima de todo */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: background 0.2s;
+}
+.btn-back-circle:hover {
+  background: #f1f5f9;
+}
+
+/* Ajuste responsive para celulares */
+@media (max-width: 600px) {
+  .cat-circle svg {
+    width: 65px;
+    height: 65px;
+  }
+  .grid-menu {
+    gap: 15px;
+    padding: 20px;
+  }
 }
 
 /* 5. DISEÑO DE PRODUCTOS (GRILLA CLIENTE) */
