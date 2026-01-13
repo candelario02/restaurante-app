@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from './firebase';
-import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { db, storage, auth } from './firebase'; // Añadimos auth
+import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { createUserWithEmailAndPassword } from 'firebase/auth'; // Importante para crear accesos
 import { Trash2, Power, PowerOff, Image as ImageIcon, Save, UserPlus, Mail, ShieldCheck } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -45,18 +46,40 @@ const Admin = ({ seccion }) => {
     setCargando(false);
   };
 
+  // FUNCIÓN ACTUALIZADA: Crea en Authentication y Firestore al mismo tiempo
   const crearUsuario = async (e) => {
     e.preventDefault();
+    if (userPass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres");
+
     try {
-      await addDoc(collection(db, "usuarios_admin"), {
+      // 1. Crear el acceso oficial en Firebase Authentication
+      // Nota: Esto creará al usuario. Si quieres que el admin no pierda su sesión,
+      // lo ideal es usar una Firebase Function, pero por ahora esto registrará el correo.
+      await createUserWithEmailAndPassword(auth, userEmail, userPass);
+
+      // 2. Crear el permiso en la base de datos Firestore
+      // Usamos el email como ID del documento para que el Login lo encuentre rápido
+      await setDoc(doc(db, "usuarios_admin", userEmail), {
         email: userEmail,
-        pass: userPass, // Nota: En producción esto debería estar encriptado
         rol: 'admin',
         fechaCrea: new Date().toLocaleDateString()
       });
-      setUserEmail(''); setUserPass('');
-      alert("Usuario administrativo creado");
-    } catch (error) { alert("Error al crear usuario"); }
+
+      setUserEmail(''); 
+      setUserPass('');
+      alert("¡Usuario Creado! El nuevo administrador ya puede ingresar con sus credenciales.");
+      
+      // Opcional: Recargar la página para recuperar la sesión del creador si Firebase la cambia
+      window.location.reload(); 
+
+    } catch (error) {
+      console.error(error);
+      if (error.code === 'auth/email-already-in-use') {
+        alert("Ese correo ya está registrado.");
+      } else {
+        alert("Error: " + error.message);
+      }
+    }
   };
 
   return (
@@ -117,7 +140,7 @@ const Admin = ({ seccion }) => {
             </div>
             <div className="input-group">
               <ShieldCheck size={18} className="input-icon" />
-              <input type="text" placeholder="Asignar Contraseña" value={userPass} onChange={e => setUserPass(e.target.value)} required />
+              <input type="password" placeholder="Asignar Contraseña (min 6 carac.)" value={userPass} onChange={e => setUserPass(e.target.value)} required />
             </div>
             <button type="submit" className="btn-save" style={{background: '#10b981'}}>
               <UserPlus size={20} /> Crear Usuario
@@ -132,7 +155,12 @@ const Admin = ({ seccion }) => {
                   <h4>{u.email}</h4>
                   <span style={{color: '#10b981'}}>Rol: {u.rol}</span>
                 </div>
-                <button className="btn-delete" onClick={() => deleteDoc(doc(db, "usuarios_admin", u.id))}><Trash2 size={20} /></button>
+                {/* Evitar que el creador se borre a sí mismo por error */}
+                {u.email !== 'jec02021994@gmail.com' && (
+                  <button className="btn-delete" onClick={() => deleteDoc(doc(db, "usuarios_admin", u.id))}>
+                    <Trash2 size={20} />
+                  </button>
+                )}
               </div>
             ))}
           </div>
