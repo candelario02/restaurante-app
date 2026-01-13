@@ -20,7 +20,7 @@ function App() {
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [seccion, setSeccion] = useState('menu');
 
-  // 🔥 Listener de Firebase — SOLO UNA VEZ
+  // 🔥 Listener Firebase — SOLO UNA VEZ
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
@@ -42,14 +42,17 @@ function App() {
       });
 
       if (!mensajeBienvenida) {
-        const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const hora = new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
         setMensajeBienvenida(`¡Sesión Activa!\n${usuario.email}\n${hora}`);
         setTimeout(() => setMensajeBienvenida(""), 3000);
       }
     });
 
     return unsubscribe;
-  }, []); // ❗ SIN dependencias
+  }, []);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
@@ -69,8 +72,8 @@ function App() {
     <div className="App">
       <div className="top-bar">
         {authState.user ? (
-          <div className="admin-buttons">
-            {authState.isAdmin && (
+          authState.isAdmin && (
+            <div className="admin-buttons">
               <button
                 className="btn-back-inline"
                 onClick={() => {
@@ -80,38 +83,38 @@ function App() {
               >
                 <ArrowLeft size={20} />
               </button>
-            )}
 
-            <button
-              className={`btn-top-gestion ${seccion === 'menu' && authState.isAdmin ? 'active' : ''}`}
-              onClick={() => {
-                localStorage.setItem('esAdmin', 'true');
-                setSeccion('menu');
-                setAuthState(prev => ({ ...prev, isAdmin: true }));
-              }}
-            >
-              <Settings size={18} /> Gestión
-            </button>
+              <button
+                className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`}
+                onClick={() => {
+                  localStorage.setItem('esAdmin', 'true');
+                  setSeccion('menu');
+                  setAuthState(prev => ({ ...prev, isAdmin: true }));
+                }}
+              >
+                <Settings size={18} /> Gestión
+              </button>
 
-            <button
-              className={`btn-top-gestion ${seccion === 'usuarios' && authState.isAdmin ? 'active' : ''}`}
-              style={{
-                background: seccion === 'usuarios' && authState.isAdmin ? '#10b981' : 'white',
-                color: seccion === 'usuarios' && authState.isAdmin ? 'white' : '#1e293b'
-              }}
-              onClick={() => {
-                localStorage.setItem('esAdmin', 'true');
-                setSeccion('usuarios');
-                setAuthState(prev => ({ ...prev, isAdmin: true }));
-              }}
-            >
-              <Users size={18} /> Usuarios
-            </button>
+              <button
+                className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
+                style={{
+                  background: seccion === 'usuarios' ? '#10b981' : 'white',
+                  color: seccion === 'usuarios' ? 'white' : '#1e293b'
+                }}
+                onClick={() => {
+                  localStorage.setItem('esAdmin', 'true');
+                  setSeccion('usuarios');
+                  setAuthState(prev => ({ ...prev, isAdmin: true }));
+                }}
+              >
+                <Users size={18} /> Usuarios
+              </button>
 
-            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
-              <LogOut size={18} />
-            </button>
-          </div>
+              <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
+                <LogOut size={18} />
+              </button>
+            </div>
+          )
         ) : (
           <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
             <LogIn size={18} /> Admin
