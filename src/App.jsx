@@ -5,34 +5,42 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogIn, LogOut, Settings, Utensils, Clock, ArrowLeft, X, Users } from 'lucide-react';
+import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users } from 'lucide-react';
 
 function App() {
   const [user, setUser] = useState(null);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
-  const [vistaAdmin, setVistaAdmin] = useState(false);
+  
+  // LEEMOS SI YA ESTÁBAMOS EN MODO ADMIN
+  const [vistaAdmin, setVistaAdmin] = useState(localStorage.getItem('esAdmin') === 'true');
   const [seccion, setSeccion] = useState('menu');
   const [cargandoAuth, setCargandoAuth] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (usuario) {
-        // Si hay un usuario, nos aseguramos de que el estado user se actualice
         setUser(usuario);
-        // NO reseteamos vistaAdmin aquí para evitar que te bote si ya estás dentro
+        // Si el usuario acaba de entrar, disparamos el cartel de bienvenida
+        if (!mensajeBienvenida) {
+            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            setMensajeBienvenida(`¡Sesión Activa! \n ${usuario.email} \n ${hora}`);
+            setTimeout(() => setMensajeBienvenida(""), 3000);
+        }
       } else {
         setUser(null);
         setVistaAdmin(false);
+        localStorage.removeItem('esAdmin');
       }
       setCargandoAuth(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
+    localStorage.removeItem('esAdmin');
     setUser(null);
     setVistaAdmin(false);
     setConfirmarSalida(false);
@@ -46,13 +54,13 @@ function App() {
         {user ? (
           <div className="admin-buttons">
             {vistaAdmin && (
-              <button className="btn-back-inline" onClick={() => setVistaAdmin(false)}>
+              <button className="btn-back-inline" onClick={() => {setVistaAdmin(false); localStorage.setItem('esAdmin', 'false');}}>
                 <ArrowLeft size={20} />
               </button>
             )}
             
             <button className={`btn-top-gestion ${seccion === 'menu' && vistaAdmin ? 'active' : ''}`} 
-                    onClick={() => { setVistaAdmin(true); setSeccion('menu'); }}>
+                    onClick={() => { setVistaAdmin(true); setSeccion('menu'); localStorage.setItem('esAdmin', 'true'); }}>
               <Settings size={18} /> Gestión
             </button>
 
@@ -61,7 +69,7 @@ function App() {
                       background: seccion === 'usuarios' && vistaAdmin ? '#10b981' : 'white', 
                       color: seccion === 'usuarios' && vistaAdmin ? 'white' : '#1e293b'
                     }}
-                    onClick={() => { setVistaAdmin(true); setSeccion('usuarios'); }}>
+                    onClick={() => { setVistaAdmin(true); setSeccion('usuarios'); localStorage.setItem('esAdmin', 'true'); }}>
               <Users size={18} /> Usuarios
             </button>
 
@@ -76,18 +84,27 @@ function App() {
         )}
       </div>
 
+      {/* LOGIN MODAL */}
       {mostrarLogin && !user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
             <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}><X size={20} /></button>
-            <Login 
-              alCerrar={() => setMostrarLogin(false)} 
-              activarAdmin={() => setVistaAdmin(true)} 
-            />
+            <Login alCerrar={() => setMostrarLogin(false)} />
           </div>
         </div>
       )}
 
+      {/* BIENVENIDA */}
+      {mensajeBienvenida && (
+        <div className="overlay-msg">
+          <div className="msg-box welcome-box">
+            <Clock color="#6366f1" size={40} />
+            <pre>{mensajeBienvenida}</pre>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMAR SALIDA */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm-styled">
@@ -101,17 +118,8 @@ function App() {
         </div>
       )}
 
-      {mensajeBienvenida && (
-        <div className="overlay-msg">
-          <div className="msg-box welcome-box">
-            <Clock color="#6366f1" size={40} />
-            <pre>{mensajeBienvenida}</pre>
-          </div>
-        </div>
-      )}
-
-      {/* Lógica de renderizado estable */}
-      {(vistaAdmin && user) ? (
+      {/* RENDERIZADO PRINCIPAL */}
+      {vistaAdmin && user ? (
         <div className="admin-container">
           <Admin seccion={seccion} />
         </div>

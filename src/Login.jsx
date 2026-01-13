@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-function Login({ alCerrar, activarAdmin }) {
+function Login({ alCerrar }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,30 +16,25 @@ function Login({ alCerrar, activarAdmin }) {
     setCargando(true);
 
     try {
-      // 1. Autenticación en Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Verificación de privilegios en Firestore
       const q = query(collection(db, "usuarios_admin"), where("email", "==", user.email));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        // Si no es admin, lo sacamos
         await signOut(auth);
         setError("Acceso Denegado: No tienes privilegios de administrador.");
       } else {
-        // ÉXITO: Primero activamos la vista admin y luego cerramos el modal
-        activarAdmin(); 
+        // EL SECRETO: Guardamos la intención de estar en modo admin
+        localStorage.setItem('esAdmin', 'true');
         alCerrar();
+        // Recarga para limpiar cualquier estado previo de React
+        window.location.reload();
       }
     } catch (err) {
       console.error(err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError("Correo o contraseña incorrectos");
-      } else {
-        setError("Error de conexión. Intente de nuevo.");
-      }
+      setError("Correo o contraseña incorrectos");
     } finally {
       setCargando(false);
     }
@@ -60,24 +55,12 @@ function Login({ alCerrar, activarAdmin }) {
       <form onSubmit={manejarLogin} className="login-form">
         <div className="input-group">
           <Mail size={18} className="input-icon" />
-          <input 
-            type="email" 
-            placeholder="Correo electrónico" 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required 
-          />
+          <input type="email" placeholder="Correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
 
         <div className="input-group">
           <Lock size={18} className="input-icon" />
-          <input 
-            type="password" 
-            placeholder="Contraseña" 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required 
-          />
+          <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
 
         {error && (
