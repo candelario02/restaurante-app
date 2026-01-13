@@ -1,42 +1,224 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* VARIABLES DE COLOR - Estilo Premium */
+:root {
+  --primary: #6366f1;    /* Púrpura elegante */
+  --secondary: #f59e0b;  /* Naranja para botones de acción */
+  --bg: #f1f5f9;         /* Gris muy claro para el fondo */
+  --white: #ffffff;
+  --text-dark: #1e293b;
+  --text-light: #64748b;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-dark);
+}
+
+/* 1. PANTALLA PRINCIPAL: ICONOS CIRCULARES (Imagen 1) */
+.main-categories {
+  padding: 20px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.main-categories h2 {
+  margin-bottom: 30px;
+  font-weight: 700;
+  color: var(--text-dark);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.grid-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas fijas en celular */
+  gap: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.cat-circle {
+  background: var(--white);
+  border: none;
+  border-radius: 25px; /* Bordes redondeados suaves */
+  aspect-ratio: 1/1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, background-color 0.2s;
+  cursor: pointer;
 }
 
-.card {
-  padding: 2em;
+.cat-circle:active {
+  transform: scale(0.95);
+  background-color: #fef3c7;
 }
 
-.read-the-docs {
-  color: #888;
+.cat-circle span {
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+/* 2. LISTA DE PRODUCTOS (Imagen 2) */
+.product-list {
+  padding: 15px;
+  padding-bottom: 100px; /* Espacio para que el carrito no tape el último plato */
+}
+
+.header-lista {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.product-card {
+  background: var(--white);
+  border-radius: 18px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.product-img {
+  width: 85px;
+  height: 85px;
+  border-radius: 15px;
+  object-fit: cover;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-info h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.price-tag {
+  display: block;
+  margin-top: 5px;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.btn-add {
+  background: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  width: 35px;
+  height: 35px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+/* 3. CARRITO FLOTANTE (Barra Inferior) */
+.cart-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
+  z-index: 100;
+}
+
+/* 4. MODAL DEL CARRITO (Toda la pantalla) */
+.cart-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--white);
+  z-index: 200;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.items-scroll {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.btn-send {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* 5. NAVEGACIÓN ADMINISTRADOR */
+.admin-nav {
+  display: flex;
+  background: var(--white);
+  padding: 10px;
+  justify-content: space-around;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-nav button {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+.admin-nav button.active {
+  color: var(--primary);
+  font-weight: bold;
 }

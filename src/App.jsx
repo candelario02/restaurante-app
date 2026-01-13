@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
+// Importamos los "cajones" (componentes)
+import Login from './Login';
+import Admin from './Admin';
+import MenuCliente from './MenuCliente';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState(null);
+  const [verLogin, setVerLogin] = useState(false);
+
+  // Escuchar si el admin inició sesión
+  useEffect(() => {
+    onAuthStateChanged(auth, (usuario) => {
+      setUser(usuario);
+    });
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="container">
+      {/* Si hay un usuario logueado, muestra el Admin */}
+      {user ? (
+        <Admin />
+      ) : (
+        // Si no hay usuario, decide entre Login o Menú Cliente
+        verLogin ? (
+          <Login alCerrar={() => setVerLogin(false)} />
+        ) : (
+          <>
+            <button className="btn-admin-acceso" onClick={() => setVerLogin(true)}>
+              Acceso Admin
+            </button>
+            <MenuCliente />
+          </>
+        )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
