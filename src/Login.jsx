@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { auth } from './firebase';
-import {
-  signInWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-// 🔐 Correos autorizados como ADMIN
+// 🔐 Agregué tu correo a la lista para que no te rebote
 const ADMIN_EMAILS = [
-  'huamancarrioncande24@gmail.com'
+  'huamancarrioncande24@gmail.com',
+  'jec02021994@gmail.com' 
 ];
 
-function Login({ alCerrar }) {
+function Login({ alCerrar, activarAdmin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,24 +22,19 @@ function Login({ alCerrar }) {
 
     try {
       // 1️⃣ Login Firebase Auth
-      const { user } = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
       // 2️⃣ Validación ADMIN por email
-      if (!ADMIN_EMAILS.includes(user.email)) {
+      if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         await signOut(auth);
-        setError(
-          'Acceso denegado: este usuario no tiene permisos de administrador.'
-        );
+        setError('Acceso denegado: este usuario no tiene permisos de administrador.');
         setCargando(false);
         return;
       }
 
-      // 3️⃣ Si es admin válido solo cerramos el modal
-      // App.js se encargará de activar la vista admin cuando Firebase confirme
+      // 3️⃣ ÉXITO: Activamos la vista admin y cerramos modal
+      if (activarAdmin) activarAdmin(); 
       alCerrar();
 
     } catch (err) {
@@ -89,40 +82,15 @@ function Login({ alCerrar }) {
         </div>
 
         {error && (
-          <div
-            className="error-box"
-            style={{
-              background: '#fee2e2',
-              padding: '10px',
-              borderRadius: '8px',
-              margin: '10px 0'
-            }}
-          >
-            <p
-              className="error-text"
-              style={{
-                color: '#b91c1c',
-                fontSize: '0.8rem',
-                textAlign: 'center'
-              }}
-            >
+          <div className="error-box" style={{ background: '#fee2e2', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>
+            <p className="error-text" style={{ color: '#b91c1c', fontSize: '0.8rem', textAlign: 'center' }}>
               {error}
             </p>
           </div>
         )}
 
-        <button
-          type="submit"
-          className="btn-login-submit"
-          disabled={cargando}
-        >
-          {cargando ? (
-            'Verificando...'
-          ) : (
-            <>
-              <LogIn size={20} /> Entrar
-            </>
-          )}
+        <button type="submit" className="btn-login-submit" disabled={cargando}>
+          {cargando ? 'Verificando...' : <><LogIn size={20} /> Entrar</>}
         </button>
       </form>
     </div>
