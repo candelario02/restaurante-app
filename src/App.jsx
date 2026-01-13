@@ -8,46 +8,43 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users } from 'lucide-react';
 
 function App() {
-  // 🔐 Estado ÚNICO de autenticación
+  // 🔐 Estado ÚNICO de auth + UI
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
-    isAdmin: false
+    isAdmin: false, // ⚠️ SOLO UI
   });
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
-  const [mensajeBienvenida, setMensajeBienvenida] = useState("");
+  const [mensajeBienvenida, setMensajeBienvenida] = useState('');
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [seccion, setSeccion] = useState('menu');
 
-  // 🔥 Listener Firebase — SOLO UNA VEZ
+  // 🔥 Listener Firebase — solo usuario
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
-        localStorage.removeItem('esAdmin');
         setAuthState({
           loading: false,
           user: null,
-          isAdmin: false
+          isAdmin: false,
         });
         return;
       }
 
-      const isAdmin = localStorage.getItem('esAdmin') === 'true';
-
-      setAuthState({
+      setAuthState((prev) => ({
+        ...prev,
         loading: false,
         user: usuario,
-        isAdmin
-      });
+      }));
 
       if (!mensajeBienvenida) {
         const hora = new Date().toLocaleTimeString([], {
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
         });
         setMensajeBienvenida(`¡Sesión Activa!\n${usuario.email}\n${hora}`);
-        setTimeout(() => setMensajeBienvenida(""), 3000);
+        setTimeout(() => setMensajeBienvenida(''), 3000);
       }
     });
 
@@ -56,16 +53,15 @@ function App() {
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
-    localStorage.removeItem('esAdmin');
     setAuthState({
       loading: false,
       user: null,
-      isAdmin: false
+      isAdmin: false,
     });
     setConfirmarSalida(false);
   };
 
-  // ⛔ Bloquea render hasta resolver auth
+  // ⛔ No renderizar hasta resolver auth
   if (authState.loading) return null;
 
   return (
@@ -76,10 +72,9 @@ function App() {
             <div className="admin-buttons">
               <button
                 className="btn-back-inline"
-                onClick={() => {
-                  localStorage.setItem('esAdmin', 'false');
-                  setAuthState(prev => ({ ...prev, isAdmin: false }));
-                }}
+                onClick={() =>
+                  setAuthState((prev) => ({ ...prev, isAdmin: false }))
+                }
               >
                 <ArrowLeft size={20} />
               </button>
@@ -87,9 +82,8 @@ function App() {
               <button
                 className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`}
                 onClick={() => {
-                  localStorage.setItem('esAdmin', 'true');
                   setSeccion('menu');
-                  setAuthState(prev => ({ ...prev, isAdmin: true }));
+                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
                 }}
               >
                 <Settings size={18} /> Gestión
@@ -99,46 +93,55 @@ function App() {
                 className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
                 style={{
                   background: seccion === 'usuarios' ? '#10b981' : 'white',
-                  color: seccion === 'usuarios' ? 'white' : '#1e293b'
+                  color: seccion === 'usuarios' ? 'white' : '#1e293b',
                 }}
                 onClick={() => {
-                  localStorage.setItem('esAdmin', 'true');
                   setSeccion('usuarios');
-                  setAuthState(prev => ({ ...prev, isAdmin: true }));
+                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
                 }}
               >
                 <Users size={18} /> Usuarios
               </button>
 
-              <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
+              <button
+                className="btn-top-admin"
+                onClick={() => setConfirmarSalida(true)}
+              >
                 <LogOut size={18} />
               </button>
             </div>
           )
         ) : (
-          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
+          <button
+            className="btn-top-login"
+            onClick={() => setMostrarLogin(true)}
+          >
             <LogIn size={18} /> Admin
           </button>
         )}
       </div>
 
+      {/* 🔐 LOGIN MODAL */}
       {mostrarLogin && !authState.user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
-            <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}>
+            <button
+              className="close-btn-modal"
+              onClick={() => setMostrarLogin(false)}
+            >
               <X size={20} />
             </button>
             <Login
               alCerrar={() => setMostrarLogin(false)}
-              activarAdmin={() => {
-                localStorage.setItem('esAdmin', 'true');
-                setAuthState(prev => ({ ...prev, isAdmin: true }));
-              }}
+              activarAdmin={() =>
+                setAuthState((prev) => ({ ...prev, isAdmin: true }))
+              }
             />
           </div>
         </div>
       )}
 
+      {/* 👋 BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box welcome-box">
@@ -148,6 +151,7 @@ function App() {
         </div>
       )}
 
+      {/* ❌ CONFIRMAR SALIDA */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm-styled">
@@ -156,7 +160,10 @@ function App() {
             </div>
             <h3>¿Cerrar Sesión?</h3>
             <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setConfirmarSalida(false)}>
+              <button
+                className="btn-no"
+                onClick={() => setConfirmarSalida(false)}
+              >
                 Cancelar
               </button>
               <button className="btn-yes" onClick={manejarCerrarSesion}>
@@ -167,7 +174,7 @@ function App() {
         </div>
       )}
 
-      {/* ✅ Render FINAL — SIN race condition */}
+      {/* ✅ RENDER FINAL */}
       {authState.user && authState.isAdmin ? (
         <div className="admin-container">
           <Admin seccion={seccion} />

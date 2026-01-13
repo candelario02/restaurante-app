@@ -17,8 +17,7 @@ import {
   Image as ImageIcon,
   Save,
   UserPlus,
-  Mail,
-  ShieldCheck
+  Mail
 } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -33,12 +32,13 @@ const Admin = ({ seccion }) => {
 
   const [userEmail, setUserEmail] = useState('');
 
+  // 🔥 Listeners en tiempo real
   useEffect(() => {
-    const unsubProd = onSnapshot(collection(db, "productos"), snap => {
+    const unsubProd = onSnapshot(collection(db, 'productos'), snap => {
       setProductos(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    const unsubUser = onSnapshot(collection(db, "usuarios_admin"), snap => {
+    const unsubUser = onSnapshot(collection(db, 'usuarios_admin'), snap => {
       setUsuarios(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
@@ -48,45 +48,66 @@ const Admin = ({ seccion }) => {
     };
   }, []);
 
+  // 🍔 Subir producto
   const subirProducto = async (e) => {
     e.preventDefault();
-    if (!imagen) return alert("Selecciona una imagen");
+
+    if (!imagen) {
+      alert('Selecciona una imagen');
+      return;
+    }
 
     setCargando(true);
     try {
-      const storageRef = ref(storage, `productos/${Date.now()}_${imagen.name}`);
+      const storageRef = ref(
+        storage,
+        `productos/${Date.now()}_${imagen.name}`
+      );
+
       await uploadBytes(storageRef, imagen);
       const url = await getDownloadURL(storageRef);
 
-      await addDoc(collection(db, "productos"), {
+      await addDoc(collection(db, 'productos'), {
         nombre,
         precio: Number(precio),
         categoria,
         img: url,
-        disponible: true
+        disponible: true,
+        creado: new Date().toISOString()
       });
 
+      // Reset form
       setNombre('');
       setPrecio('');
+      setCategoria('Menu');
       setImagen(null);
-    } catch (e) {
-      alert("Error al subir producto");
+
+    } catch (error) {
+      console.error(error);
+      alert('Error al subir el producto');
+    } finally {
+      setCargando(false);
     }
-    setCargando(false);
   };
 
+  // 👤 Registrar admin (solo visual / futura referencia)
   const registrarAdmin = async (e) => {
     e.preventDefault();
     if (!userEmail) return;
 
-    await setDoc(doc(db, "usuarios_admin", userEmail), {
-      email: userEmail,
-      rol: "admin",
-      creado: new Date().toISOString()
-    });
+    try {
+      await setDoc(doc(db, 'usuarios_admin', userEmail), {
+        email: userEmail,
+        rol: 'admin',
+        creado: new Date().toISOString()
+      });
 
-    setUserEmail('');
-    alert("Correo autorizado como Admin");
+      setUserEmail('');
+      alert('Correo agregado como admin (lista interna)');
+    } catch (error) {
+      console.error(error);
+      alert('Error al registrar admin');
+    }
   };
 
   return (
@@ -96,32 +117,63 @@ const Admin = ({ seccion }) => {
           <h2>Gestión de Menú</h2>
 
           <form onSubmit={subirProducto} className="admin-form">
-            <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" required />
-            <input type="number" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio" required />
-            <select value={categoria} onChange={e => setCategoria(e.target.value)}>
+            <input
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Nombre"
+              required
+            />
+
+            <input
+              type="number"
+              value={precio}
+              onChange={e => setPrecio(e.target.value)}
+              placeholder="Precio"
+              required
+            />
+
+            <select
+              value={categoria}
+              onChange={e => setCategoria(e.target.value)}
+            >
               <option value="Menu">Comidas</option>
               <option value="Cafeteria">Café</option>
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
             </select>
 
-            <label>
-              <ImageIcon /> {imagen ? imagen.name : "Subir Imagen"}
-              <input type="file" hidden onChange={e => setImagen(e.target.files[0])} />
+            <label className="upload-label">
+              <ImageIcon /> {imagen ? imagen.name : 'Subir Imagen'}
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={e => setImagen(e.target.files[0])}
+              />
             </label>
 
             <button disabled={cargando}>
-              <Save /> Guardar
+              <Save /> {cargando ? 'Guardando...' : 'Guardar'}
             </button>
           </form>
 
           {productos.map(p => (
-            <div key={p.id}>
+            <div key={p.id} className="admin-item">
               <span>{p.nombre}</span>
-              <button onClick={() => updateDoc(doc(db, "productos", p.id), { disponible: !p.disponible })}>
+
+              <button
+                onClick={() =>
+                  updateDoc(doc(db, 'productos', p.id), {
+                    disponible: !p.disponible
+                  })
+                }
+              >
                 {p.disponible ? <Power /> : <PowerOff />}
               </button>
-              <button onClick={() => deleteDoc(doc(db, "productos", p.id))}>
+
+              <button
+                onClick={() => deleteDoc(doc(db, 'productos', p.id))}
+              >
                 <Trash2 />
               </button>
             </div>
@@ -129,9 +181,9 @@ const Admin = ({ seccion }) => {
         </>
       ) : (
         <>
-          <h2>Admins</h2>
+          <h2>Administradores</h2>
 
-          <form onSubmit={registrarAdmin}>
+          <form onSubmit={registrarAdmin} className="admin-form">
             <Mail />
             <input
               type="email"
@@ -141,14 +193,18 @@ const Admin = ({ seccion }) => {
               required
             />
             <button>
-              <UserPlus /> Autorizar
+              <UserPlus /> Agregar
             </button>
           </form>
 
           {usuarios.map(u => (
-            <div key={u.id}>
+            <div key={u.id} className="admin-item">
               {u.email}
-              <button onClick={() => deleteDoc(doc(db, "usuarios_admin", u.id))}>
+              <button
+                onClick={() =>
+                  deleteDoc(doc(db, 'usuarios_admin', u.id))
+                }
+              >
                 <Trash2 />
               </button>
             </div>

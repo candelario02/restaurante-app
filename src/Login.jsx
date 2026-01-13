@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { auth } from './firebase';
+import {
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
+
+// 🔐 Correos autorizados como ADMIN
+const ADMIN_EMAILS = [
+  'huamancarrioncande24@gmail.com'
+];
 
 function Login({ alCerrar, activarAdmin }) {
   const [email, setEmail] = useState('');
@@ -16,31 +23,24 @@ function Login({ alCerrar, activarAdmin }) {
     setCargando(true);
 
     try {
-      // 🔐 1. Login Firebase
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-
-      // 🛡️ 2. Verificación ADMIN en Firestore
-      const q = query(
-        collection(db, 'usuarios_admin'),
-        where('email', '==', user.email.toLowerCase())
+      // 1️⃣ Login Firebase Auth
+      const { user } = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
-      const snap = await getDocs(q);
 
-      // ❌ No es admin → expulsión inmediata
-      if (snap.empty) {
+      // 2️⃣ Validación ADMIN por email
+      if (!ADMIN_EMAILS.includes(user.email)) {
         await signOut(auth);
-        localStorage.removeItem('esAdmin');
-        setError('Acceso Denegado: Tu correo no está autorizado como administrador.');
+        setError(
+          'Acceso denegado: este usuario no tiene permisos de administrador.'
+        );
         return;
       }
 
-      // ✅ 3. ES ADMIN → persistimos ANTES de que Firebase notifique
-      localStorage.setItem('esAdmin', 'true');
-
-      // 🔥 4. Sincronizamos App.jsx inmediatamente (bloquea desmontaje)
-      if (activarAdmin) activarAdmin();
-
-      // ✅ 5. Cerramos modal
+      // 3️⃣ Admin válido → activar modo admin
+      activarAdmin();
       alCerrar();
 
     } catch (err) {
@@ -54,7 +54,7 @@ function Login({ alCerrar, activarAdmin }) {
   return (
     <div className="login-content">
       <div className="login-icon-header">
-        {error.includes('Acceso Denegado') ? (
+        {error.includes('Acceso') ? (
           <ShieldAlert size={40} color="#ef4444" />
         ) : (
           <Lock size={40} color="#6366f1" />
@@ -110,7 +110,11 @@ function Login({ alCerrar, activarAdmin }) {
           </div>
         )}
 
-        <button type="submit" className="btn-login-submit" disabled={cargando}>
+        <button
+          type="submit"
+          className="btn-login-submit"
+          disabled={cargando}
+        >
           {cargando ? (
             'Verificando...'
           ) : (

@@ -10,7 +10,7 @@ import { getStorage } from "firebase/storage";
 
 /**
  * Configuración Firebase
- * Las keys públicas NO son un problema de seguridad
+ * ⚠️ Las keys públicas NO son un problema de seguridad
  */
 const firebaseConfig = {
   apiKey: "AIzaSyDbhwRwkFdu_2hOLo_0e0jSgDXFx8Azw8Q",
@@ -28,14 +28,14 @@ const app = initializeApp(firebaseConfig);
 // 🔐 Auth
 export const auth = getAuth(app);
 
-// ✅ Persistencia local (clave para Brave, Vercel, Safari, etc.)
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("🔐 Firebase Auth persistence: LOCAL");
-  })
-  .catch((error) => {
-    console.error("❌ Error setPersistence:", error);
-  });
+// 🧠 Persistencia LOCAL (tablets, Brave, Safari, Vercel)
+(async () => {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch (error) {
+    console.error("Error estableciendo persistencia Auth:", error);
+  }
+})();
 
 // 🗄️ Firestore
 export const db = getFirestore(app);
