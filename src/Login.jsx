@@ -25,7 +25,7 @@ function Login({ alCerrar, activarAdmin }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2️⃣ Validación ADMIN por email
+      // 2️⃣ Validación ADMIN por email (Tu lógica de seguridad original)
       if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         await signOut(auth);
         setError('Acceso denegado: este usuario no tiene permisos de administrador.');
@@ -39,7 +39,12 @@ function Login({ alCerrar, activarAdmin }) {
 
     } catch (err) {
       console.error(err);
-      setError('Correo o contraseña incorrectos');
+      // Manejo de errores detallado
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Correo o contraseña incorrectos');
+      } else {
+        setError('Error al intentar iniciar sesión. Reintenta.');
+      }
     } finally {
       setCargando(false);
     }
@@ -47,21 +52,22 @@ function Login({ alCerrar, activarAdmin }) {
 
   return (
     <div className="login-content">
-      {/* El diseño de estos iconos ahora depende de las clases CSS */}
+      {/* Icono de cabecera dinámico según el error */}
       <div className="icon-circle-warning">
         {error.includes('Acceso') ? (
-          <ShieldAlert size={40} />
+          <ShieldAlert size={40} color="var(--danger)" />
         ) : (
-          <Lock size={40} />
+          <Lock size={40} color="var(--primary)" />
         )}
       </div>
 
-      <div className="header-brand">
-        <h2>Acceso Admin</h2>
-        <p>Ingresa tus credenciales autorizadas</p>
+      <div className="header-brand" style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <h2 style={{ margin: '0', color: 'var(--text-main)' }}>Acceso Admin</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Ingresa tus credenciales autorizadas</p>
       </div>
 
       <form onSubmit={manejarLogin} className="login-form">
+        {/* Grupo: Email */}
         <div className="input-group">
           <Mail size={18} className="input-icon" />
           <input
@@ -70,9 +76,11 @@ function Login({ alCerrar, activarAdmin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
           />
         </div>
 
+        {/* Grupo: Contraseña */}
         <div className="input-group">
           <Lock size={18} className="input-icon" />
           <input
@@ -81,19 +89,46 @@ function Login({ alCerrar, activarAdmin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
           />
         </div>
 
+        {/* Caja de Error (Usando variables de tu CSS) */}
         {error && (
-          <div className="msg-box" style={{ padding: '10px', boxShadow: 'none', border: '1px solid var(--danger)' }}>
-            <p className="text-muted" style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>
+          <div style={{ 
+            background: '#fef2f2', 
+            border: '1px solid var(--danger)', 
+            padding: '12px', 
+            borderRadius: 'var(--radius)',
+            marginTop: '10px'
+          }}>
+            <p style={{ 
+              color: 'var(--danger)', 
+              fontSize: '0.85rem', 
+              margin: 0, 
+              textAlign: 'center',
+              fontWeight: '500'
+            }}>
               {error}
             </p>
           </div>
         )}
 
-        <button type="submit" className="btn-login-submit" disabled={cargando}>
-          {cargando ? 'Verificando...' : <><LogIn size={20} /> Entrar</>}
+        {/* Botón de envío con estado de carga */}
+        <button 
+          type="submit" 
+          className="btn-login-submit" 
+          disabled={cargando}
+          style={{ marginTop: '10px' }}
+        >
+          {cargando ? (
+            'Verificando...'
+          ) : (
+            <>
+              <LogIn size={20} /> 
+              <span>Entrar al Panel</span>
+            </>
+          )}
         </button>
       </form>
     </div>

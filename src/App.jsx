@@ -5,19 +5,9 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import {
-  LogIn,
-  LogOut,
-  Settings,
-  Clock,
-  ArrowLeft,
-  X,
-  Users,
-  Package
-} from 'lucide-react';
+import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users, Package } from 'lucide-react';
 
 function App() {
-  // 🔐 Estado de autenticación
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
@@ -33,48 +23,28 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
-        setAuthState({
-          loading: false,
-          user: null,
-          isAdmin: false
-        });
+        setAuthState({ loading: false, user: null, isAdmin: false });
         localStorage.removeItem('esAdmin');
         setBienvenidaMostrada(false);
         return;
       }
-
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
+      setAuthState({ loading: false, user: usuario, isAdmin: eraAdmin });
 
-      setAuthState((prev) => ({
-        ...prev,
-        loading: false,
-        user: usuario,
-        isAdmin: eraAdmin
-      }));
-
-      // 👋 Mensaje de bienvenida
       if (!bienvenidaMostrada) {
-        const hora = new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         setMensajeBienvenida(`¡Sesión Activa!\n${usuario.email}\n${hora}`);
         setBienvenidaMostrada(true);
         setTimeout(() => setMensajeBienvenida(''), 3000);
       }
     });
-
     return () => unsubscribe();
   }, [bienvenidaMostrada]);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
     localStorage.removeItem('esAdmin');
-    setAuthState({
-      loading: false,
-      user: null,
-      isAdmin: false
-    });
+    setAuthState({ loading: false, user: null, isAdmin: false });
     setConfirmarSalida(false);
     setSeccion('menu');
   };
@@ -83,104 +53,69 @@ function App() {
 
   return (
     <div className="App">
-      
-      {/* 🔝 SESIÓN 2: BARRA SUPERIOR (TOP BAR) */}
       <div className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
             {!authState.isAdmin ? (
-              <button
-                className="btn-top-gestion active"
-                onClick={() => {
-                  setAuthState(prev => ({ ...prev, isAdmin: true }));
-                  localStorage.setItem('esAdmin', 'true');
-                }}
-              >
+              <button className="btn-top-gestion active" onClick={() => {
+                setAuthState(p => ({ ...p, isAdmin: true }));
+                localStorage.setItem('esAdmin', 'true');
+              }}>
                 <Settings size={18} /> Volver al Panel
               </button>
             ) : (
               <>
-                <button
-                  className="btn-back-inline"
-                  title="Ver como Cliente"
-                  onClick={() => {
-                    setAuthState((prev) => ({ ...prev, isAdmin: false }));
-                    localStorage.setItem('esAdmin', 'false');
-                  }}
-                >
-                  <ArrowLeft size={20} />
-                </button>
+                <button className="btn-back-inline" onClick={() => {
+                  setAuthState(p => ({ ...p, isAdmin: false }));
+                  localStorage.setItem('esAdmin', 'false');
+                }}><ArrowLeft size={20} /></button>
 
-                <button
-                  className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`}
-                  onClick={() => setSeccion('menu')}
-                >
+                <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} onClick={() => setSeccion('menu')}>
                   <Settings size={18} /> <span>Menú</span>
                 </button>
-
-                <button
-                  className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
-                  onClick={() => setSeccion('usuarios')}
-                >
+                <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`} onClick={() => setSeccion('usuarios')}>
                   <Users size={18} /> <span>Usuarios</span>
                 </button>
-
-                <button
-                  className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`}
-                  onClick={() => setSeccion('pedidos')}
-                >
+                <button className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`} onClick={() => setSeccion('pedidos')}>
                   <Package size={18} /> <span>Pedidos</span>
                 </button>
               </>
             )}
-
-            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
-              <LogOut size={18} />
-            </button>
+            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}><LogOut size={18} /></button>
           </div>
         ) : (
-          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
-            <LogIn size={18} /> Admin
-          </button>
+          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}><LogIn size={18} /> Admin</button>
         )}
       </div>
 
-      {/* 🔐 SESIÓN 4: MODAL DE LOGIN */}
-      {mostrarLogin && !authState.user && (
+      {mostrarLogin && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <button className="btn-back-inline" onClick={() => setMostrarLogin(false)}>
-              <X size={20} />
-            </button>
-            <Login 
-              alCerrar={() => setMostrarLogin(false)} 
-              activarAdmin={() => {
-                setAuthState(prev => ({ ...prev, isAdmin: true }));
-                localStorage.setItem('esAdmin', 'true');
-              }}
-            />
+            <button className="btn-back-inline" onClick={() => setMostrarLogin(false)} style={{position: 'absolute', top: '15px', right: '15px'}}><X size={20}/></button>
+            <Login alCerrar={() => setMostrarLogin(false)} activarAdmin={() => {
+              setAuthState(p => ({ ...p, isAdmin: true }));
+              localStorage.setItem('esAdmin', 'true');
+            }} />
           </div>
         </div>
       )}
 
-      {/* 👋 SESIÓN 4: POPUP BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
-          <div className="msg-box welcome-box">
+          <div className="msg-box">
             <div className="icon-circle-warning">
-               <Clock size={40} />
+               <Clock size={40} color="var(--primary)" />
             </div>
-            <pre className="text-main">{mensajeBienvenida}</pre>
+            <pre style={{fontWeight: '700', whiteSpace: 'pre-wrap'}}>{mensajeBienvenida}</pre>
           </div>
         </div>
       )}
 
-      {/* ❌ SESIÓN 4: DIÁLOGO CERRAR SESIÓN (IMAGEN 3) */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box">
             <div className="icon-circle-warning">
-              <LogOut size={30} />
+              <LogOut size={35} color="var(--danger)" />
             </div>
             <h3>¿Cerrar Sesión?</h3>
             <p className="text-muted">Deberás ingresar tus credenciales nuevamente.</p>
@@ -192,16 +127,10 @@ function App() {
         </div>
       )}
 
-      {/* 🧠 CONTENIDO DINÁMICO */}
       <main>
-        {authState.user && authState.isAdmin ? (
-          <Admin seccion={seccion} />
-        ) : (
-          <MenuCliente />
-        )}
+        {authState.user && authState.isAdmin ? <Admin seccion={seccion} /> : <MenuCliente />}
       </main>
     </div>
   );
 }
-
 export default App;
