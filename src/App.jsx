@@ -8,77 +8,103 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users } from 'lucide-react';
 
 function App() {
-  const [user, setUser] = useState(null);
+  // 🔐 Estado ÚNICO de autenticación
+  const [authState, setAuthState] = useState({
+    loading: true,
+    user: null,
+    isAdmin: false
+  });
+
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
-  
-  // 1. Priorizamos siempre lo que diga el localStorage para evitar el parpadeo de 2 segundos
-  const [vistaAdmin, setVistaAdmin] = useState(localStorage.getItem('esAdmin') === 'true');
   const [seccion, setSeccion] = useState('menu');
-  const [cargandoAuth, setCargandoAuth] = useState(true);
 
+  // 🔥 Listener de Firebase — SOLO UNA VEZ
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
-      if (usuario) {
-        setUser(usuario);
-        
-        // 2. Si hay un usuario logueado, verificamos si debe estar en vista Admin
-        const eraAdmin = localStorage.getItem('esAdmin') === 'true';
-        if (eraAdmin) {
-          setVistaAdmin(true);
-        }
-
-        // 3. Lógica de bienvenida mejorada
-        if (!mensajeBienvenida) {
-            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            setMensajeBienvenida(`¡Sesión Activa! \n ${usuario.email} \n ${hora}`);
-            setTimeout(() => setMensajeBienvenida(""), 3000);
-        }
-      } else {
-        // Si no hay usuario en Firebase, limpiamos todo por seguridad
-        setUser(null);
-        setVistaAdmin(false);
+      if (!usuario) {
         localStorage.removeItem('esAdmin');
+        setAuthState({
+          loading: false,
+          user: null,
+          isAdmin: false
+        });
+        return;
       }
-      setCargandoAuth(false);
+
+      const isAdmin = localStorage.getItem('esAdmin') === 'true';
+
+      setAuthState({
+        loading: false,
+        user: usuario,
+        isAdmin
+      });
+
+      if (!mensajeBienvenida) {
+        const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setMensajeBienvenida(`¡Sesión Activa!\n${usuario.email}\n${hora}`);
+        setTimeout(() => setMensajeBienvenida(""), 3000);
+      }
     });
-    
-    return () => unsubscribe();
-  }, [mensajeBienvenida]); 
+
+    return unsubscribe;
+  }, []); // ❗ SIN dependencias
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
     localStorage.removeItem('esAdmin');
-    setUser(null);
-    setVistaAdmin(false);
+    setAuthState({
+      loading: false,
+      user: null,
+      isAdmin: false
+    });
     setConfirmarSalida(false);
   };
 
-  if (cargandoAuth) return null;
+  // ⛔ Bloquea render hasta resolver auth
+  if (authState.loading) return null;
 
   return (
     <div className="App">
       <div className="top-bar">
-        {user ? (
+        {authState.user ? (
           <div className="admin-buttons">
-            {vistaAdmin && (
-              <button className="btn-back-inline" onClick={() => {setVistaAdmin(false); localStorage.setItem('esAdmin', 'false');}}>
+            {authState.isAdmin && (
+              <button
+                className="btn-back-inline"
+                onClick={() => {
+                  localStorage.setItem('esAdmin', 'false');
+                  setAuthState(prev => ({ ...prev, isAdmin: false }));
+                }}
+              >
                 <ArrowLeft size={20} />
               </button>
             )}
-            
-            <button className={`btn-top-gestion ${seccion === 'menu' && vistaAdmin ? 'active' : ''}`} 
-                    onClick={() => { setVistaAdmin(true); setSeccion('menu'); localStorage.setItem('esAdmin', 'true'); }}>
+
+            <button
+              className={`btn-top-gestion ${seccion === 'menu' && authState.isAdmin ? 'active' : ''}`}
+              onClick={() => {
+                localStorage.setItem('esAdmin', 'true');
+                setSeccion('menu');
+                setAuthState(prev => ({ ...prev, isAdmin: true }));
+              }}
+            >
               <Settings size={18} /> Gestión
             </button>
 
-            <button className={`btn-top-gestion ${seccion === 'usuarios' && vistaAdmin ? 'active' : ''}`}
-                    style={{
-                      background: seccion === 'usuarios' && vistaAdmin ? '#10b981' : 'white', 
-                      color: seccion === 'usuarios' && vistaAdmin ? 'white' : '#1e293b'
-                    }}
-                    onClick={() => { setVistaAdmin(true); setSeccion('usuarios'); localStorage.setItem('esAdmin', 'true'); }}>
+            <button
+              className={`btn-top-gestion ${seccion === 'usuarios' && authState.isAdmin ? 'active' : ''}`}
+              style={{
+                background: seccion === 'usuarios' && authState.isAdmin ? '#10b981' : 'white',
+                color: seccion === 'usuarios' && authState.isAdmin ? 'white' : '#1e293b'
+              }}
+              onClick={() => {
+                localStorage.setItem('esAdmin', 'true');
+                setSeccion('usuarios');
+                setAuthState(prev => ({ ...prev, isAdmin: true }));
+              }}
+            >
               <Users size={18} /> Usuarios
             </button>
 
@@ -93,16 +119,18 @@ function App() {
         )}
       </div>
 
-      {mostrarLogin && !user && (
+      {mostrarLogin && !authState.user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
-            <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}><X size={20} /></button>
-            <Login 
-              alCerrar={() => setMostrarLogin(false)} 
+            <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}>
+              <X size={20} />
+            </button>
+            <Login
+              alCerrar={() => setMostrarLogin(false)}
               activarAdmin={() => {
-                setVistaAdmin(true);
                 localStorage.setItem('esAdmin', 'true');
-              }} 
+                setAuthState(prev => ({ ...prev, isAdmin: true }));
+              }}
             />
           </div>
         </div>
@@ -120,24 +148,30 @@ function App() {
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm-styled">
-            <div className="icon-circle-warning"><LogOut size={30} color="#ef4444" /></div>
+            <div className="icon-circle-warning">
+              <LogOut size={30} color="#ef4444" />
+            </div>
             <h3>¿Cerrar Sesión?</h3>
             <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
-              <button className="btn-yes" onClick={manejarCerrarSesion}>Sí, Salir</button>
+              <button className="btn-no" onClick={() => setConfirmarSalida(false)}>
+                Cancelar
+              </button>
+              <button className="btn-yes" onClick={manejarCerrarSesion}>
+                Sí, Salir
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* RENDERIZADO PRINCIPAL: Si es admin y está logueado, se queda aquí */}
-      {vistaAdmin && user ? (
+      {/* ✅ Render FINAL — SIN race condition */}
+      {authState.user && authState.isAdmin ? (
         <div className="admin-container">
           <Admin seccion={seccion} />
         </div>
       ) : (
         <div className="cliente-container">
-          <MenuCliente esAdmin={!!user} />
+          <MenuCliente />
         </div>
       )}
     </div>
