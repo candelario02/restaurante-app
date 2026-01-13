@@ -231,3 +231,94 @@ body {
 .is-off { background: #fee2e2; color: #dc2626; }
 
 .btn-delete { background: none; border: none; color: #94a3b8; cursor: pointer; }
+/* DISEÑO DE CUADRÍCULA DE PRODUCTOS */
+.product-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas como en tu referencia */
+  gap: 15px;
+  padding: 15px;
+  padding-top: 80px; /* Espacio para el header fijo */
+}
+
+.food-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.food-img-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1; /* Imágenes cuadradas */
+}
+
+.food-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-add-food {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: var(--secondary);
+  color: white;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.food-info {
+  padding: 10px;
+  text-align: center;
+}
+
+.food-info h3 {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #333;
+  height: 2.4em; /* Mantiene el texto en 2 líneas máximo */
+  overflow: hidden;
+}
+
+.food-price {
+  font-weight: bold;
+  color: var(--primary);
+  display: block;
+  margin-top: 5px;
+}
+
+/* Header superior para volver */
+.header-lista-fija {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  max-width: 500px; /* Mismo que el container */
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  z-index: 90;
+  border-bottom: 1px solid #eee;
+}
+
+.btn-back-circle {
+  background: #f1f5f9;
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}

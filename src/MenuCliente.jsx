@@ -11,7 +11,6 @@ const MenuCliente = ({ esAdmin }) => {
 
   useEffect(() => {
     if (categoriaActual) {
-      // FILTRO: Solo trae productos que el admin marcó como disponibles
       const q = query(
         collection(db, "productos"), 
         where("categoria", "==", categoriaActual),
@@ -30,23 +29,7 @@ const MenuCliente = ({ esAdmin }) => {
 
   const total = carrito.reduce((acc, item) => acc + item.precio, 0);
 
-  const enviarPedido = async () => {
-    try {
-      await addDoc(collection(db, "pedidos"), {
-        items: carrito,
-        total: total,
-        estado: "Pendiente",
-        fecha: new Date().toISOString(),
-        tipo: esAdmin ? "Venta Directa" : "Pedido Cliente"
-      });
-      alert(esAdmin ? "Venta registrada" : "¡Pedido enviado a cocina!");
-      setCarrito([]);
-      setVerCarrito(false);
-    } catch (e) {
-      alert("Error al procesar");
-    }
-  };
-
+  // Pantalla Principal de Categorías
   if (!categoriaActual) {
     return (
       <div className="main-categories">
@@ -85,29 +68,32 @@ const MenuCliente = ({ esAdmin }) => {
     );
   }
 
+  // PANTALLA DE PRODUCTOS (ESTILO CUADRÍCULA COMO TU IMAGEN)
   return (
-    <div className="product-list-view">
-      <div className="header-lista">
-        <button onClick={() => setCategoriaActual(null)} className="btn-back">
-          <ArrowLeft size={20}/> <span>Volver</span>
+    <div className="product-view">
+      <div className="header-lista-fija">
+        <button onClick={() => setCategoriaActual(null)} className="btn-back-circle">
+          <ArrowLeft size={24}/>
         </button>
-        <div className="category-title">{categoriaActual}</div>
+        <h2>{categoriaActual}</h2>
+        <div className="spacer"></div>
       </div>
       
-      <div className="products-container">
+      <div className="product-grid-layout">
         {productos.map(p => (
-          <div key={p.id} className="product-card">
-            <img src={p.img} alt={p.nombre} className="product-img" />
-            <div className="product-info">
-              <h3>{p.nombre}</h3>
-              <span className="price-tag">S/ {p.precio.toFixed(2)}</span>
+          <div key={p.id} className="food-card">
+            <div className="food-img-container">
+              <img src={p.img} alt={p.nombre} className="food-img" />
+              <button className="btn-add-food" onClick={() => agregarAlCarrito(p)}>+</button>
             </div>
-            <button className="btn-add" onClick={() => agregarAlCarrito(p)}>+</button>
+            <div className="food-info">
+              <h3>{p.nombre}</h3>
+              <span className="food-price">S/ {p.precio.toFixed(2)}</span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* MODAL DEL CARRITO */}
       {verCarrito && (
         <div className="cart-modal">
           <div className="modal-content">
@@ -124,12 +110,9 @@ const MenuCliente = ({ esAdmin }) => {
               ))}
             </div>
             <div className="cart-footer">
-              <div className="total-box">
-                <span>Total a pagar</span>
-                <h3>S/ {total.toFixed(2)}</h3>
-              </div>
-              <button className="btn-send" onClick={enviarPedido}>
-                <Send size={18} /> {esAdmin ? "COBRAR VENTA" : "ENVIAR PEDIDO"}
+              <h3>Total: S/ {total.toFixed(2)}</h3>
+              <button className="btn-send" onClick={() => alert("Pedido enviado")}>
+                <Send size={18} /> ENVIAR PEDIDO
               </button>
             </div>
           </div>
