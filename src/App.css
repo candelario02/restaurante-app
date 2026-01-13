@@ -322,3 +322,107 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+/* AJUSTE PANTALLA PRINCIPAL: Iconos más grandes */
+.main-categories {
+  padding: 40px 20px; /* Más espacio arriba */
+  text-align: center;
+}
+
+.main-categories h2 {
+  font-size: 1.5rem;
+  margin-bottom: 40px;
+  color: var(--text-dark);
+}
+
+.grid-menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px; /* Más separación para que respiren */
+  padding: 10px;
+}
+
+.cat-circle {
+  background: var(--white);
+  border: none;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1); /* Sombra más profunda */
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+/* Iconos dentro del círculo más grandes */
+.cat-circle svg {
+  width: 55px; 
+  height: 55px;
+}
+
+.cat-circle span {
+  margin-top: 15px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* --- ESTILOS DEL NUEVO LOGIN (MODAL) --- */
+.login-card {
+  background: white;
+  width: 90%;
+  max-width: 350px;
+  padding: 30px;
+  border-radius: 25px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  animation: popIn 0.3s ease-out;
+}
+
+.login-icon {
+  background: #f1f5f9;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.login-form input {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  outline: none;
+}
+
+.btn-login-submit {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-close-login {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
