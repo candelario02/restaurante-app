@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { auth, db } from './firebase'; // Importamos db para consultar Firestore
+import { auth, db } from './firebase'; 
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-function Login({ alCerrar }) {
+function Login({ alCerrar, activarAdmin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,28 +16,29 @@ function Login({ alCerrar }) {
     setCargando(true);
 
     try {
-      // 1. Intento de autenticación normal en Firebase Auth
+      // 1. Autenticación en Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Verificar si el correo está en la lista de 'usuarios_admin' en Firestore
+      // 2. Verificación de privilegios en Firestore
       const q = query(collection(db, "usuarios_admin"), where("email", "==", user.email));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        // Si no está en la lista de permitidos, cerramos sesión inmediatamente
+        // Si no es admin, lo sacamos
         await signOut(auth);
         setError("Acceso Denegado: No tienes privilegios de administrador.");
       } else {
-        // Si está en la lista, el login es exitoso
+        // ÉXITO: Primero activamos la vista admin y luego cerramos el modal
+        activarAdmin(); 
         alCerrar();
       }
     } catch (err) {
       console.error(err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError("Correo o contraseña incorrectos");
       } else {
-        setError("Error al intentar ingresar. Reintente.");
+        setError("Error de conexión. Intente de nuevo.");
       }
     } finally {
       setCargando(false);
@@ -80,13 +81,8 @@ function Login({ alCerrar }) {
         </div>
 
         {error && (
-          <div className="error-box" style={{ 
-            background: '#fee2e2', 
-            padding: '10px', 
-            borderRadius: '8px', 
-            margin: '10px 0' 
-          }}>
-            <p className="error-text" style={{ color: '#b91c1c', fontSize: '0.8rem' }}>{error}</p>
+          <div className="error-box" style={{ background: '#fee2e2', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>
+            <p className="error-text" style={{ color: '#b91c1c', fontSize: '0.8rem', textAlign: 'center' }}>{error}</p>
           </div>
         )}
 
