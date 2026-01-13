@@ -5,7 +5,16 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users } from 'lucide-react';
+import {
+  LogIn,
+  LogOut,
+  Settings,
+  Clock,
+  ArrowLeft,
+  X,
+  Users,
+  Package
+} from 'lucide-react';
 
 function App() {
   // 🔐 Estado ÚNICO de auth + UI
@@ -20,7 +29,7 @@ function App() {
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [seccion, setSeccion] = useState('menu');
 
-  // 🔥 Listener Firebase — solo usuario
+  // 🔥 Listener Firebase
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
@@ -49,7 +58,7 @@ function App() {
     });
 
     return unsubscribe;
-  }, []);
+  }, [mensajeBienvenida]);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
@@ -66,10 +75,12 @@ function App() {
 
   return (
     <div className="App">
+      {/* 🔝 TOP BAR */}
       <div className="top-bar">
         {authState.user ? (
           authState.isAdmin && (
             <div className="admin-buttons">
+              {/* 🔙 Volver a vista cliente */}
               <button
                 className="btn-back-inline"
                 onClick={() =>
@@ -79,6 +90,7 @@ function App() {
                 <ArrowLeft size={20} />
               </button>
 
+              {/* 🍔 Gestión Menú */}
               <button
                 className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`}
                 onClick={() => {
@@ -86,9 +98,10 @@ function App() {
                   setAuthState((prev) => ({ ...prev, isAdmin: true }));
                 }}
               >
-                <Settings size={18} /> Gestión
+                <Settings size={18} /> Menú
               </button>
 
+              {/* 👥 Usuarios */}
               <button
                 className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
                 style={{
@@ -103,6 +116,22 @@ function App() {
                 <Users size={18} /> Usuarios
               </button>
 
+              {/* 📦 Pedidos */}
+              <button
+                className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`}
+                style={{
+                  background: seccion === 'pedidos' ? '#6366f1' : 'white',
+                  color: seccion === 'pedidos' ? 'white' : '#1e293b',
+                }}
+                onClick={() => {
+                  setSeccion('pedidos');
+                  setAuthState((prev) => ({ ...prev, isAdmin: true }));
+                }}
+              >
+                <Package size={18} /> Pedidos
+              </button>
+
+              {/* 🚪 Cerrar sesión */}
               <button
                 className="btn-top-admin"
                 onClick={() => setConfirmarSalida(true)}
@@ -174,7 +203,7 @@ function App() {
         </div>
       )}
 
-      {/* ✅ RENDER FINAL */}
+      {/* ✅ RENDER PRINCIPAL */}
       {authState.user && authState.isAdmin ? (
         <div className="admin-container">
           <Admin seccion={seccion} />

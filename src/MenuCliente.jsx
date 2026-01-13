@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
 import {
   Utensils,
   Coffee,
@@ -9,7 +9,10 @@ import {
   ArrowLeft,
   ShoppingCart,
   X,
-  Send
+  Send,
+  User,
+  Phone,
+  MapPin
 } from 'lucide-react';
 
 const MenuCliente = () => {
@@ -17,11 +20,16 @@ const MenuCliente = () => {
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
   const [verCarrito, setVerCarrito] = useState(false);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  // Datos del cliente
+  const [nombre, setNombre] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     if (!categoriaActual) return;
-
-    setProductos([]);
 
     const q = query(
       collection(db, "productos"),
@@ -45,6 +53,45 @@ const MenuCliente = () => {
 
   const total = carrito.reduce((acc, item) => acc + item.precio, 0);
 
+  const enviarPedido = async () => {
+    if (!nombre || !telefono || !direccion) {
+      alert("Completa todos los datos");
+      return;
+    }
+
+    setEnviando(true);
+
+    try {
+      await addDoc(collection(db, "pedidos"), {
+        cliente: {
+          nombre,
+          telefono,
+          direccion
+        },
+        productos: carrito,
+        total,
+        estado: "pendiente",
+        fecha: new Date()
+      });
+
+      alert("Pedido enviado correctamente");
+
+      // Resetear todo
+      setCarrito([]);
+      setNombre('');
+      setTelefono('');
+      setDireccion('');
+      setMostrarFormulario(false);
+      setVerCarrito(false);
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al enviar pedido");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   // ------------------ CATEGORÍAS ------------------
   if (!categoriaActual) {
     return (
@@ -56,22 +103,19 @@ const MenuCliente = () => {
 
         <div className="grid-menu">
           <button className="cat-circle" onClick={() => setCategoriaActual('Menu')}>
-            <Pizza size={50} color="#f59e0b" />
+            <Pizza size={50} />
             <span>Comidas</span>
           </button>
-
           <button className="cat-circle" onClick={() => setCategoriaActual('Cafeteria')}>
-            <Coffee size={50} color="#6366f1" />
+            <Coffee size={50} />
             <span>Café</span>
           </button>
-
           <button className="cat-circle" onClick={() => setCategoriaActual('Bebidas')}>
-            <Droplet size={50} color="#06b6d4" />
+            <Droplet size={50} />
             <span>Bebidas</span>
           </button>
-
           <button className="cat-circle" onClick={() => setCategoriaActual('Entradas')}>
-            <Utensils size={50} color="#ec4899" />
+            <Utensils size={50} />
             <span>Entradas</span>
           </button>
         </div>
@@ -95,63 +139,61 @@ const MenuCliente = () => {
         <ArrowLeft size={28} />
       </button>
 
-      <div className="header-lista-fija">
-        <h2>{categoriaActual}</h2>
-      </div>
-
       <div className="product-grid-layout">
         {productos.map(p => (
           <div key={p.id} className="food-card">
-            <div className="food-img-container">
-              <img src={p.img} alt={p.nombre} className="food-img" />
-              <button
-                className="btn-add-food"
-                onClick={() => agregarAlCarrito(p)}
-              >
-                +
-              </button>
-            </div>
-
-            <div className="food-info">
-              <h3>{p.nombre}</h3>
-              <span className="food-price">S/ {p.precio.toFixed(2)}</span>
-            </div>
+            <img src={p.img} alt={p.nombre} />
+            <button className="btn-add-food" onClick={() => agregarAlCarrito(p)}>+</button>
+            <h3>{p.nombre}</h3>
+            <span>S/ {p.precio.toFixed(2)}</span>
           </div>
         ))}
       </div>
 
       {verCarrito && (
         <div className="overlay-msg">
-          <div className="msg-box modal-confirm" style={{ maxWidth: '400px', width: '90%' }}>
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h2>Tu Pedido</h2>
-              <button
-                onClick={() => setVerCarrito(false)}
-                style={{ background: 'none', border: 'none' }}
-              >
-                <X />
-              </button>
+          <div className="msg-box modal-confirm">
+            <h2>Tu Pedido</h2>
+            <button onClick={() => setVerCarrito(false)}><X /></button>
+
+            {carrito.map((item, i) => (
+              <div key={i}>
+                {item.nombre} - S/ {item.precio.toFixed(2)}
+              </div>
+            ))}
+
+            <h3>Total: S/ {total.toFixed(2)}</h3>
+
+            <button onClick={() => setMostrarFormulario(true)}>
+              <Send /> Continuar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mostrarFormulario && (
+        <div className="overlay-msg">
+          <div className="msg-box modal-confirm">
+            <h2>Datos del Cliente</h2>
+
+            <div className="input-group">
+              <User />
+              <input placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
             </div>
 
-            <div className="items-scroll" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {carrito.map((item, i) => (
-                <div key={i} className="cart-item">
-                  <span>{item.nombre}</span>
-                  <strong>S/ {item.precio.toFixed(2)}</strong>
-                </div>
-              ))}
+            <div className="input-group">
+              <Phone />
+              <input placeholder="Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} />
             </div>
 
-            <div className="cart-footer">
-              <h3>Total: S/ {total.toFixed(2)}</h3>
-              <button
-                className="btn-save"
-                style={{ width: '100%' }}
-                onClick={() => alert("Pedido enviado")}
-              >
-                <Send size={18} /> ENVIAR PEDIDO
-              </button>
+            <div className="input-group">
+              <MapPin />
+              <input placeholder="Dirección" value={direccion} onChange={e => setDireccion(e.target.value)} />
             </div>
+
+            <button onClick={enviarPedido} disabled={enviando}>
+              {enviando ? "Enviando..." : "Confirmar Pedido"}
+            </button>
           </div>
         </div>
       )}

@@ -17,12 +17,16 @@ import {
   Image as ImageIcon,
   Save,
   UserPlus,
-  Mail
+  Mail,
+  Truck,
+  ChefHat,
+  CheckCircle
 } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
 
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState('');
@@ -42,9 +46,15 @@ const Admin = ({ seccion }) => {
       setUsuarios(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    const unsubPedidos = onSnapshot(collection(db, 'pedidos'), snap => {
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setPedidos(data.sort((a, b) => b.fecha?.seconds - a.fecha?.seconds));
+    });
+
     return () => {
       unsubProd();
       unsubUser();
+      unsubPedidos();
     };
   }, []);
 
@@ -59,11 +69,7 @@ const Admin = ({ seccion }) => {
 
     setCargando(true);
     try {
-      const storageRef = ref(
-        storage,
-        `productos/${Date.now()}_${imagen.name}`
-      );
-
+      const storageRef = ref(storage, `productos/${Date.now()}_${imagen.name}`);
       await uploadBytes(storageRef, imagen);
       const url = await getDownloadURL(storageRef);
 
@@ -73,15 +79,13 @@ const Admin = ({ seccion }) => {
         categoria,
         img: url,
         disponible: true,
-        creado: new Date().toISOString()
+        creado: new Date()
       });
 
-      // Reset form
       setNombre('');
       setPrecio('');
       setCategoria('Menu');
       setImagen(null);
-
     } catch (error) {
       console.error(error);
       alert('Error al subir el producto');
@@ -90,7 +94,7 @@ const Admin = ({ seccion }) => {
     }
   };
 
-  // 👤 Registrar admin (solo visual / futura referencia)
+  // 👤 Registrar admin
   const registrarAdmin = async (e) => {
     e.preventDefault();
     if (!userEmail) return;
@@ -99,20 +103,28 @@ const Admin = ({ seccion }) => {
       await setDoc(doc(db, 'usuarios_admin', userEmail), {
         email: userEmail,
         rol: 'admin',
-        creado: new Date().toISOString()
+        creado: new Date()
       });
 
       setUserEmail('');
-      alert('Correo agregado como admin (lista interna)');
+      alert('Admin agregado');
     } catch (error) {
       console.error(error);
       alert('Error al registrar admin');
     }
   };
 
+  // 🔁 Cambiar estado pedido
+  const cambiarEstado = async (id, estado) => {
+    await updateDoc(doc(db, 'pedidos', id), { estado });
+  };
+
+  // ================= RENDER =================
   return (
     <div className="admin-view">
-      {seccion === 'menu' ? (
+
+      {/* ----------- GESTIÓN DE MENÚ ----------- */}
+      {seccion === 'menu' && (
         <>
           <h2>Gestión de Menú</h2>
 
@@ -132,10 +144,7 @@ const Admin = ({ seccion }) => {
               required
             />
 
-            <select
-              value={categoria}
-              onChange={e => setCategoria(e.target.value)}
-            >
+            <select value={categoria} onChange={e => setCategoria(e.target.value)}>
               <option value="Menu">Comidas</option>
               <option value="Cafeteria">Café</option>
               <option value="Bebidas">Bebidas</option>
@@ -144,12 +153,7 @@ const Admin = ({ seccion }) => {
 
             <label className="upload-label">
               <ImageIcon /> {imagen ? imagen.name : 'Subir Imagen'}
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={e => setImagen(e.target.files[0])}
-              />
+              <input type="file" accept="image/*" hidden onChange={e => setImagen(e.target.files[0])} />
             </label>
 
             <button disabled={cargando}>
@@ -161,25 +165,22 @@ const Admin = ({ seccion }) => {
             <div key={p.id} className="admin-item">
               <span>{p.nombre}</span>
 
-              <button
-                onClick={() =>
-                  updateDoc(doc(db, 'productos', p.id), {
-                    disponible: !p.disponible
-                  })
-                }
-              >
+              <button onClick={() =>
+                updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })
+              }>
                 {p.disponible ? <Power /> : <PowerOff />}
               </button>
 
-              <button
-                onClick={() => deleteDoc(doc(db, 'productos', p.id))}
-              >
+              <button onClick={() => deleteDoc(doc(db, 'productos', p.id))}>
                 <Trash2 />
               </button>
             </div>
           ))}
         </>
-      ) : (
+      )}
+
+      {/* ----------- ADMINISTRADORES ----------- */}
+      {seccion === 'usuarios' && (
         <>
           <h2>Administradores</h2>
 
@@ -200,17 +201,52 @@ const Admin = ({ seccion }) => {
           {usuarios.map(u => (
             <div key={u.id} className="admin-item">
               {u.email}
-              <button
-                onClick={() =>
-                  deleteDoc(doc(db, 'usuarios_admin', u.id))
-                }
-              >
+              <button onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}>
                 <Trash2 />
               </button>
             </div>
           ))}
         </>
       )}
+
+      {/* ----------- PEDIDOS ----------- */}
+      {seccion === 'pedidos' && (
+        <>
+          <h2>Pedidos</h2>
+
+          {pedidos.map(p => (
+            <div key={p.id} className="pedido-card">
+              <h3>{p.cliente.nombre}</h3>
+              <p>📞 {p.cliente.telefono}</p>
+              <p>📍 {p.cliente.direccion}</p>
+
+              {p.productos.map((prod, i) => (
+                <div key={i}>
+                  {prod.nombre} - S/ {prod.precio.toFixed(2)}
+                </div>
+              ))}
+
+              <h4>Total: S/ {p.total.toFixed(2)}</h4>
+              <strong>Estado: {p.estado}</strong>
+
+              <div className="pedido-actions">
+                <button onClick={() => cambiarEstado(p.id, 'preparando')}>
+                  <ChefHat size={18} /> Preparando
+                </button>
+
+                <button onClick={() => cambiarEstado(p.id, 'enviado')}>
+                  <Truck size={18} /> Enviado
+                </button>
+
+                <button onClick={() => cambiarEstado(p.id, 'entregado')}>
+                  <CheckCircle size={18} /> Entregado
+                </button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
     </div>
   );
 };
