@@ -29,9 +29,9 @@ body {
    ========================================================================== */
 .cliente-container {
   width: 100%;
-  background: var(--white);
   min-height: 100vh;
   position: relative;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
 .admin-container {
@@ -66,7 +66,9 @@ body {
   gap: 10px;
 }
 
-.btn-top-gestion, .btn-top-login, .btn-top-admin {
+.btn-top-gestion, 
+.btn-top-login, 
+.btn-top-admin {
   background: white;
   border: 1px solid #e2e8f0;
   padding: 8px 18px;
@@ -86,7 +88,7 @@ body {
   border: none;
 }
 
-/* Flecha al lado de Admin en Top Bar */
+/* Flecha */
 .btn-back-inline {
   background: white;
   border: 1px solid #e2e8f0;
@@ -107,16 +109,27 @@ body {
 }
 
 /* ==========================================================================
-   4. PANTALLA DE INICIO (MENÚ CIRCULAR 2x2) 
+   4. PANTALLA PRINCIPAL (MENÚ CIRCULAR)
    ========================================================================== */
 .main-categories {
-  padding: 60px 20px;
+  padding: 80px 20px;
   text-align: center;
+  background: transparent;
+}
+
+.main-categories h1 {
+  font-size: 2.3rem;
+  font-weight: 800;
+}
+
+.main-categories p {
+  color: var(--text-light);
+  margin-top: 5px;
 }
 
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 280px); /* 2x2 forzado en PC */
+  grid-template-columns: repeat(2, 280px);
   gap: 40px;
   padding: 40px;
   justify-content: center;
@@ -124,7 +137,7 @@ body {
 }
 
 .cat-circle {
-  background: var(--white);
+  background: radial-gradient(circle at top, #ffffff, #f8fafc);
   border: none;
   border-radius: 50%;
   aspect-ratio: 1/1;
@@ -155,7 +168,7 @@ body {
 }
 
 /* ==========================================================================
-   5. DISEÑO DE PRODUCTOS (VISTA CLIENTE) 
+   5. PRODUCTOS
    ========================================================================== */
 .product-grid-layout {
   display: grid;
@@ -184,7 +197,7 @@ body {
 }
 
 /* ==========================================================================
-   6. MODALES Y MENSAJES (OVERLAYS) 
+   6. MODALES
    ========================================================================== */
 .overlay-msg {
   position: fixed;
@@ -203,7 +216,7 @@ body {
   background: white;
   padding: 30px;
   border-radius: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 90%;
   max-width: 380px;
@@ -211,34 +224,8 @@ body {
   animation: popIn 0.3s ease-out;
 }
 
-/* Estilo Salida */
-.modal-confirm-styled h3 { margin: 15px 0 5px 0; font-size: 1.4rem; }
-.modal-confirm-styled p { color: var(--text-light); margin-bottom: 20px; }
-
-.icon-circle-warning {
-  background: #fee2e2;
-  width: 60px; height: 60px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto;
-}
-
-.modal-buttons { display: flex; gap: 12px; }
-
-.btn-no {
-  flex: 1; padding: 12px; border-radius: 12px;
-  border: 1px solid #e2e8f0; background: #f8fafc;
-  cursor: pointer; font-weight: 600;
-}
-
-.btn-yes {
-  flex: 1; padding: 12px; border-radius: 12px;
-  border: none; background: var(--danger);
-  color: white; cursor: pointer; font-weight: 600;
-}
-
 /* ==========================================================================
-   7. FORMULARIOS (ADMIN & LOGIN) 
+   7. FORMULARIOS
    ========================================================================== */
 .admin-form, .login-form {
   display: flex;
@@ -246,50 +233,18 @@ body {
   gap: 15px;
 }
 
-.admin-form input, .admin-form select, .input-group input {
+.admin-form input, 
+.admin-form select, 
+.input-group input {
   padding: 14px;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: #f8fafc;
   font-size: 1rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Input con Icono (Login) */
-.input-group { position: relative; display: flex; align-items: center; }
-.input-icon { position: absolute; left: 12px; color: #94a3b8; }
-.input-group input { padding-left: 40px; }
-
-.input-group input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.btn-save, .btn-login-submit {
-  background: var(--primary);
-  color: white;
-  padding: 15px;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.close-btn-modal {
-  position: absolute;
-  top: 15px; right: 15px;
-  background: #f1f5f9; border: none;
-  border-radius: 50%; padding: 5px; cursor: pointer;
 }
 
 /* ==========================================================================
-   8. ANIMACIONES Y RESPONSIVE 
+   8. ANIMACIONES Y RESPONSIVE
    ========================================================================== */
 @keyframes popIn {
   0% { transform: scale(0.9); opacity: 0; }
