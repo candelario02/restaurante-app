@@ -218,6 +218,8 @@ body {
   font-size: 0.8rem;
 }
 
+
+
 .admin-nav button.active {
   color: var(--primary);
   font-weight: bold;
