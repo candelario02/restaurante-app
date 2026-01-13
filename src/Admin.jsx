@@ -1,95 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, storage } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Camera, ArrowLeft, Utensils, Coffee, Pizza, Droplet, PlusSquare, LayoutGrid } from 'lucide-react';
-import MenuCliente from './MenuCliente';
+import { PlusCircle, Trash2, Power, PowerOff, Image as ImageIcon, Save } from 'lucide-react';
 
 const Admin = () => {
-  const [vista, setVista] = useState('menu'); // 'menu', 'subir'
-  const [paso, setPaso] = useState(1); 
-  const [categoria, setCategoria] = useState('');
-  const [form, setForm] = useState({ nombre: '', precio: '' });
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [productos, setProductos] = useState([]);
+  const [nombre, setNombre] = useState('');
+  const [precio, setPrecio] = useState('');
+  const [categoria, setCategoria] = useState('Menu');
+  const [imagen, setImagen] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
-  const categorias = [
-    { id: 'Entradas', icon: <Utensils />, label: 'Entradas' },
-    { id: 'Menu', icon: <Pizza />, label: 'Menú / Fondo' },
-    { id: 'Cafeteria', icon: <Coffee />, label: 'Cafetería' },
-    { id: 'Bebidas', icon: <Droplet />, label: 'Bebidas' },
-  ];
+  // Leer productos en tiempo real
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "productos"), (snapshot) => {
+      setProductos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const handleGuardar = async (e) => {
+  const subirProducto = async (e) => {
     e.preventDefault();
-    if (!file) return alert("¡Toma una foto del producto!");
-    setLoading(true);
+    if (!imagen) return alert("Selecciona una imagen");
+    setCargando(true);
+
     try {
-      const storageRef = ref(storage, `productos/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
+      const storageRef = ref(storage, `productos/${imagen.name}`);
+      await uploadBytes(storageRef, imagen);
       const url = await getDownloadURL(storageRef);
 
       await addDoc(collection(db, "productos"), {
-        nombre: form.nombre,
-        precio: Number(form.precio),
-        categoria: categoria,
+        nombre,
+        precio: parseFloat(precio),
+        categoria,
         img: url,
-        disponible: true
+        disponible: true // Se crea activo por defecto
       });
 
-      alert("Producto subido correctamente");
-      setPaso(1); setForm({ nombre: '', precio: '' }); setFile(null);
-      setVista('menu'); // Regresa al menú para ver el producto nuevo
-    } catch (e) { alert("Error al subir"); }
-    setLoading(false);
+      setNombre(''); setPrecio(''); setImagen(null);
+      alert("Producto guardado con éxito");
+    } catch (error) {
+      console.error(error);
+      alert("Error al subir");
+    }
+    setCargando(false);
+  };
+
+  // FUNCIÓN CLAVE: Activar o Desactivar producto
+  const alternarDisponibilidad = async (id, estadoActual) => {
+    const productoRef = doc(db, "productos", id);
+    await updateDoc(productoRef, {
+      disponible: !estadoActual
+    });
+  };
+
+  const eliminarProducto = async (id) => {
+    if (window.confirm("¿Eliminar este producto permanentemente?")) {
+      await deleteDoc(doc(db, "productos", id));
+    }
   };
 
   return (
     <div className="admin-view">
-      {/* Barra de Navegación Admin */}
-      <nav className="admin-nav">
-        <button onClick={() => setVista('menu')} className={vista === 'menu' ? 'active' : ''}>
-          <LayoutGrid /> Caja/Ventas
-        </button>
-        <button onClick={() => setVista('subir')} className={vista === 'subir' ? 'active' : ''}>
-          <PlusSquare /> Nuevo Producto
-        </button>
-      </nav>
+      <div className="admin-header">
+        <h2>Panel de Control</h2>
+        <p>Gestiona tus platos y disponibilidad</p>
+      </div>
 
-      {vista === 'menu' ? (
-        <MenuCliente esAdmin={true} />
-      ) : (
-        <div className="upload-section">
-          {paso === 1 ? (
-            <div className="cat-selector">
-              <h2>¿Categoría del nuevo producto?</h2>
-              <div className="grid-categorias">
-                {categorias.map(cat => (
-                  <button key={cat.id} onClick={() => {setCategoria(cat.id); setPaso(2)}} className="btn-cat">
-                    {cat.icon} <span>{cat.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="form-subida">
-              <button onClick={() => setPaso(1)} className="btn-volver"><ArrowLeft /> Volver</button>
-              <form onSubmit={handleGuardar}>
-                <h3>Subiendo a: {categoria}</h3>
-                <input placeholder="Nombre del producto" required value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} />
-                <input type="number" placeholder="Precio S/" required value={form.precio} onChange={e => setForm({...form, precio: e.target.value})} />
-                <label className="foto-label">
-                  <Camera /> {file ? "Foto Lista ✅" : "Tocar para Tomar Foto"}
-                  <input type="file" accept="image/*" hidden onChange={e => setFile(e.target.files[0])} />
-                </label>
-                <button type="submit" disabled={loading} className="btn-publish">
-                  {loading ? "Subiendo..." : "Publicar Ahora"}
-                </button>
-              </form>
-            </div>
-          )}
+      {/* Formulario para subir nuevo plato */}
+      <form onSubmit={subirProducto} className="admin-form">
+        <input type="text" placeholder="Nombre del plato" value={nombre} onChange={e => setNombre(e.target.value)} required />
+        <input type="number" placeholder="Precio S/" value={precio} onChange={e => setPrecio(e.target.value)} required />
+        <select value={categoria} onChange={e => setCategoria(e.target.value)}>
+          <option value="Menu">Comidas</option>
+          <option value="Cafeteria">Café</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Entradas">Entradas</option>
+        </select>
+        <div className="file-input">
+          <label htmlFor="foto"><ImageIcon size={20} /> {imagen ? "Imagen lista" : "Subir Foto"}</label>
+          <input type="file" id="foto" onChange={e => setImagen(e.target.files[0])} hidden />
         </div>
-      )}
+        <button type="submit" disabled={cargando} className="btn-save">
+          {cargando ? "Guardando..." : <><Save size={20} /> Guardar Producto</>}
+        </button>
+      </form>
+
+      {/* Lista de gestión para el Admin */}
+      <div className="admin-products-list">
+        <h3>Tus Productos</h3>
+        {productos.map(p => (
+          <div key={p.id} className={`admin-product-item ${!p.disponible ? 'product-off' : ''}`}>
+            <img src={p.img} alt="" />
+            <div className="admin-info">
+              <h4>{p.nombre}</h4>
+              <span>S/ {p.precio.toFixed(2)}</span>
+            </div>
+            <div className="admin-actions">
+              {/* Botón de ACTIVAR / DESACTIVAR */}
+              <button 
+                className={`btn-toggle ${p.disponible ? 'is-on' : 'is-off'}`}
+                onClick={() => alternarDisponibilidad(p.id, p.disponible)}
+                title={p.disponible ? "Desactivar plato" : "Activar plato"}
+              >
+                {p.disponible ? <Power size={20} /> : <PowerOff size={20} />}
+              </button>
+              
+              <button className="btn-delete" onClick={() => eliminarProducto(p.id)}>
+                <Trash2 size={20} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

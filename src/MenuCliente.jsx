@@ -11,7 +11,13 @@ const MenuCliente = ({ esAdmin }) => {
 
   useEffect(() => {
     if (categoriaActual) {
-      const q = query(collection(db, "productos"), where("categoria", "==", categoriaActual));
+      // FILTRO: Solo trae productos que el admin marcó como disponibles
+      const q = query(
+        collection(db, "productos"), 
+        where("categoria", "==", categoriaActual),
+        where("disponible", "==", true) 
+      );
+      
       return onSnapshot(q, (snapshot) => {
         setProductos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
@@ -44,24 +50,35 @@ const MenuCliente = ({ esAdmin }) => {
   if (!categoriaActual) {
     return (
       <div className="main-categories">
-        <h2>Selecciona una Categoría</h2>
+        <div className="header-brand">
+          <h1>Nuestro Menú</h1>
+          <p>Selecciona una categoría</p>
+        </div>
         <div className="grid-menu">
           <button className="cat-circle" onClick={() => setCategoriaActual('Menu')}>
-            <Pizza size={40} color="#f59e0b" /> <span>Comidas</span>
+            <div className="icon-wrapper"><Pizza size={35} color="#f59e0b" /></div>
+            <span>Comidas</span>
           </button>
           <button className="cat-circle" onClick={() => setCategoriaActual('Cafeteria')}>
-            <Coffee size={40} color="#6366f1" /> <span>Café</span>
+            <div className="icon-wrapper"><Coffee size={35} color="#6366f1" /></div>
+            <span>Café</span>
           </button>
           <button className="cat-circle" onClick={() => setCategoriaActual('Bebidas')}>
-            <Droplet size={40} color="#06b6d4" /> <span>Bebidas</span>
+            <div className="icon-wrapper"><Droplet size={35} color="#06b6d4" /></div>
+            <span>Bebidas</span>
           </button>
           <button className="cat-circle" onClick={() => setCategoriaActual('Entradas')}>
-            <Utensils size={40} color="#ec4899" /> <span>Entradas</span>
+            <div className="icon-wrapper"><Utensils size={35} color="#ec4899" /></div>
+            <span>Entradas</span>
           </button>
         </div>
+        
         {carrito.length > 0 && (
           <div className="cart-bar" onClick={() => setVerCarrito(true)}>
-            <ShoppingCart /> <span>{carrito.length} items - S/ {total.toFixed(2)}</span>
+            <div className="cart-badge">{carrito.length}</div>
+            <ShoppingCart /> 
+            <span>Ver mi pedido</span>
+            <strong>S/ {total.toFixed(2)}</strong>
           </div>
         )}
       </div>
@@ -69,29 +86,35 @@ const MenuCliente = ({ esAdmin }) => {
   }
 
   return (
-    <div className="product-list">
+    <div className="product-list-view">
       <div className="header-lista">
-        <button onClick={() => setCategoriaActual(null)} className="btn-back"><ArrowLeft /> Volver</button>
-        <button onClick={() => setVerCarrito(true)} className="btn-cart-icon"><ShoppingCart /> ({carrito.length})</button>
+        <button onClick={() => setCategoriaActual(null)} className="btn-back">
+          <ArrowLeft size={20}/> <span>Volver</span>
+        </button>
+        <div className="category-title">{categoriaActual}</div>
       </div>
       
-      <h2>{categoriaActual}</h2>
-      {productos.map(p => (
-        <div key={p.id} className="product-card">
-          <img src={p.img} alt={p.nombre} className="product-img" />
-          <div className="product-info">
-            <h3>{p.nombre}</h3>
-            <span className="price-tag">S/ {p.precio.toFixed(2)}</span>
+      <div className="products-container">
+        {productos.map(p => (
+          <div key={p.id} className="product-card">
+            <img src={p.img} alt={p.nombre} className="product-img" />
+            <div className="product-info">
+              <h3>{p.nombre}</h3>
+              <span className="price-tag">S/ {p.precio.toFixed(2)}</span>
+            </div>
+            <button className="btn-add" onClick={() => agregarAlCarrito(p)}>+</button>
           </div>
-          <button className="btn-add" onClick={() => agregarAlCarrito(p)}>+</button>
-        </div>
-      ))}
+        ))}
+      </div>
 
+      {/* MODAL DEL CARRITO */}
       {verCarrito && (
         <div className="cart-modal">
           <div className="modal-content">
-            <button className="close-btn" onClick={() => setVerCarrito(false)}><X /></button>
-            <h2>Tu Pedido</h2>
+            <div className="modal-header">
+               <h2>Tu Pedido</h2>
+               <button className="close-btn" onClick={() => setVerCarrito(false)}><X /></button>
+            </div>
             <div className="items-scroll">
               {carrito.map((item, i) => (
                 <div key={i} className="cart-item">
@@ -101,9 +124,12 @@ const MenuCliente = ({ esAdmin }) => {
               ))}
             </div>
             <div className="cart-footer">
-              <h3>Total: S/ {total.toFixed(2)}</h3>
+              <div className="total-box">
+                <span>Total a pagar</span>
+                <h3>S/ {total.toFixed(2)}</h3>
+              </div>
               <button className="btn-send" onClick={enviarPedido}>
-                <Send /> {esAdmin ? "COBRAR VENTA" : "ENVIAR PEDIDO"}
+                <Send size={18} /> {esAdmin ? "COBRAR VENTA" : "ENVIAR PEDIDO"}
               </button>
             </div>
           </div>
