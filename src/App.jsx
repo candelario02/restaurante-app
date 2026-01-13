@@ -13,25 +13,37 @@ function App() {
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [vistaAdmin, setVistaAdmin] = useState(false);
-  const [seccion, setSeccion] = useState('menu'); // 'menu' o 'usuarios'
+  const [seccion, setSeccion] = useState('menu');
+  const [cargandoAuth, setCargandoAuth] = useState(true); // Nuevo estado de control
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (usuario) => {
+    const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (usuario) {
-        const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        setMensajeBienvenida(`¡Bienvenido Administrador! \n Ingreso: ${hora}`);
-        setTimeout(() => setMensajeBienvenida(""), 3000);
+        // Solo mostrar bienvenida si es un login nuevo, no un refresco
+        if (!user) {
+          const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          setMensajeBienvenida(`¡Sesión Activa! \n ${usuario.email} \n ${hora}`);
+          setTimeout(() => setMensajeBienvenida(""), 2500);
+        }
+        setUser(usuario);
       } else {
+        setUser(null);
         setVistaAdmin(false);
       }
-      setUser(usuario);
+      setCargandoAuth(false);
     });
-  }, []);
+    return () => unsubscribe();
+  }, [user]);
 
-  const manejarCerrarSesion = () => {
-    signOut(auth);
+  const manejarCerrarSesion = async () => {
+    await signOut(auth);
+    setUser(null);
+    setVistaAdmin(false);
     setConfirmarSalida(false);
   };
+
+  // Si está verificando la sesión, no renderizamos nada para evitar saltos
+  if (cargandoAuth) return null;
 
   return (
     <div className="App">
@@ -44,15 +56,16 @@ function App() {
               </button>
             )}
             
-            {/* Botón Gestión de Menú */}
-            <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} 
+            <button className={`btn-top-gestion ${seccion === 'menu' && vistaAdmin ? 'active' : ''}`} 
                     onClick={() => { setVistaAdmin(true); setSeccion('menu'); }}>
               <Settings size={18} /> Gestión
             </button>
 
-            {/* NUEVO: Botón Gestión de Usuarios */}
-            <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
-                    style={{background: seccion === 'usuarios' ? '#10b981' : 'white', color: seccion === 'usuarios' ? 'white' : '#1e293b'}}
+            <button className={`btn-top-gestion ${seccion === 'usuarios' && vistaAdmin ? 'active' : ''}`}
+                    style={{
+                      background: seccion === 'usuarios' && vistaAdmin ? '#10b981' : 'white', 
+                      color: seccion === 'usuarios' && vistaAdmin ? 'white' : '#1e293b'
+                    }}
                     onClick={() => { setVistaAdmin(true); setSeccion('usuarios'); }}>
               <Users size={18} /> Usuarios
             </button>
@@ -68,7 +81,7 @@ function App() {
         )}
       </div>
 
-      {/* MODALES (Login, Salida, Bienvenida - Sin cambios) */}
+      {/* LOGIN MODAL */}
       {mostrarLogin && !user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
@@ -78,6 +91,7 @@ function App() {
         </div>
       )}
 
+      {/* MODAL SALIDA */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm-styled">
@@ -91,12 +105,24 @@ function App() {
         </div>
       )}
 
-      {vistaAdmin ? (
+      {/* MENSAJE FLOTANTE */}
+      {mensajeBienvenida && (
+        <div className="overlay-msg">
+          <div className="msg-box welcome-box">
+            <Clock color="#6366f1" size={40} />
+            <pre>{mensajeBienvenida}</pre>
+          </div>
+        </div>
+      )}
+
+      {vistaAdmin && user ? (
         <div className="admin-container">
           <Admin seccion={seccion} />
         </div>
       ) : (
-        <div className="cliente-container"><MenuCliente esAdmin={!!user} /></div>
+        <div className="cliente-container">
+          <MenuCliente esAdmin={!!user} />
+        </div>
       )}
     </div>
   );
