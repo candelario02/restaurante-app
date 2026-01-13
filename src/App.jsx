@@ -13,7 +13,6 @@ function App() {
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   
-  // LEEMOS SI YA ESTÁBAMOS EN MODO ADMIN
   const [vistaAdmin, setVistaAdmin] = useState(localStorage.getItem('esAdmin') === 'true');
   const [seccion, setSeccion] = useState('menu');
   const [cargandoAuth, setCargandoAuth] = useState(true);
@@ -22,7 +21,7 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (usuario) {
         setUser(usuario);
-        // Si el usuario acaba de entrar, disparamos el cartel de bienvenida
+        // Si el usuario existe pero no tenemos mensaje, lo mostramos
         if (!mensajeBienvenida) {
             const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             setMensajeBienvenida(`¡Sesión Activa! \n ${usuario.email} \n ${hora}`);
@@ -36,7 +35,7 @@ function App() {
       setCargandoAuth(false);
     });
     return () => unsubscribe();
-  }, [user]);
+  }, [user, mensajeBienvenida]); // Agregamos dependencias para estabilidad
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
@@ -84,17 +83,19 @@ function App() {
         )}
       </div>
 
-      {/* LOGIN MODAL */}
       {mostrarLogin && !user && (
         <div className="overlay-msg">
           <div className="msg-box login-modal">
             <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}><X size={20} /></button>
-            <Login alCerrar={() => setMostrarLogin(false)} />
+            {/* PASAMOS LA FUNCIÓN PARA ACTIVAR LA VISTA */}
+            <Login 
+              alCerrar={() => setMostrarLogin(false)} 
+              activarAdmin={() => setVistaAdmin(true)} 
+            />
           </div>
         </div>
       )}
 
-      {/* BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box welcome-box">
@@ -104,7 +105,6 @@ function App() {
         </div>
       )}
 
-      {/* CONFIRMAR SALIDA */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box modal-confirm-styled">
@@ -118,7 +118,6 @@ function App() {
         </div>
       )}
 
-      {/* RENDERIZADO PRINCIPAL */}
       {vistaAdmin && user ? (
         <div className="admin-container">
           <Admin seccion={seccion} />

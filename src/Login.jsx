@@ -4,7 +4,8 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-function Login({ alCerrar }) {
+// Agregamos la prop 'activarAdmin' que viene de App.jsx
+function Login({ alCerrar, activarAdmin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,18 +20,22 @@ function Login({ alCerrar }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      const q = query(collection(db, "usuarios_admin"), where("email", "==", user.email));
+      // Verificamos en Firestore (usamos el correo en minúsculas por seguridad)
+      const q = query(collection(db, "usuarios_admin"), where("email", "==", user.email.toLowerCase()));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
         await signOut(auth);
-        setError("Acceso Denegado: No tienes privilegios de administrador.");
+        setError("Acceso Denegado: Tu correo no está en la lista de administradores.");
       } else {
-        // EL SECRETO: Guardamos la intención de estar en modo admin
+        // 1. Guardamos persistencia
         localStorage.setItem('esAdmin', 'true');
+        
+        // 2. Cambiamos el estado en App.jsx INMEDIATAMENTE (sin recargar)
+        if (activarAdmin) activarAdmin();
+        
+        // 3. Cerramos el modal
         alCerrar();
-        // Recarga para limpiar cualquier estado previo de React
-        window.location.reload();
       }
     } catch (err) {
       console.error(err);
@@ -50,7 +55,7 @@ function Login({ alCerrar }) {
         )}
       </div>
       <h2>Acceso Admin</h2>
-      <p>Solo personal autorizado por el administrador principal.</p>
+      <p>Ingresa tus credenciales autorizadas</p>
 
       <form onSubmit={manejarLogin} className="login-form">
         <div className="input-group">
