@@ -81,41 +81,56 @@ const MenuCliente = () => {
     }
   };
 
-  /* --- VISTA DE CATEGORÍAS (Círculos - Sesión 3 del CSS) --- */
+  /* --- VISTA DE CATEGORÍAS (Estructura corregida para círculos grandes) --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container">
-        {/* Contenedor limitador para centrar el contenido */}
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div className="header-brand" style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Nuestro Menú</h1>
-            <p className="text-muted">Selecciona una categoría para empezar</p>
+        {/* Contenedor principal que centra todo el menú */}
+        <div className="menu-principal-wrapper" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          
+          <div className="header-brand">
+            <h1 className="titulo-principal">Nuestro Menú</h1>
+            <p className="subtitulo-principal">Selecciona una categoría para empezar</p>
           </div>
 
-          <div className="categorias-container">
-            <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
-              <div className="categoria-circulo"><Pizza size={60} color="var(--primary)" /></div>
-              <span>Comidas</span>
+          {/* Esta es la rejilla que tu CSS de la Sesión 3 debe controlar */}
+          <div className="categorias-grid-principal">
+            
+            <div className="categoria-card-circular" onClick={() => setCategoriaActual('Menu')}>
+              <div className="icon-circle-wrapper">
+                <Pizza size={50} className="icon-main" />
+              </div>
+              <span className="categoria-label">Comidas</span>
             </div>
-            <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}>
-              <div className="categoria-circulo"><Coffee size={60} color="var(--primary)" /></div>
-              <span>Café</span>
+
+            <div className="categoria-card-circular" onClick={() => setCategoriaActual('Cafeteria')}>
+              <div className="icon-circle-wrapper">
+                <Coffee size={50} className="icon-main" />
+              </div>
+              <span className="categoria-label">Café</span>
             </div>
-            <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
-              <div className="categoria-circulo"><Droplet size={60} color="var(--primary)" /></div>
-              <span>Bebidas</span>
+
+            <div className="categoria-card-circular" onClick={() => setCategoriaActual('Bebidas')}>
+              <div className="icon-circle-wrapper">
+                <Droplet size={50} className="icon-main" />
+              </div>
+              <span className="categoria-label">Bebidas</span>
             </div>
-            <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}>
-              <div className="categoria-circulo"><Utensils size={60} color="var(--primary)" /></div>
-              <span>Entradas</span>
+
+            <div className="categoria-card-circular" onClick={() => setCategoriaActual('Entradas')}>
+              <div className="icon-circle-wrapper">
+                <Utensils size={50} className="icon-main" />
+              </div>
+              <span className="categoria-label">Entradas</span>
             </div>
+
           </div>
         </div>
 
         {carrito.length > 0 && (
           <button 
-            className="btn-top-gestion active" 
-            style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, padding: '15px 30px', borderRadius: '50px' }}
+            className="btn-top-gestion active floating-cart" 
+            style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}
             onClick={() => setVerCarrito(true)}
           >
             <ShoppingCart size={22} />
@@ -126,41 +141,28 @@ const MenuCliente = () => {
     );
   }
 
-  /* --- VISTA DE PRODUCTOS (Grid - Sesión 6 del CSS) --- */
+  /* --- VISTA DE PRODUCTOS (Se mantiene igual, solo envolviendo en contenedor) --- */
   return (
     <div className="admin-container">
-      {/* Contenedor limitador para que los productos no ocupen toda la pantalla */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+      <div className="view-wrapper" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="view-header">
           <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
             <ArrowLeft size={24} />
           </button>
-          <h2 style={{ margin: 0 }}>{categoriaActual}</h2>
+          <h2>{categoriaActual}</h2>
         </div>
 
         <div className="productos-grid">
           {productos.map(p => (
             <div key={p.id} className="producto-card">
-              <div style={{ width: '100%', height: '200px', overflow: 'hidden' }}>
-                <img 
-                  src={p.img} 
-                  alt={p.nombre} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
+              <div className="card-img-container">
+                <img src={p.img} alt={p.nombre} />
               </div>
-              <div style={{ padding: '20px' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: '800', fontSize: '1.3rem', color: 'var(--primary)' }}>
-                    S/ {p.precio.toFixed(2)}
-                  </span>
-                  <button 
-                    className="btn-top-gestion active" 
-                    onClick={() => agregarAlCarrito(p)}
-                    style={{ width: '40px', height: '40px', padding: 0, justifyContent: 'center', borderRadius: '50%' }}
-                  >
-                    +
-                  </button>
+              <div className="card-body">
+                <h3>{p.nombre}</h3>
+                <div className="card-footer">
+                  <span className="precio-text">S/ {p.precio.toFixed(2)}</span>
+                  <button className="btn-add-cart" onClick={() => agregarAlCarrito(p)}>+</button>
                 </div>
               </div>
             </div>
@@ -168,23 +170,23 @@ const MenuCliente = () => {
         </div>
       </div>
 
-      {/* MODALES (Mantenidos exactamente como los tenías) */}
+      {/* MODALES - Sin cambios en lógica */}
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
             <h2>Tu Pedido</h2>
-            <div style={{ margin: '20px 0', textAlign: 'left' }}>
+            <div className="carrito-lista">
               {carrito.map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                <div key={i} className="carrito-item-row">
                   <span>{item.nombre}</span>
                   <strong>S/ {item.precio.toFixed(2)}</strong>
                 </div>
               ))}
             </div>
-            <h3 style={{ marginBottom: '25px' }}>Total: S/ {total.toFixed(2)}</h3>
+            <h3 className="total-msg">Total: S/ {total.toFixed(2)}</h3>
             <div className="modal-buttons">
               <button className="btn-no" onClick={() => setVerCarrito(false)}>Atrás</button>
-              <button className="btn-top-gestion active" style={{ justifyContent: 'center' }} onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
+              <button className="btn-yes" onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
             </div>
           </div>
         </div>
@@ -209,7 +211,7 @@ const MenuCliente = () => {
               </div>
               <div className="modal-buttons">
                 <button className="btn-no" onClick={() => setMostrarFormulario(false)}>Atrás</button>
-                <button className="btn-yes" style={{ background: 'var(--success)' }} onClick={enviarPedido} disabled={enviando}>
+                <button className="btn-yes confirm-btn" onClick={enviarPedido} disabled={enviando}>
                   {enviando ? "Enviando..." : "Confirmar"}
                 </button>
               </div>
