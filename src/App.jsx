@@ -4,6 +4,7 @@ import MenuCliente from './MenuCliente';
 import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
+import { ShoppingCart, Pizza, Coffee, Utensils, Droplet } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 function App() {
