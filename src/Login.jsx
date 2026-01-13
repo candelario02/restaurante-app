@@ -1,52 +1,62 @@
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { X, Lock } from 'lucide-react';
+import { Lock, Mail, LogIn } from 'lucide-react';
 
-const Login = ({ alCerrar }) => {
+function Login({ alCerrar }) {
   const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const acceder = async (e) => {
+  const manejarLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      alCerrar(); 
-    } catch (error) {
-      alert("Credenciales incorrectas");
+      await signInWithEmailAndPassword(auth, email, password);
+      alCerrar();
+    } catch (err) {
+      setError("Credenciales incorrectas");
     }
   };
 
   return (
-    <div className="overlay-msg"> {/* Reutilizamos el fondo oscuro */}
-      <div className="login-card">
-        <button className="btn-close-login" onClick={alCerrar}><X size={20}/></button>
-        
-        <div className="login-icon">
-          <Lock size={30} color="#6366f1" />
-        </div>
-        
-        <h2>Admin</h2>
-        <p>Ingresa tus credenciales</p>
+    <div className="login-content">
+      <div className="login-icon-header">
+        <Lock size={40} color="#6366f1" />
+      </div>
+      <h2>Acceso Admin</h2>
+      <p>Ingresa tus credenciales para gestionar el menú</p>
 
-        <form onSubmit={acceder} className="login-form">
+      <form onSubmit={manejarLogin} className="login-form">
+        <div className="input-group">
+          <Mail size={18} className="input-icon" />
           <input 
             type="email" 
-            placeholder="Correo" 
-            onChange={e => setEmail(e.target.value)} 
+            placeholder="Correo electrónico" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required 
           />
+        </div>
+
+        <div className="input-group">
+          <Lock size={18} className="input-icon" />
           <input 
             type="password" 
             placeholder="Contraseña" 
-            onChange={e => setPass(e.target.value)} 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required 
           />
-          <button type="submit" className="btn-login-submit">Entrar</button>
-        </form>
-      </div>
+        </div>
+
+        {error && <p className="error-text">{error}</p>}
+
+        <button type="submit" className="btn-login-submit">
+          <LogIn size={20} /> Entrar
+        </button>
+      </form>
     </div>
   );
-};
+}
 
 export default Login;

@@ -1,4 +1,6 @@
-/* 1. VARIABLES Y BASE */
+/* ==========================================================================
+   1. VARIABLES Y BASE 
+   ========================================================================== */
 :root {
   --primary: #6366f1;
   --secondary: #f59e0b;
@@ -6,6 +8,7 @@
   --white: #ffffff;
   --text-dark: #1e293b;
   --text-light: #64748b;
+  --danger: #ef4444;
 }
 
 body {
@@ -21,7 +24,9 @@ body {
   flex-direction: column;
 }
 
-/* 2. CONTENEDORES PRINCIPALES */
+/* ==========================================================================
+   2. CONTENEDORES PRINCIPALES 
+   ========================================================================== */
 .cliente-container {
   width: 100%;
   background: var(--white);
@@ -39,23 +44,84 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
-/* 3. PANTALLA DE INICIO (ICONOS CIRCULARES) */
+/* ==========================================================================
+   3. BARRA SUPERIOR (TOP BAR) Y BOTONES ADMIN
+   ========================================================================== */
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  z-index: 1000;
+}
+
+.admin-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-top-gestion, .btn-top-login, .btn-top-admin {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 8px 18px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.btn-top-gestion {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+/* Flecha al lado de Admin en Top Bar */
+.btn-back-inline {
+  background: white;
+  border: 1px solid #e2e8f0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.btn-back-inline:hover {
+  transform: scale(1.1);
+  background: #f1f5f9;
+}
+
+/* ==========================================================================
+   4. PANTALLA DE INICIO (MENÚ CIRCULAR 2x2) 
+   ========================================================================== */
 .main-categories {
   padding: 60px 20px;
   text-align: center;
 }
 
-/* GRILLA FORZADA 2x2 SIEMPRE */
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 280px); /* Tamaño fijo grande para PC */
+  grid-template-columns: repeat(2, 280px); /* 2x2 forzado en PC */
   gap: 40px;
   padding: 40px;
-  justify-content: center; /* Centra los 4 círculos en el medio */
+  justify-content: center;
   margin: 0 auto;
 }
-
-/* Eliminamos la regla de 4 columnas para que se mantenga 2x2 en PC */
 
 .cat-circle {
   background: var(--white);
@@ -77,103 +143,26 @@ body {
 }
 
 .cat-circle svg {
-  width: 110px; /* Iconos más grandes */
+  width: 110px;
   height: 110px;
 }
 
 .cat-circle span {
   margin-top: 15px;
   font-weight: 700;
-  font-size: 1.3rem; /* Texto más legible */
+  font-size: 1.3rem;
   color: var(--text-dark);
 }
 
-/* Para que la flecha y el botón Admin estén juntos a la derecha */
-.top-bar {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  padding: 15px;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto; /* Cambiado de 100% para que no bloquee clics */
-  z-index: 1000;
-}
-
-.admin-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-top-gestion, .btn-top-login, .btn-top-admin {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 8px 18px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.btn-top-gestion {
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-/* Estilo para la flecha al lado de Admin */
-.btn-back-inline {
-  background: white;
-  border: 1px solid #e2e8f0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.btn-back-circle:hover {
-  background: #f1f5f9;
-  transform: scale(1.1);
-}
-/* Arreglo para la pantalla de Login (Modal gris) */
-.login-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(30, 41, 59, 0.7); /* Fondo oscuro semitransparente */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-.login-box {
-  background: white;
-  padding: 40px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-/* 5. DISEÑO DE PRODUCTOS (GRILLA CLIENTE) */
+/* ==========================================================================
+   5. DISEÑO DE PRODUCTOS (VISTA CLIENTE) 
+   ========================================================================== */
 .product-grid-layout {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   padding: 15px;
-  padding-top: 100px; /* Más espacio para la flecha fixed */
+  padding-top: 100px;
 }
 
 .food-card {
@@ -194,84 +183,131 @@ body {
   object-fit: cover;
 }
 
-/* 6. FORMULARIOS Y PANEL ADMIN */
-.admin-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 20px 0;
-}
-
-.admin-form input, .admin-form select {
-  padding: 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.btn-save {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 15px;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* 7. MODALES Y MENSAJES */
+/* ==========================================================================
+   6. MODALES Y MENSAJES (OVERLAYS) 
+   ========================================================================== */
 .overlay-msg {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.5);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 3000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
 }
 
 .msg-box {
   background: white;
   padding: 30px;
-  border-radius: 25px;
+  border-radius: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
   text-align: center;
+  width: 90%;
+  max-width: 380px;
+  position: relative;
   animation: popIn 0.3s ease-out;
 }
 
+/* Estilo Salida */
+.modal-confirm-styled h3 { margin: 15px 0 5px 0; font-size: 1.4rem; }
+.modal-confirm-styled p { color: var(--text-light); margin-bottom: 20px; }
+
+.icon-circle-warning {
+  background: #fee2e2;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto;
+}
+
+.modal-buttons { display: flex; gap: 12px; }
+
+.btn-no {
+  flex: 1; padding: 12px; border-radius: 12px;
+  border: 1px solid #e2e8f0; background: #f8fafc;
+  cursor: pointer; font-weight: 600;
+}
+
+.btn-yes {
+  flex: 1; padding: 12px; border-radius: 12px;
+  border: none; background: var(--danger);
+  color: white; cursor: pointer; font-weight: 600;
+}
+
+/* ==========================================================================
+   7. FORMULARIOS (ADMIN & LOGIN) 
+   ========================================================================== */
+.admin-form, .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.admin-form input, .admin-form select, .input-group input {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Input con Icono (Login) */
+.input-group { position: relative; display: flex; align-items: center; }
+.input-icon { position: absolute; left: 12px; color: #94a3b8; }
+.input-group input { padding-left: 40px; }
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.btn-save, .btn-login-submit {
+  background: var(--primary);
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.close-btn-modal {
+  position: absolute;
+  top: 15px; right: 15px;
+  background: #f1f5f9; border: none;
+  border-radius: 50%; padding: 5px; cursor: pointer;
+}
+
+/* ==========================================================================
+   8. ANIMACIONES Y RESPONSIVE 
+   ========================================================================== */
 @keyframes popIn {
   0% { transform: scale(0.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* 8. RESPONSIVE CELULAR */
-@media (max-width: 700px) {
-  .grid-menu {
-    grid-template-columns: repeat(2, 1fr); /* 2 columnas en celular */
-    gap: 15px;
-    padding: 15px;
-    max-width: 100%;
-  }
-  .cat-circle svg { 
-    width: 65px; 
-    height: 65px; 
-  }
-  .cat-circle span {
-    font-size: 1rem;
-  }
-  .admin-container { 
-    margin: 20px auto; 
-    width: 90%; 
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.login-box input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-sizing: border-box; /* Importante para que no se salga del cuadro */
+@media (max-width: 700px) {
+  .grid-menu {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+  }
+  .cat-circle svg { width: 65px; height: 65px; }
+  .cat-circle span { font-size: 1rem; }
+  .admin-container { margin: 20px auto; width: 90%; }
 }

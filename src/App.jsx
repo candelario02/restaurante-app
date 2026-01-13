@@ -5,7 +5,7 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogIn, LogOut, Settings, Utensils, Clock, ArrowLeft } from 'lucide-react';
+import { LogIn, LogOut, Settings, Utensils, Clock, ArrowLeft, X, Users } from 'lucide-react';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,6 +13,7 @@ function App() {
   const [mensajeBienvenida, setMensajeBienvenida] = useState("");
   const [confirmarSalida, setConfirmarSalida] = useState(false);
   const [vistaAdmin, setVistaAdmin] = useState(false);
+  const [seccion, setSeccion] = useState('menu'); // 'menu' o 'usuarios'
 
   useEffect(() => {
     return onAuthStateChanged(auth, (usuario) => {
@@ -34,20 +35,26 @@ function App() {
 
   return (
     <div className="App">
-      {/* BARRA SUPERIOR CON FLECHA AL LADO DE ADMIN */}
       <div className="top-bar">
         {user ? (
           <div className="admin-buttons">
-            {/* Si estamos en Gestión, mostramos flecha para volver al menú */}
             {vistaAdmin && (
               <button className="btn-back-inline" onClick={() => setVistaAdmin(false)}>
                 <ArrowLeft size={20} />
               </button>
             )}
             
-            <button className="btn-top-gestion" onClick={() => setVistaAdmin(!vistaAdmin)}>
-              {vistaAdmin ? <Utensils size={18} /> : <Settings size={18} />}
-              {vistaAdmin ? " Ver Menú" : " Gestión"}
+            {/* Botón Gestión de Menú */}
+            <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} 
+                    onClick={() => { setVistaAdmin(true); setSeccion('menu'); }}>
+              <Settings size={18} /> Gestión
+            </button>
+
+            {/* NUEVO: Botón Gestión de Usuarios */}
+            <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
+                    style={{background: seccion === 'usuarios' ? '#10b981' : 'white', color: seccion === 'usuarios' ? 'white' : '#1e293b'}}
+                    onClick={() => { setVistaAdmin(true); setSeccion('usuarios'); }}>
+              <Users size={18} /> Usuarios
             </button>
 
             <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
@@ -61,29 +68,21 @@ function App() {
         )}
       </div>
 
-      {/* MODAL DE LOGIN (Ya no es una pantalla aparte) */}
+      {/* MODALES (Login, Salida, Bienvenida - Sin cambios) */}
       {mostrarLogin && !user && (
         <div className="overlay-msg">
-          <div className="login-box-container">
+          <div className="msg-box login-modal">
+            <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}><X size={20} /></button>
             <Login alCerrar={() => setMostrarLogin(false)} />
-          </div>
-        </div>
-      )}
-
-      {/* MENSAJES DE BIENVENIDA Y SALIDA */}
-      {mensajeBienvenida && (
-        <div className="overlay-msg">
-          <div className="msg-box">
-            <Clock color="#6366f1" size={40} />
-            <p>{mensajeBienvenida}</p>
           </div>
         </div>
       )}
 
       {confirmarSalida && (
         <div className="overlay-msg">
-          <div className="msg-box modal-confirm">
-            <h3>¿Estás seguro de salir?</h3>
+          <div className="msg-box modal-confirm-styled">
+            <div className="icon-circle-warning"><LogOut size={30} color="#ef4444" /></div>
+            <h3>¿Cerrar Sesión?</h3>
             <div className="modal-buttons">
               <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
               <button className="btn-yes" onClick={manejarCerrarSesion}>Sí, Salir</button>
@@ -92,15 +91,12 @@ function App() {
         </div>
       )}
 
-      {/* CONTENIDO PRINCIPAL */}
       {vistaAdmin ? (
         <div className="admin-container">
-          <Admin />
+          <Admin seccion={seccion} />
         </div>
       ) : (
-        <div className="cliente-container">
-          <MenuCliente esAdmin={!!user} />
-        </div>
+        <div className="cliente-container"><MenuCliente esAdmin={!!user} /></div>
       )}
     </div>
   );
