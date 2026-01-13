@@ -3,7 +3,7 @@ import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-// 🔐 Agregué tu correo a la lista para que no te rebote
+// 🔐 Lista de correos autorizados como Administradores
 const ADMIN_EMAILS = [
   'huamancarrioncande24@gmail.com',
   'jec02021994@gmail.com' 
@@ -47,16 +47,19 @@ function Login({ alCerrar, activarAdmin }) {
 
   return (
     <div className="login-content">
-      <div className="login-icon-header">
+      {/* El diseño de estos iconos ahora depende de las clases CSS */}
+      <div className="icon-circle-warning">
         {error.includes('Acceso') ? (
-          <ShieldAlert size={40} color="#ef4444" />
+          <ShieldAlert size={40} />
         ) : (
-          <Lock size={40} color="#6366f1" />
+          <Lock size={40} />
         )}
       </div>
 
-      <h2>Acceso Admin</h2>
-      <p>Ingresa tus credenciales autorizadas</p>
+      <div className="header-brand">
+        <h2>Acceso Admin</h2>
+        <p>Ingresa tus credenciales autorizadas</p>
+      </div>
 
       <form onSubmit={manejarLogin} className="login-form">
         <div className="input-group">
@@ -82,8 +85,8 @@ function Login({ alCerrar, activarAdmin }) {
         </div>
 
         {error && (
-          <div className="error-box" style={{ background: '#fee2e2', padding: '10px', borderRadius: '8px', margin: '10px 0' }}>
-            <p className="error-text" style={{ color: '#b91c1c', fontSize: '0.8rem', textAlign: 'center' }}>
+          <div className="msg-box" style={{ padding: '10px', boxShadow: 'none', border: '1px solid var(--danger)' }}>
+            <p className="text-muted" style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>
               {error}
             </p>
           </div>

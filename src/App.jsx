@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 function App() {
-  // 🔐 Estado de autenticación con persistencia en localStorage
+  // 🔐 Estado de autenticación
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
@@ -43,17 +43,16 @@ function App() {
         return;
       }
 
-      // Verificamos si ya estaba marcado como admin
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
 
       setAuthState((prev) => ({
         ...prev,
         loading: false,
         user: usuario,
-        isAdmin: eraAdmin // Mantiene el estado visual
+        isAdmin: eraAdmin
       }));
 
-      // 👋 Mensaje de bienvenida único
+      // 👋 Mensaje de bienvenida
       if (!bienvenidaMostrada) {
         const hora = new Date().toLocaleTimeString([], {
           hour: '2-digit',
@@ -84,7 +83,8 @@ function App() {
 
   return (
     <div className="App">
-      {/* 🔝 BARRA SUPERIOR CONSTANTE */}
+      
+      {/* 🔝 SESIÓN 2: BARRA SUPERIOR (TOP BAR) */}
       <div className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
@@ -120,9 +120,6 @@ function App() {
 
                 <button
                   className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`}
-                  style={{
-                    borderBottom: seccion === 'usuarios' ? '2px solid #10b981' : 'none'
-                  }}
                   onClick={() => setSeccion('usuarios')}
                 >
                   <Users size={18} /> <span>Usuarios</span>
@@ -130,9 +127,6 @@ function App() {
 
                 <button
                   className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`}
-                  style={{
-                    borderBottom: seccion === 'pedidos' ? '2px solid #6366f1' : 'none'
-                  }}
                   onClick={() => setSeccion('pedidos')}
                 >
                   <Package size={18} /> <span>Pedidos</span>
@@ -151,11 +145,11 @@ function App() {
         )}
       </div>
 
-      {/* 🔐 MODAL DE LOGIN */}
+      {/* 🔐 SESIÓN 4: MODAL DE LOGIN */}
       {mostrarLogin && !authState.user && (
         <div className="overlay-msg">
-          <div className="msg-box login-modal">
-            <button className="close-btn-modal" onClick={() => setMostrarLogin(false)}>
+          <div className="msg-box">
+            <button className="btn-back-inline" onClick={() => setMostrarLogin(false)}>
               <X size={20} />
             </button>
             <Login 
@@ -169,27 +163,27 @@ function App() {
         </div>
       )}
 
-      {/* 👋 POPUP BIENVENIDA */}
+      {/* 👋 SESIÓN 4: POPUP BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box welcome-box">
-            <div className="icon-circle" style={{ background: '#eef2ff', padding: '15px', borderRadius: '50%', display: 'inline-block' }}>
-               <Clock color="#6366f1" size={40} />
+            <div className="icon-circle-warning">
+               <Clock size={40} />
             </div>
-            <pre style={{ marginTop: '15px', fontWeight: '600' }}>{mensajeBienvenida}</pre>
+            <pre className="text-main">{mensajeBienvenida}</pre>
           </div>
         </div>
       )}
 
-      {/* ❌ DIÁLOGO CERRAR SESIÓN */}
+      {/* ❌ SESIÓN 4: DIÁLOGO CERRAR SESIÓN (IMAGEN 3) */}
       {confirmarSalida && (
         <div className="overlay-msg">
-          <div className="msg-box modal-confirm-styled">
+          <div className="msg-box">
             <div className="icon-circle-warning">
-              <LogOut size={30} color="#ef4444" />
+              <LogOut size={30} />
             </div>
             <h3>¿Cerrar Sesión?</h3>
-            <p style={{ color: '#64748b' }}>Deberás ingresar tus credenciales nuevamente.</p>
+            <p className="text-muted">Deberás ingresar tus credenciales nuevamente.</p>
             <div className="modal-buttons">
               <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
               <button className="btn-yes" onClick={manejarCerrarSesion}>Sí, Salir</button>
@@ -199,15 +193,11 @@ function App() {
       )}
 
       {/* 🧠 CONTENIDO DINÁMICO */}
-      <main className="main-content">
+      <main>
         {authState.user && authState.isAdmin ? (
-          <div className="admin-container">
-            <Admin seccion={seccion} />
-          </div>
+          <Admin seccion={seccion} />
         ) : (
-          <div className="cliente-container">
-            <MenuCliente />
-          </div>
+          <MenuCliente />
         )}
       </main>
     </div>
