@@ -1,40 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { auth } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-
-// Importamos los "cajones" (componentes)
-import Login from './Login';
-import Admin from './Admin';
+import React, { useState } from 'react';
+import './App.css';
 import MenuCliente from './MenuCliente';
+import Admin from './Admin';
+import Login from './Login';
+import { auth } from './firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [verLogin, setVerLogin] = useState(false);
+  const [mostrarLogin, setMostrarLogin] = useState(false);
 
-  // Escuchar si el admin inició sesión
-  useEffect(() => {
-    onAuthStateChanged(auth, (usuario) => {
+  // Escuchar si el admin inicia sesión
+  React.useEffect(() => {
+    return onAuthStateChanged(auth, (usuario) => {
       setUser(usuario);
     });
   }, []);
 
+  if (mostrarLogin && !user) {
+    return <Login alCerrar={() => setMostrarLogin(false)} />;
+  }
+
   return (
-    <div className="container">
-      {/* Si hay un usuario logueado, muestra el Admin */}
+    <div className="App">
       {user ? (
-        <Admin />
+        <div className="admin-container">
+          <button onClick={() => signOut(auth)} className="btn-logout">Cerrar Sesión</button>
+          <Admin />
+        </div>
       ) : (
-        // Si no hay usuario, decide entre Login o Menú Cliente
-        verLogin ? (
-          <Login alCerrar={() => setVerLogin(false)} />
-        ) : (
-          <>
-            <button className="btn-admin-acceso" onClick={() => setVerLogin(true)}>
-              Acceso Admin
-            </button>
-            <MenuCliente />
-          </>
-        )
+        <div className="cliente-container">
+          <MenuCliente esAdmin={false} />
+          <button className="admin-access" onClick={() => setMostrarLogin(true)}>
+            Acceso Admin
+          </button>
+        </div>
       )}
     </div>
   );
