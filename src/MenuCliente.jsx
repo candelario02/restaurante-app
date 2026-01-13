@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, query, where, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { Utensils, Coffee, Pizza, Droplet, ArrowLeft, ShoppingCart, X, Send } from 'lucide-react';
 
 const MenuCliente = ({ esAdmin }) => {
@@ -17,9 +17,10 @@ const MenuCliente = ({ esAdmin }) => {
         where("disponible", "==", true) 
       );
       
-      return onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         setProductos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
+      return () => unsubscribe();
     }
   }, [categoriaActual]);
 
@@ -29,7 +30,7 @@ const MenuCliente = ({ esAdmin }) => {
 
   const total = carrito.reduce((acc, item) => acc + item.precio, 0);
 
-  // Pantalla Principal de Categorías
+  // --- PANTALLA PRINCIPAL DE CATEGORÍAS ---
   if (!categoriaActual) {
     return (
       <div className="main-categories">
@@ -37,30 +38,28 @@ const MenuCliente = ({ esAdmin }) => {
           <h1>Nuestro Menú</h1>
           <p>Selecciona una categoría</p>
         </div>
+        
+        {/* Aquí es donde el CSS fuerza el 2x2 con círculos grandes */}
         <div className="grid-menu">
           <button className="cat-circle" onClick={() => setCategoriaActual('Menu')}>
-            <div className="icon-wrapper"><Pizza size={35} color="#f59e0b" /></div>
+            <Pizza size={50} color="#f59e0b" />
             <span>Comidas</span>
           </button>
+          
           <button className="cat-circle" onClick={() => setCategoriaActual('Cafeteria')}>
-            <div className="icon-wrapper"><Coffee size={35} color="#6366f1" /></div>
+            <Coffee size={50} color="#6366f1" />
             <span>Café</span>
           </button>
+          
           <button className="cat-circle" onClick={() => setCategoriaActual('Bebidas')}>
-            <div className="icon-wrapper"><Droplet size={35} color="#06b6d4" /></div>
+            <Droplet size={50} color="#06b6d4" />
             <span>Bebidas</span>
           </button>
+          
           <button className="cat-circle" onClick={() => setCategoriaActual('Entradas')}>
-            <div className="icon-wrapper"><Utensils size={35} color="#ec4899" /></div>
+            <Utensils size={50} color="#ec4899" />
             <span>Entradas</span>
           </button>
-
-          {/* Flecha de regresar estilizada */}
-<button className="btn-back-circle" onClick={() => setCategoriaSeleccionada(null)}>
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 12H5M12 19l-7-7 7-7" />
-  </svg>
-</button>
         </div>
         
         {carrito.length > 0 && (
@@ -75,15 +74,16 @@ const MenuCliente = ({ esAdmin }) => {
     );
   }
 
-  // PANTALLA DE PRODUCTOS (ESTILO CUADRÍCULA COMO TU IMAGEN)
+  // --- PANTALLA DE LISTA DE PRODUCTOS ---
   return (
     <div className="product-view">
+      {/* Flecha de regresar estilizada y funcional */}
+      <button className="btn-back-circle" onClick={() => setCategoriaActual(null)}>
+        <ArrowLeft size={28} />
+      </button>
+
       <div className="header-lista-fija">
-        <button onClick={() => setCategoriaActual(null)} className="btn-back-circle">
-          <ArrowLeft size={24}/>
-        </button>
         <h2>{categoriaActual}</h2>
-        <div className="spacer"></div>
       </div>
       
       <div className="product-grid-layout">
@@ -102,15 +102,15 @@ const MenuCliente = ({ esAdmin }) => {
       </div>
 
       {verCarrito && (
-        <div className="cart-modal">
-          <div className="modal-content">
-            <div className="modal-header">
+        <div className="overlay-msg">
+          <div className="msg-box modal-confirm" style={{maxWidth: '400px', width: '90%'}}>
+            <div className="modal-header" style={{display: 'flex', justifyContent: 'space-between', marginBottom: '20px'}}>
                <h2>Tu Pedido</h2>
-               <button className="close-btn" onClick={() => setVerCarrito(false)}><X /></button>
+               <button onClick={() => setVerCarrito(false)} style={{background: 'none', border: 'none'}}><X /></button>
             </div>
-            <div className="items-scroll">
+            <div className="items-scroll" style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '20px'}}>
               {carrito.map((item, i) => (
-                <div key={i} className="cart-item">
+                <div key={i} className="cart-item" style={{display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee'}}>
                   <span>{item.nombre}</span>
                   <strong>S/ {item.precio.toFixed(2)}</strong>
                 </div>
@@ -118,7 +118,7 @@ const MenuCliente = ({ esAdmin }) => {
             </div>
             <div className="cart-footer">
               <h3>Total: S/ {total.toFixed(2)}</h3>
-              <button className="btn-send" onClick={() => alert("Pedido enviado")}>
+              <button className="btn-save" style={{width: '100%'}} onClick={() => alert("Pedido enviado")}>
                 <Send size={18} /> ENVIAR PEDIDO
               </button>
             </div>

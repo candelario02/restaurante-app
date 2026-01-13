@@ -22,8 +22,6 @@ body {
 }
 
 /* 2. CONTENEDORES PRINCIPALES */
-
-/* El Menú Principal ocupa todo el ancho en PC */
 .cliente-container {
   width: 100%;
   background: var(--white);
@@ -31,11 +29,10 @@ body {
   position: relative;
 }
 
-/* El Panel de Control se ve como un cuadro centrado y pequeño */
 .admin-container {
   width: 95%;
   max-width: 600px; 
-  margin: 80px auto 40px; /* Margen superior para no chocar con la top-bar */
+  margin: 80px auto 40px;
   background: var(--white);
   padding: 20px;
   border-radius: 25px;
@@ -48,23 +45,18 @@ body {
   text-align: center;
 }
 
-/* GRILLA 2x2 PARA PC Y CELULAR */
+/* GRILLA FORZADA 2x2 SIEMPRE */
 .grid-menu {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas siempre */
-  gap: 30px;
+  grid-template-columns: repeat(2, 280px); /* Tamaño fijo grande para PC */
+  gap: 40px;
   padding: 40px;
-  max-width: 800px; /* Reducido un poco para que se vea más compacto al centro */
+  justify-content: center; /* Centra los 4 círculos en el medio */
   margin: 0 auto;
 }
 
-@media (min-width: 1024px) {
-  .grid-menu {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
+/* Eliminamos la regla de 4 columnas para que se mantenga 2x2 en PC */
 
-/* Iconos más grandes en PC */
 .cat-circle {
   background: var(--white);
   border: none;
@@ -78,19 +70,22 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
 }
+
 .cat-circle:hover {
   transform: translateY(-10px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
 }
 
 .cat-circle svg {
-  width: 100px;
-  height: 100px;
+  width: 110px; /* Iconos más grandes */
+  height: 110px;
 }
 
 .cat-circle span {
   margin-top: 15px;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.3rem; /* Texto más legible */
+  color: var(--text-dark);
 }
 
 /* 4. BARRA SUPERIOR Y BOTONES ADMIN */
@@ -128,38 +123,29 @@ body {
   color: white;
   border: none;
 }
-/* ESTILO PARA LA FLECHA DE REGRESAR */
+
+/* ESTILO PARA LA FLECHA DE REGRESAR (Mejorado para clics) */
 .btn-back-circle {
-  position: absolute;
-  top: 15px;
-  left: 15px;
+  position: fixed; /* Fixed para que no se mueva al hacer scroll */
+  top: 20px;
+  left: 20px;
   background: var(--white);
-  border: 1px solid #e2e8f0;
-  width: 45px;
-  height: 45px;
+  border: none;
+  width: 55px; /* Un poco más grande para facilitar el toque */
+  height: 55px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 150; /* Para que esté por encima de todo */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: background 0.2s;
-}
-.btn-back-circle:hover {
-  background: #f1f5f9;
+  z-index: 999; /* Máxima prioridad para clics */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  transition: all 0.2s;
 }
 
-/* Ajuste responsive para celulares */
-@media (max-width: 600px) {
-  .cat-circle svg {
-    width: 65px;
-    height: 65px;
-  }
-  .grid-menu {
-    gap: 15px;
-    padding: 20px;
-  }
+.btn-back-circle:hover {
+  background: #f1f5f9;
+  transform: scale(1.1);
 }
 
 /* 5. DISEÑO DE PRODUCTOS (GRILLA CLIENTE) */
@@ -168,7 +154,7 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
   padding: 15px;
-  padding-top: 80px;
+  padding-top: 100px; /* Más espacio para la flecha fixed */
 }
 
 .food-card {
@@ -242,8 +228,22 @@ body {
 }
 
 /* 8. RESPONSIVE CELULAR */
-@media (max-width: 600px) {
-  .cat-circle svg { width: 55px; height: 55px; }
-  .admin-container { margin: 20px auto; width: 90%; }
-  .grid-menu { gap: 15px; padding: 10px; }
+@media (max-width: 700px) {
+  .grid-menu {
+    grid-template-columns: repeat(2, 1fr); /* 2 columnas en celular */
+    gap: 15px;
+    padding: 15px;
+    max-width: 100%;
+  }
+  .cat-circle svg { 
+    width: 65px; 
+    height: 65px; 
+  }
+  .cat-circle span {
+    font-size: 1rem;
+  }
+  .admin-container { 
+    margin: 20px auto; 
+    width: 90%; 
+  }
 }
