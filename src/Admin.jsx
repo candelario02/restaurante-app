@@ -57,18 +57,37 @@ const Admin = ({ seccion }) => {
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
             </select>
-            <label className="btn-top-login"><ImageIcon size={18}/> {imagen ? imagen.name : 'Imagen'}<input type="file" hidden onChange={e => setImagen(e.target.files[0])}/></label>
+            <label className="btn-top-login">
+              <ImageIcon size={18}/> {imagen ? imagen.name : 'Imagen'}
+              <input type="file" hidden onChange={e => setImagen(e.target.files[0])}/>
+            </label>
             <button className="btn-login-submit" disabled={cargando}>{cargando ? '...' : 'Guardar'}</button>
           </form>
+
           <table className="tabla-admin">
-            <thead><tr><th>Nombre</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
             <tbody>
               {productos.map(p => (
                 <tr key={p.id}>
                   <td>{p.nombre}</td>
                   <td>S/ {p.precio.toFixed(2)}</td>
-                  <td><button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>{p.disponible ? <Power color="var(--success)"/> : <PowerOff color="var(--danger)"/>}</button></td>
-                  <td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'productos', p.id))}><Trash2 color="var(--danger)"/></button></td>
+                  <td>
+                    <button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>
+                      {p.disponible ? <Power color="var(--success)"/> : <PowerOff color="var(--danger)"/>}
+                    </button>
+                  </td>
+                  <td>
+                    <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'productos', p.id))}>
+                      <Trash2 color="var(--danger)"/>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -80,14 +99,24 @@ const Admin = ({ seccion }) => {
         <>
           <form onSubmit={registrarAdmin} className="login-form">
             <h2>Registrar Admin</h2>
-            <div className="input-group"><Mail className="input-icon"/><input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email" required /></div>
+            <div className="input-group">
+              <Mail className="input-icon"/>
+              <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email" required />
+            </div>
             <button className="btn-login-submit"><UserPlus size={18}/> Agregar</button>
           </form>
           <table className="tabla-admin">
             <thead><tr><th>Email</th><th>Eliminar</th></tr></thead>
             <tbody>
               {usuarios.map(u => (
-                <tr key={u.id}><td>{u.email}</td><td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="var(--danger)"/></button></td></tr>
+                <tr key={u.id}>
+                  <td>{u.email}</td>
+                  <td>
+                    <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}>
+                      <Trash2 color="var(--danger)"/>
+                    </button>
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
@@ -97,15 +126,17 @@ const Admin = ({ seccion }) => {
       {seccion === 'pedidos' && (
         <div className="productos-grid">
           {pedidos.map(p => (
-            <div key={p.id} className="producto-card" style={{padding: '20px'}}>
-              <h3>{p.cliente.nombre}</h3>
-              <p className="text-muted">{p.cliente.direccion}</p>
-              <div className="precio-tag">Total: S/ {p.total.toFixed(2)}</div>
-              <p>Estado: <strong>{p.estado}</strong></p>
-              <div className="modal-buttons">
-                <button className="btn-no" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={16}/> Cocina</button>
-                <button className="btn-no" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={16}/> Ruta</button>
-                <button className="btn-yes" style={{background: 'var(--success)'}} onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={16}/> OK</button>
+            <div key={p.id} className="producto-card">
+              <div className="msg-box">
+                <h3>{p.cliente.nombre}</h3>
+                <p className="text-muted">{p.cliente.direccion}</p>
+                <div className="precio-tag">Total: S/ {p.total.toFixed(2)}</div>
+                <p>Estado: <strong>{p.estado}</strong></p>
+                <div className="modal-buttons">
+                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={16}/> Cocina</button>
+                  <button className="btn-no" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={16}/> Ruta</button>
+                  <button className="btn-yes" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={16}/> OK</button>
+                </div>
               </div>
             </div>
           ))}

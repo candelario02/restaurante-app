@@ -8,8 +8,6 @@ import {
   Droplet,
   ArrowLeft,
   ShoppingCart,
-  X,
-  Send,
   User,
   Phone,
   MapPin
@@ -83,112 +81,133 @@ const MenuCliente = () => {
     }
   };
 
-  /* --- VISTA DE CATEGORÍAS (Círculos) --- */
+  /* --- VISTA DE CATEGORÍAS (Círculos - Sesión 3 del CSS) --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container">
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1>Nuestro Menú</h1>
-          <p>Selecciona una categoría</p>
+        <div className="header-brand" style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Nuestro Menú</h1>
+          <p className="text-muted">Selecciona una categoría para empezar</p>
         </div>
 
         <div className="categorias-container">
           <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
-            <div className="categoria-circulo"><Pizza size={50} /></div>
+            <div className="categoria-circulo"><Pizza size={60} color="var(--primary)" /></div>
             <span>Comidas</span>
           </div>
           <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}>
-            <div className="categoria-circulo"><Coffee size={50} /></div>
+            <div className="categoria-circulo"><Coffee size={60} color="var(--primary)" /></div>
             <span>Café</span>
           </div>
           <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
-            <div className="categoria-circulo"><Droplet size={50} /></div>
+            <div className="categoria-circulo"><Droplet size={60} color="var(--primary)" /></div>
             <span>Bebidas</span>
           </div>
           <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}>
-            <div className="categoria-circulo"><Utensils size={50} /></div>
+            <div className="categoria-circulo"><Utensils size={60} color="var(--primary)" /></div>
             <span>Entradas</span>
           </div>
         </div>
 
+        {/* Botón flotante de carrito (Sesión 2 clases) */}
         {carrito.length > 0 && (
-          <div className="btn-top-gestion active" 
-               style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}
-               onClick={() => setVerCarrito(true)}>
-            <ShoppingCart size={20} />
+          <button 
+            className="btn-top-gestion active" 
+            style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, padding: '15px 30px', borderRadius: '50px' }}
+            onClick={() => setVerCarrito(true)}
+          >
+            <ShoppingCart size={22} />
             <span>Ver mi pedido (S/ {total.toFixed(2)})</span>
-          </div>
+          </button>
         )}
       </div>
     );
   }
 
-  /* --- VISTA DE PRODUCTOS --- */
+  /* --- VISTA DE PRODUCTOS (Grid - Sesión 6 del CSS) --- */
   return (
     <div className="admin-container">
-      <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
-        <ArrowLeft size={24} />
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+        <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
+          <ArrowLeft size={24} />
+        </button>
+        <h2 style={{ margin: 0 }}>{categoriaActual}</h2>
+      </div>
 
       <div className="productos-grid">
         {productos.map(p => (
           <div key={p.id} className="producto-card">
-            <div className="producto-img-container">
-              <img src={p.img} alt={p.nombre} />
+            <div style={{ width: '100%', height: '200px', overflow: 'hidden' }}>
+              <img 
+                src={p.img} 
+                alt={p.nombre} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
             </div>
-            <div className="producto-info">
-              <h3>{p.nombre}</h3>
-              <div className="producto-footer">
-                <span className="precio-tag">S/ {p.precio.toFixed(2)}</span>
-                <button className="btn-top-gestion active" onClick={() => agregarAlCarrito(p)}>+</button>
+            <div style={{ padding: '20px' }}>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: '800', fontSize: '1.3rem', color: 'var(--primary)' }}>
+                  S/ {p.precio.toFixed(2)}
+                </span>
+                <button 
+                  className="btn-top-gestion active" 
+                  onClick={() => agregarAlCarrito(p)}
+                  style={{ width: '40px', height: '40px', padding: 0, justifyContent: 'center', borderRadius: '50%' }}
+                >
+                  +
+                </button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* MODAL CARRITO */}
+      {/* MODAL CARRITO (Sesión 4 del CSS) */}
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
             <h2>Tu Pedido</h2>
-            {carrito.map((item, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-                <span>{item.nombre}</span>
-                <strong>S/ {item.precio.toFixed(2)}</strong>
-              </div>
-            ))}
-            <h3 style={{ marginTop: '20px' }}>Total: S/ {total.toFixed(2)}</h3>
+            <div style={{ margin: '20px 0', textAlign: 'left' }}>
+              {carrito.map((item, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                  <span>{item.nombre}</span>
+                  <strong>S/ {item.precio.toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+            <h3 style={{ marginBottom: '25px' }}>Total: S/ {total.toFixed(2)}</h3>
             <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setVerCarrito(false)}>Cerrar</button>
-              <button className="btn-top-gestion active" style={{ width: '100%' }} onClick={() => setMostrarFormulario(true)}>Continuar</button>
+              <button className="btn-no" onClick={() => setVerCarrito(false)}>Atrás</button>
+              <button className="btn-top-gestion active" style={{ justifyContent: 'center' }} onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DATOS CLIENTE */}
+      {/* MODAL DATOS CLIENTE (Sesión 7 del CSS) */}
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2>Datos de Entrega</h2>
+            <h2>Finalizar Pedido</h2>
+            <p className="text-muted">¿A donde llevamos tu orden?</p>
             <div className="login-form">
               <div className="input-group">
                 <User className="input-icon" size={18} />
-                <input placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
+                <input placeholder="Nombre completo" value={nombre} onChange={e => setNombre(e.target.value)} />
               </div>
               <div className="input-group">
                 <Phone className="input-icon" size={18} />
-                <input placeholder="Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} />
+                <input placeholder="Teléfono / WhatsApp" value={telefono} onChange={e => setTelefono(e.target.value)} />
               </div>
               <div className="input-group">
                 <MapPin className="input-icon" size={18} />
-                <input placeholder="Dirección" value={direccion} onChange={e => setDireccion(e.target.value)} />
+                <input placeholder="Dirección de entrega" value={direccion} onChange={e => setDireccion(e.target.value)} />
               </div>
               <div className="modal-buttons">
-                <button className="btn-no" onClick={() => setMostrarFormulario(false)}>Atrás</button>
+                <button className="btn-no" onClick={() => setMostrarFormulario(false)}>Cancelar</button>
                 <button className="btn-yes" style={{ background: 'var(--success)' }} onClick={enviarPedido} disabled={enviando}>
-                  {enviando ? "Enviando..." : "Confirmar"}
+                  {enviando ? "Enviando..." : "Confirmar Pedido"}
                 </button>
               </div>
             </div>
