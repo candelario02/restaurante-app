@@ -53,6 +53,7 @@ function App() {
 
   return (
     <div className="App">
+      {/* BARRA SUPERIOR */}
       <div className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
@@ -88,6 +89,7 @@ function App() {
         )}
       </div>
 
+      {/* MODAL LOGIN */}
       {mostrarLogin && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -100,6 +102,7 @@ function App() {
         </div>
       )}
 
+      {/* MODAL BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -111,6 +114,7 @@ function App() {
         </div>
       )}
 
+      {/* MODAL CERRAR SESIÓN */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -127,8 +131,11 @@ function App() {
         </div>
       )}
 
-      <main>
-        {authState.user && authState.isAdmin ? <Admin seccion={seccion} /> : <MenuCliente />}
+      {/* CONTENIDO PRINCIPAL CENTRADO */}
+      <main className="admin-container">
+        <div className="content-wrapper">
+          {authState.user && authState.isAdmin ? <Admin seccion={seccion} /> : <MenuCliente />}
+        </div>
       </main>
     </div>
   );
