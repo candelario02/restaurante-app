@@ -170,8 +170,8 @@ body {
 
 /* Círculos Gigantes y Suaves */
 .categoria-circulo {
-  width: 190px !important; /* Tamaño aumentado para destacar */
-  height: 190px !important;
+  width: 220px !important; /* Tamaño aumentado para destacar */
+  height: 220px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
