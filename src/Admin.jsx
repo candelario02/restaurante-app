@@ -24,24 +24,53 @@ const Admin = ({ seccion }) => {
 
   const subirProducto = async (e) => {
     e.preventDefault();
-    if (!imagen) return;
+    if (!imagen) {
+      alert("Por favor selecciona una imagen");
+      return;
+    }
     setCargando(true);
     try {
-      const storageRef = ref(storage, `productos/${Date.now()}`);
+      // 1. Subir imagen a Storage
+      const storageRef = ref(storage, `productos/${Date.now()}_${imagen.name}`);
       await uploadBytes(storageRef, imagen);
       const url = await getDownloadURL(storageRef);
-      await addDoc(collection(db, 'productos'), { nombre, precio: Number(precio), categoria, img: url, disponible: true });
-      setNombre(''); setPrecio(''); setImagen(null);
-    } catch (e) { alert("Error al subir"); } finally { setCargando(false); }
+
+      // 2. Guardar datos en Firestore
+      await addDoc(collection(db, 'productos'), { 
+        nombre, 
+        precio: Number(precio), 
+        categoria, 
+        img: url, 
+        disponible: true 
+      });
+
+      // 3. Limpiar formulario
+      setNombre(''); 
+      setPrecio(''); 
+      setImagen(null);
+      alert("Producto guardado con éxito");
+    } catch (e) { 
+      console.error(e);
+      alert("Error al subir el producto"); 
+    } finally { 
+      setCargando(false); 
+    }
   };
 
   const registrarAdmin = async (e) => {
     e.preventDefault();
-    await setDoc(doc(db, 'usuarios_admin', userEmail), { email: userEmail, rol: 'admin' });
-    setUserEmail('');
+    try {
+      await setDoc(doc(db, 'usuarios_admin', userEmail), { email: userEmail, rol: 'admin' });
+      setUserEmail('');
+      alert("Administrador registrado");
+    } catch (error) {
+      alert("Error al registrar");
+    }
   };
 
-  const cambiarEstado = async (id, estado) => { await updateDoc(doc(db, 'pedidos', id), { estado }); };
+  const cambiarEstado = async (id, estado) => { 
+    await updateDoc(doc(db, 'pedidos', id), { estado }); 
+  };
 
   return (
     <div className="admin-container">
@@ -49,52 +78,62 @@ const Admin = ({ seccion }) => {
       {seccion === 'menu' && (
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <form onSubmit={subirProducto} className="login-form">
-            <h2>Nuevo Producto</h2>
-            <div className="input-group"><input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" required /></div>
-            <div className="input-group"><input type="number" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio" required /></div>
-            <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)} style={{width: '100%', marginBottom: '15px'}}>
-              <option value="Menu">Comidas</option>
-              <option value="Cafeteria">Cafetería</option>
-              <option value="Bebidas">Bebidas</option>
-              <option value="Entradas">Entradas</option>
-            </select>
-            <label className="btn-top-login" style={{width: '100%', justifyContent: 'center', marginBottom: '15px'}}>
-              <ImageIcon size={18}/> {imagen ? imagen.name : 'Imagen'}
-              <input type="file" hidden onChange={e => setImagen(e.target.files[0])}/>
+            <h2 style={{textAlign: 'center', marginBottom: '20px'}}>Nuevo Producto</h2>
+            <div className="input-group"><input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del plato" required /></div>
+            <div className="input-group"><input type="number" step="0.1" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio (S/)" required /></div>
+            
+            <div style={{marginBottom: '15px'}}>
+              <label style={{display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#666'}}>Categoría:</label>
+              <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)} style={{width: '100%'}}>
+                <option value="Menu">Comidas</option>
+                <option value="Cafeteria">Cafetería</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Entradas">Entradas</option>
+              </select>
+            </div>
+
+            <label className="btn-top-login" style={{width: '100%', justifyContent: 'center', marginBottom: '15px', cursor: 'pointer'}}>
+              <ImageIcon size={18} style={{marginRight: '10px'}}/> {imagen ? imagen.name : 'Seleccionar Imagen'}
+              <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
             </label>
+
             <button className="btn-login-submit" disabled={cargando} style={{width: '100%'}}>
-              <Save size={18}/> {cargando ? '...' : 'Guardar'}
+              {cargando ? 'Guardando...' : <><Save size={18} style={{marginRight: '10px'}}/> Guardar Producto</>}
             </button>
           </form>
 
-          <table className="tabla-admin">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Precio</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productos.map(p => (
-                <tr key={p.id}>
-                  <td style={{fontWeight: '600'}}>{p.nombre}</td>
-                  <td>S/ {p.precio.toFixed(2)}</td>
-                  <td>
-                    <button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>
-                      {p.disponible ? <Power color="var(--success)"/> : <PowerOff color="var(--danger)"/>}
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'productos', p.id))}>
-                      <Trash2 color="var(--danger)"/>
-                    </button>
-                  </td>
+          <div style={{marginTop: '40px', overflowX: 'auto'}}>
+            <table className="tabla-admin">
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {productos.map(p => (
+                  <tr key={p.id}>
+                    <td><img src={p.img} alt={p.nombre} style={{width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover'}} /></td>
+                    <td style={{fontWeight: '600'}}>{p.nombre}</td>
+                    <td>S/ {p.precio.toFixed(2)}</td>
+                    <td>
+                      <button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>
+                        {p.disponible ? <Power color="#22c55e"/> : <PowerOff color="#ef4444"/>}
+                      </button>
+                    </td>
+                    <td>
+                      <button className="btn-back-inline" onClick={() => { if(window.confirm('¿Eliminar?')) deleteDoc(doc(db, 'productos', p.id)) }}>
+                        <Trash2 color="#ef4444"/>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -105,9 +144,9 @@ const Admin = ({ seccion }) => {
             <h2>Registrar Admin</h2>
             <div className="input-group">
               <Mail className="input-icon"/>
-              <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email" required />
+              <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Email del nuevo administrador" required />
             </div>
-            <button className="btn-login-submit" style={{width: '100%'}}><UserPlus size={18}/> Agregar</button>
+            <button className="btn-login-submit" style={{width: '100%'}}><UserPlus size={18}/> Agregar Acceso</button>
           </form>
           <table className="tabla-admin">
             <thead><tr><th>Email</th><th>Eliminar</th></tr></thead>
@@ -117,7 +156,7 @@ const Admin = ({ seccion }) => {
                   <td>{u.email}</td>
                   <td>
                     <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}>
-                      <Trash2 color="var(--danger)"/>
+                      <Trash2 color="#ef4444"/>
                     </button>
                   </td>
                 </tr>
@@ -130,17 +169,29 @@ const Admin = ({ seccion }) => {
       {/* SECCIÓN PEDIDOS */}
       {seccion === 'pedidos' && (
         <div className="productos-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          {pedidos.map(p => (
+          {pedidos.length === 0 ? <p style={{textAlign: 'center', width: '100%'}}>No hay pedidos pendientes</p> : 
+          pedidos.map(p => (
             <div key={p.id} className="producto-card">
               <div className="msg-box" style={{boxShadow: 'none', border: 'none', padding: '10px'}}>
-                <h3 style={{margin: '0 0 5px 0'}}>{p.cliente.nombre}</h3>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <h3 style={{margin: '0 0 5px 0'}}>{p.cliente.nombre}</h3>
+                    <span style={{fontSize: '0.8rem', color: '#888'}}>{p.fecha?.toDate().toLocaleTimeString()}</span>
+                </div>
                 <p className="text-muted" style={{fontSize: '0.9rem'}}>{p.cliente.direccion}</p>
                 <div className="precio-tag">Total: S/ {p.total.toFixed(2)}</div>
-                <p style={{marginTop: '10px'}}>Estado: <strong>{p.estado}</strong></p>
+                
+                <div style={{margin: '10px 0', fontSize: '0.85rem', background: '#f9f9f9', padding: '5px', borderRadius: '5px'}}>
+                    <strong>Detalle:</strong>
+                    {p.productos.map((prod, idx) => (
+                        <div key={idx}>- {prod.nombre} (S/ {prod.precio})</div>
+                    ))}
+                </div>
+
+                <p>Estado: <span className={`badge-${p.estado}`} style={{textTransform: 'uppercase', fontWeight: 'bold'}}>{p.estado}</span></p>
                 <div className="modal-buttons" style={{marginTop: '15px'}}>
                   <button className="btn-no" onClick={() => cambiarEstado(p.id, 'preparando')} title="Cocina"><ChefHat size={16}/></button>
                   <button className="btn-no" onClick={() => cambiarEstado(p.id, 'enviado')} title="Ruta"><Truck size={16}/></button>
-                  <button className="btn-yes" style={{background: 'var(--success)'}} onClick={() => cambiarEstado(p.id, 'entregado')} title="OK"><CheckCircle size={16}/></button>
+                  <button className="btn-yes" style={{background: '#22c55e', color: 'white'}} onClick={() => cambiarEstado(p.id, 'entregado')} title="OK"><CheckCircle size={16}/></button>
                 </div>
               </div>
             </div>
