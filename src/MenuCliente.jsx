@@ -11,7 +11,8 @@ import {
   User,
   Phone,
   MapPin,
-  Plus
+  Plus,
+  CheckCircle
 } from 'lucide-react';
 
 const MenuCliente = () => {
@@ -20,6 +21,7 @@ const MenuCliente = () => {
   const [carrito, setCarrito] = useState([]);
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [pedidoExitoso, setPedidoExitoso] = useState(false);
 
   // Datos del cliente
   const [nombre, setNombre] = useState('');
@@ -53,10 +55,8 @@ const MenuCliente = () => {
   const total = carrito.reduce((acc, item) => acc + item.precio, 0);
 
   const enviarPedido = async () => {
-    if (!nombre || !telefono || !direccion) {
-      alert("Completa todos los datos");
-      return;
-    }
+    if (!nombre || !telefono || !direccion) return;
+    
     setEnviando(true);
     try {
       await addDoc(collection(db, "pedidos"), {
@@ -66,7 +66,8 @@ const MenuCliente = () => {
         estado: "pendiente",
         fecha: new Date()
       });
-      alert("¡Pedido enviado correctamente! Pronto nos comunicaremos contigo.");
+      
+      // Limpiar estados
       setCarrito([]);
       setNombre('');
       setTelefono('');
@@ -74,15 +75,19 @@ const MenuCliente = () => {
       setMostrarFormulario(false);
       setVerCarrito(false);
       setCategoriaActual(null);
+      
+      // Mostrar notificación de éxito
+      setPedidoExitoso(true);
+      setTimeout(() => setPedidoExitoso(false), 4000);
+
     } catch (error) {
-      console.error(error);
-      alert("Error al enviar pedido");
+      console.error("Error al enviar pedido:", error);
     } finally {
       setEnviando(false);
     }
   };
 
-  /* --- VISTA DE CATEGORÍAS (PRINCIPAL) --- */
+  /* --- VISTA 1: CATEGORÍAS (Respetando Círculos de 220px) --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container view-principal">
@@ -90,9 +95,7 @@ const MenuCliente = () => {
           
           <div className="header-brand">
             <h1 className="titulo-principal">Nuestro Menú</h1>
-            <p className="subtitulo-principal" style={{textAlign: 'center', color: 'var(--text-muted)'}}>
-              Selecciona una categoría para ver los platos
-            </p>
+            <p className="text-muted">Selecciona una categoría para ver los platos</p>
           </div>
 
           <div className="categorias-grid-principal">
@@ -108,7 +111,7 @@ const MenuCliente = () => {
               <div className="categoria-circulo bg-cafe">
                 <Coffee size={90} className="icon-main" />
               </div>
-              <span className="categoria-label">Café</span>
+              <span className="categoria-label">Cafetería</span>
             </div>
 
             <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
@@ -133,107 +136,118 @@ const MenuCliente = () => {
             className="btn-login-submit" 
             onClick={() => setVerCarrito(true)}
             style={{
-              position: 'fixed',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '90%',
-              maxWidth: '400px',
-              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)',
-              zIndex: 100
+              position: 'fixed', 
+              bottom: '20px', 
+              left: '50%', 
+              transform: 'translateX(-50%)', 
+              width: '90%', 
+              maxWidth: '400px', 
+              zIndex: 1100,
+              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)'
             }}
           >
             <ShoppingCart size={22} />
             <span>Ver mi pedido (S/ {total.toFixed(2)})</span>
           </button>
         )}
+
+        {/* Notificación de éxito con tu animación 'aparecer' */}
+        {pedidoExitoso && (
+          <div className="overlay-msg">
+            <div className="mensaje-alerta exito" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <CheckCircle size={50} color="white" />
+              <div style={{ textAlign: 'center' }}>
+                ¡Pedido enviado con éxito!<br/>
+                Pronto nos comunicaremos contigo.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  /* --- VISTA DE PRODUCTOS POR CATEGORÍA --- */
+  /* --- VISTA 2: LISTADO DE PRODUCTOS --- */
   return (
     <div className="admin-container">
-      <div className="productos-wrapper">
-        <div className="view-header" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-          <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
-            <ArrowLeft size={24} />
-          </button>
-          <h2 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-main)' }}>{categoriaActual}</h2>
-        </div>
+      <div className="view-header" style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px'}}>
+        <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
+          <ArrowLeft size={24} />
+        </button>
+        <h2 className="titulo-principal" style={{ fontSize: '2rem', margin: 0 }}>{categoriaActual}</h2>
+      </div>
 
-        <div className="productos-grid">
-          {productos.map(p => (
+      <div className="productos-grid">
+        {productos.length === 0 ? (
+          <p className="text-muted" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}>
+            No hay productos disponibles en esta categoría.
+          </p>
+        ) : (
+          productos.map(p => (
             <div key={p.id} className="producto-card">
-              {/* MEJORA: Clase para imagen uniforme desde App.css */}
-              <img src={p.img} alt={p.nombre} className="img-producto-cliente" />
-              
-              <div style={{ padding: '16px' }}>
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem' }}>{p.nombre}</h3>
+              <img src={p.img} alt={p.nombre} style={{width: '100%', height: '200px', objectFit: 'cover'}} />
+              <div style={{ padding: '20px' }}>
+                <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '1.2rem' }}>
+                  <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.3rem' }}>
                     S/ {p.precio.toFixed(2)}
                   </span>
-                  <button 
-                    className="btn-back-inline" 
-                    style={{ background: 'var(--primary)', color: 'white' }}
-                    onClick={() => agregarAlCarrito(p)}
-                  >
-                    <Plus size={20} />
+                  <button className="btn-back-inline" style={{ background: 'var(--primary)', color: 'white' }} onClick={() => agregarAlCarrito(p)}>
+                    <Plus size={22} />
                   </button>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </div>
 
-      {/* MODAL: CARRITO */}
+      {/* MODAL CARRITO */}
       {verCarrito && (
-        <div className="modal-overlay">
+        <div className="overlay-msg">
           <div className="msg-box">
-            <h2 style={{ marginBottom: '20px' }}>Tu Pedido</h2>
-            <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '20px' }}>
+            <h2 className="titulo-principal" style={{ fontSize: '1.8rem', marginBottom: '20px' }}>Tu Pedido</h2>
+            <div style={{ maxHeight: '350px', overflowY: 'auto', marginBottom: '20px', paddingRight: '5px' }}>
               {carrito.map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span>{item.nombre}</span>
-                  <strong>S/ {item.precio.toFixed(2)}</strong>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ fontWeight: '500' }}>{item.nombre}</span>
+                  <strong style={{ color: 'var(--text-main)' }}>S/ {item.precio.toFixed(2)}</strong>
                 </div>
               ))}
             </div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '25px' }}>
+            <div style={{ fontSize: '1.6rem', fontWeight: '900', marginBottom: '25px', color: 'var(--primary)' }}>
               Total: S/ {total.toFixed(2)}
             </div>
             <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setVerCarrito(false)}>Atrás</button>
+              <button className="btn-no" onClick={() => setVerCarrito(false)}>Cerrar</button>
               <button className="btn-yes" style={{ background: 'var(--success)' }} onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL: FORMULARIO ENTREGA */}
+      {/* MODAL FORMULARIO ENTREGA */}
       {mostrarFormulario && (
-        <div className="modal-overlay">
+        <div className="overlay-msg">
           <div className="msg-box">
-            <h2 style={{ marginBottom: '20px' }}>Datos de entrega</h2>
+            <h2 className="titulo-principal" style={{ fontSize: '1.8rem', marginBottom: '20px' }}>Datos de Entrega</h2>
             <div className="login-form">
               <div className="input-group">
                 <User className="input-icon" size={18} />
-                <input placeholder="Tu nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
+                <input placeholder="Nombre completo" value={nombre} onChange={e => setNombre(e.target.value)} required />
               </div>
               <div className="input-group">
                 <Phone className="input-icon" size={18} />
-                <input type="tel" placeholder="WhatsApp (9 dígitos)" value={telefono} onChange={e => setTelefono(e.target.value)} />
+                <input type="tel" placeholder="WhatsApp / Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} required />
               </div>
               <div className="input-group">
                 <MapPin className="input-icon" size={18} />
-                <input placeholder="Dirección completa" value={direccion} onChange={e => setDireccion(e.target.value)} />
+                <input placeholder="Dirección de entrega" value={direccion} onChange={e => setDireccion(e.target.value)} required />
               </div>
-              <div className="modal-buttons" style={{ marginTop: '20px' }}>
-                <button className="btn-no" onClick={() => setMostrarFormulario(false)}>Atrás</button>
+              <div className="modal-buttons">
+                <button className="btn-no" type="button" onClick={() => setMostrarFormulario(false)}>Atrás</button>
                 <button 
-                  className="btn-login-submit" 
+                  className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} 
                   onClick={enviarPedido} 
                   disabled={enviando}
                 >

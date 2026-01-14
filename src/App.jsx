@@ -59,17 +59,15 @@ function App() {
 
   return (
     <div className="App">
-      {/* S2: BARRA SUPERIOR (TOP BAR) */}
+      {/* SESIÓN 2: BARRA SUPERIOR */}
       <nav className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
             {!authState.isAdmin ? (
-              /* Botón para regresar al panel si el usuario ya está logueado pero está viendo como cliente */
               <button className="btn-top-gestion active" onClick={() => alternarModoAdmin(true)}>
                 <Settings size={18} /> Volver al Panel
               </button>
             ) : (
-              /* Navegación interna del Panel Admin */
               <>
                 <button className="btn-back-inline" title="Vista Cliente" onClick={() => alternarModoAdmin(false)}>
                   <ArrowLeft size={20} />
@@ -91,16 +89,15 @@ function App() {
             </button>
           </div>
         ) : (
-          /* Botón de Login para visitantes */
           <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
             <LogIn size={18} /> Admin
           </button>
         )}
       </nav>
 
-      {/* S8: MODALES Y ALERTAS */}
+      {/* SESIÓN 4: MODALES Y ALERTAS (Usando overlay-msg de tu CSS) */}
       {mostrarLogin && (
-        <div className="modal-overlay">
+        <div className="overlay-msg">
           <div className="msg-box">
             <button className="btn-back-inline" onClick={() => setMostrarLogin(false)} style={{position: 'absolute', top: '15px', right: '15px'}}>
               <X size={20}/>
@@ -111,20 +108,18 @@ function App() {
       )}
 
       {mensajeBienvenida && (
-        <div className="modal-overlay">
-          <div className="mensaje-alerta exito" style={{ textAlign: 'center' }}>
-             <Clock size={24} style={{ marginBottom: '10px' }} />
-             <pre style={{ margin: 0, fontSiz: '0.9rem', fontFamily: 'inherit' }}>{mensajeBienvenida}</pre>
+        <div className="overlay-msg">
+          <div className="mensaje-alerta exito">
+             <Clock size={24} />
+             <pre>{mensajeBienvenida}</pre>
           </div>
         </div>
       )}
 
       {confirmarSalida && (
-        <div className="modal-overlay">
+        <div className="overlay-msg">
           <div className="msg-box">
-            <div style={{ marginBottom: '15px' }}>
-              <LogOut size={40} color="var(--danger)" style={{ margin: '0 auto' }} />
-            </div>
+            <LogOut size={40} color="var(--danger)" style={{ marginBottom: '15px' }} />
             <h3>¿Cerrar Sesión?</h3>
             <p className="text-muted">Deberás ingresar tus credenciales nuevamente.</p>
             <div className="modal-buttons">

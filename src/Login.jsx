@@ -21,35 +21,28 @@ function Login({ alCerrar, activarAdmin }) {
     setCargando(true);
 
     try {
-      // 1️⃣ Login Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
 
-      // 2️⃣ Validación ADMIN por email
-      // Esto coincide con tu lista y con los IDs que creamos en la colección 'usuarios_admin'
       if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         await signOut(auth);
-        setError('Acceso denegado: este usuario no tiene permisos de administrador.');
+        setError('Acceso denegado: no tienes permisos de administrador.');
         setCargando(false);
         return;
       }
 
-      // 3️⃣ ÉXITO: 
-      // Guardamos en localStorage antes de activar para asegurar persistencia
       localStorage.setItem('esAdmin', 'true');
-      
       if (activarAdmin) activarAdmin(); 
       alCerrar();
 
     } catch (err) {
       console.error(err);
-      // Manejo de errores detallado (Actualizado para Firebase v9+)
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos');
       } else if (err.code === 'auth/too-many-requests') {
         setError('Demasiados intentos. Intenta más tarde.');
       } else {
-        setError('Error al intentar iniciar sesión. Reintenta.');
+        setError('Error al iniciar sesión. Reintenta.');
       }
     } finally {
       setCargando(false);
@@ -58,22 +51,22 @@ function Login({ alCerrar, activarAdmin }) {
 
   return (
     <div className="login-content">
-      {/* Icono de cabecera dinámico según el error */}
-      <div className="icon-circle-warning">
-        {error && error.includes('Acceso') ? (
-          <ShieldAlert size={40} color="var(--danger)" />
+      {/* Icono dinámico según estado */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        {error ? (
+          <ShieldAlert size={50} color="var(--danger)" />
         ) : (
-          <Lock size={40} color="var(--primary)" />
+          <Lock size={50} color="var(--primary)" />
         )}
       </div>
 
-      <div className="header-brand" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: '0', color: 'var(--text-main)' }}>Acceso Admin</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Ingresa tus credenciales autorizadas</p>
+      <div className="header-brand">
+        <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Acceso Admin</h2>
+        <p className="text-muted">Ingresa tus credenciales autorizadas</p>
       </div>
 
       <form onSubmit={manejarLogin} className="login-form">
-        {/* Grupo: Email */}
+        {/* Email */}
         <div className="input-group">
           <Mail size={18} className="input-icon" />
           <input
@@ -86,7 +79,7 @@ function Login({ alCerrar, activarAdmin }) {
           />
         </div>
 
-        {/* Grupo: Contraseña */}
+        {/* Contraseña */}
         <div className="input-group">
           <Lock size={18} className="input-icon" />
           <input
@@ -99,36 +92,21 @@ function Login({ alCerrar, activarAdmin }) {
           />
         </div>
 
-        {/* Caja de Error */}
+        {/* Caja de Error usando clases de tu CSS */}
         {error && (
-          <div style={{ 
-            background: '#fef2f2', 
-            border: '1px solid var(--danger)', 
-            padding: '12px', 
-            borderRadius: 'var(--radius)',
-            marginTop: '10px'
-          }}>
-            <p style={{ 
-              color: 'var(--danger)', 
-              fontSize: '0.85rem', 
-              margin: 0, 
-              textAlign: 'center',
-              fontWeight: '500'
-            }}>
-              {error}
-            </p>
+          <div className="mensaje-alerta error" style={{ padding: '10px', fontSize: '0.9rem', position: 'relative' }}>
+            {error}
           </div>
         )}
 
-        {/* Botón de envío */}
+        {/* Botón de envío con Spinner de tu CSS */}
         <button 
           type="submit" 
-          className="btn-login-submit" 
+          className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
           disabled={cargando}
-          style={{ marginTop: '10px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
         >
           {cargando ? (
-            'Verificando...'
+            <div className="spinner-loader"></div>
           ) : (
             <>
               <LogIn size={20} /> 
