@@ -133,44 +133,47 @@ body {
   border-radius: var(--radius); font-weight: 700; cursor: pointer;
   display: flex; justify-content: center; align-items: center; gap: 10px;
 }
-/* --- SESIÓN 8: ESTILO FINAL - IGUAL A TU IMAGEN --- */
+/* --- SESIÓN 8: ESTILO FINAL - CORREGIDO PARA CELULAR Y ESPACIOS --- */
 
-/* Forzamos que el título suba quitando el espacio del padre */
+/* 1. PEGAR TÍTULO TOTALMENTE ARRIBA */
 .admin-container.view-principal {
-  padding-top: 5px !important;
-  margin-top: 0 !important;
+  padding-top: 0 !important; /* Quitamos todo el relleno superior */
+  margin-top: -10px !important; /* Subimos un poco más el contenedor */
 }
 
 .menu-principal-wrapper {
   text-align: center;
+  padding-top: 0 !important;
+}
+
+.header-brand {
+  margin-top: 0 !important;
+  margin-bottom: 10px !important; /* Menos espacio debajo del título */
 }
 
 .titulo-principal {
   margin: 0 !important;
+  padding-top: 0 !important;
   font-size: 2.8rem;
   font-weight: 800;
   color: #1e293b;
 }
 
-.subtitulo-principal {
-  margin-top: 5px;
-  color: #64748b;
-  font-size: 1.1rem;
-}
-
-/* Cuadrícula de 2 columnas */
+/* 2. CÍRCULOS MÁS PEGADOS (Reducimos el gap y el margin-top) */
 .categorias-grid-principal {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 30px !important;
+  gap: 15px !important; /* Antes era 30px, ahora están más juntos */
   max-width: 600px;
-  margin: 30px auto 0 !important;
-  padding: 0 20px;
+  margin: 10px auto 0 !important; /* Bajamos de 30px a 10px el margen superior */
+  padding: 0 10px;
+  justify-content: center !important; /* Centra el grupo de columnas */
+  justify-items: center !important;    /* Centra cada círculo en su columna */
 }
 
-/* Círculos Gigantes y Suaves */
+/* MANTENEMOS TUS COLORES Y TAMAÑOS (No tocados) */
 .categoria-circulo {
-  width: 220px !important; /* Tamaño aumentado para destacar */
+  width: 220px !important;
   height: 220px !important;
   border-radius: 50%;
   display: flex;
@@ -182,7 +185,7 @@ body {
   transition: transform 0.2s ease;
 }
 
-/* Colores Pastel Suaves */
+/* TUS COLORES (Intactos como pediste) */
 .bg-comidas { background-color: #ffffff !important; color: #f59e0b !important; }
 .bg-cafe    { background-color: #feffff !important; color: #6367f1 !important; }
 .bg-bebidas { background-color: #fffffe !important; color: #06b6d4 !important; }
@@ -196,18 +199,38 @@ body {
 .categoria-label {
   font-size: 1.4rem;
   font-weight: 700;
-  margin-top: 15px;
+  margin-top: 10px; /* Un poco más pegado al círculo */
   display: block;
   color: #1e293b;
 }
 
-/* Ajustes para móviles */
+/* 3. SOLUCIÓN DESCENTRADO EN CELULAR */
 @media (max-width: 480px) {
+  .admin-container.view-principal {
+    padding-top: 0 !important;
+  }
+  
+  .titulo-principal {
+    font-size: 2.2rem; /* Un poco más pequeño para que no ocupe tanto arriba */
+  }
+
   .categorias-grid-principal {
-    grid-template-columns: repeat(2, 1fr) !important; /* Mantiene 2 columnas */
-    gap: 15px !important; /* Espacio pequeño entre círculos */
-    width: 100% !important; /* Ocupa todo el ancho del celular */
-    padding: 10px !important; /* Margen interno igual en ambos lados */
-    justify-items: center !important; /* ESTA LÍNEA centra los círculos */
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important; /* Aún más pegados en celular */
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 10px 0 !important; /* Elimina márgenes laterales que descentran */
+    justify-content: center !important;
+  }
+
+  .categoria-circulo {
+    width: 160px !important; /* Ajuste para que quepan los dos en pantalla */
+    height: 160px !important;
+  }
+
+  .icon-main {
+    width: 70px !important;
+    height: 70px !important;
   }
 }
