@@ -1,8 +1,8 @@
-/* =========================================
-   APP.CSS - VERSIÓN FINAL ORGANIZADA
-   ========================================= */
+/* =========================================================
+   APP.CSS - VERSIÓN MAESTRA ORGANIZADA (2026)
+   ========================================================= */
 
-/* --- SESIÓN 1: VARIABLES Y RESET --- */
+/* --- S1: VARIABLES, RESET Y FUENTES --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -33,7 +33,7 @@ body {
   line-height: 1.5;
 }
 
-/* --- SESIÓN 2: BARRA SUPERIOR (TOP BAR) --- */
+/* --- S2: NAVEGACIÓN (TOP BAR) --- */
 .top-bar {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -66,41 +66,61 @@ body {
 .btn-top-admin { color: var(--danger); border-color: #fee2e2; }
 .btn-top-admin:hover { background: #fef2f2; }
 
+/* --- S3: BOTONES DE ACCIÓN Y ESTADOS --- */
 .btn-back-inline {
   background: #f1f5f9; border: none; width: 40px; height: 40px;
   border-radius: 50%; cursor: pointer; display: flex;
   align-items: center; justify-content: center; transition: all 0.2s;
 }
 
-/* --- SESIÓN 3: CATEGORÍAS (ESTILO BASE) --- */
-.categorias-container {
-  display: flex; justify-content: center; flex-wrap: wrap; gap: 40px; padding: 40px 20px;
+.btn-edit { color: var(--primary); }
+.btn-edit:hover { background: #e0e7ff; transform: scale(1.05); }
+
+.badge-preparando { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; }
+.badge-enviado { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; }
+.badge-entregado { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; }
+
+/* --- S4: VISTA PRINCIPAL (TÍTULO Y CÍRCULOS) --- */
+.admin-container.view-principal { padding-top: 0 !important; margin-top: -10px !important; }
+
+.header-brand { margin-top: 0 !important; margin-bottom: 10px !important; }
+
+.titulo-principal {
+  margin: 0 !important;
+  padding-top: 0 !important;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
 }
 
-.categoria-item {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 15px; cursor: pointer; transition: transform 0.3s ease;
+.categorias-grid-principal {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 15px !important;
+  max-width: 600px;
+  margin: 10px auto 0 !important;
+  padding: 0 10px;
+  justify-content: center !important;
+  justify-items: center !important;
 }
-.categoria-item:hover { transform: translateY(-8px); }
 
-/* --- SESIÓN 4: MODALES Y DIÁLOGOS --- */
-.overlay-msg {
-  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(6px); display: flex; justify-content: center;
-  align-items: center; z-index: 2000; padding: 20px;
+.categoria-circulo {
+  width: 220px !important; height: 220px !important; border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  border: none !important; margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04); transition: transform 0.2s ease;
 }
-.msg-box {
-  background: white; padding: 32px; border-radius: 24px; box-shadow: var(--shadow-lg);
-  width: 100%; max-width: 420px; position: relative;
-  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center;
-}
-.modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
-.btn-no { background: #f1f5f9; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
-.btn-yes { background: var(--danger); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 
-@keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.bg-comidas { background-color: #ffffff !important; color: #f59e0b !important; }
+.bg-cafe     { background-color: #feffff !important; color: #6367f1 !important; }
+.bg-bebidas { background-color: #fffffe !important; color: #06b6d4 !important; }
+.bg-entradas { background-color: #fefefe !important; color: #ec4998 !important; }
 
-/* --- SESIÓN 5: PANEL ADMIN Y TABLAS --- */
+.icon-main { width: 90px !important; height: 90px !important; }
+.categoria-label { font-size: 1.4rem; font-weight: 700; margin-top: 10px; display: block; color: #1e293b; text-align: center; }
+
+/* --- S5: TABLAS Y GESTIÓN ADMIN --- */
 .admin-container { padding: 40px 20px; }
 .tabla-admin {
   width: 100%; background: white; border-radius: var(--radius);
@@ -109,7 +129,25 @@ body {
 .tabla-admin th { background: #f1f5f9; padding: 16px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); }
 .tabla-admin td { padding: 16px; border-bottom: 1px solid var(--border); }
 
-/* --- SESIÓN 6: TARJETAS DE PRODUCTO --- */
+/* --- S6: IMÁGENES (TAMAÑO UNIFORME) --- */
+/* Imagen en tablas de administración */
+.img-tabla-admin {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Imagen en vista de clientes (Menú) */
+.img-producto-cliente {
+  width: 100%;
+  height: 200px; /* Tamaño ideal para cuadrar imágenes de platos */
+  object-fit: cover;
+  border-radius: 20px 20px 0 0;
+}
+
+/* --- S7: GRID DE PRODUCTOS (CATÁLOGO) --- */
 .productos-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px; padding: 20px;
@@ -120,171 +158,32 @@ body {
 }
 .producto-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 
-/* --- SESIÓN 7: LOGIN Y FORMULARIOS --- */
-.login-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
-.input-group { position: relative; display: flex; align-items: center; }
-.input-icon { position: absolute; left: 14px; color: var(--text-muted); }
-.input-group input {
-  width: 100%; padding: 14px 14px 14px 45px;
-  border: 2px solid var(--border); border-radius: var(--radius); font-size: 1rem;
-}
-.btn-login-submit {
-  background: var(--primary); color: white; padding: 14px; border: none;
-  border-radius: var(--radius); font-weight: 700; cursor: pointer;
-  display: flex; justify-content: center; align-items: center; gap: 10px;
-}
-/* --- SESIÓN 8: ESTILO FINAL - CORREGIDO PARA CELULAR Y ESPACIOS --- */
-
-/* 1. PEGAR TÍTULO TOTALMENTE ARRIBA */
-.admin-container.view-principal {
-  padding-top: 0 !important; /* Quitamos todo el relleno superior */
-  margin-top: -10px !important; /* Subimos un poco más el contenedor */
-}
-
-.menu-principal-wrapper {
-  text-align: center;
-  padding-top: 0 !important;
-}
-
-.header-brand {
-  margin-top: 0 !important;
-  margin-bottom: 10px !important; /* Menos espacio debajo del título */
-}
-
-.titulo-principal {
-  margin: 0 !important;
-  padding-top: 0 !important;
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #1e293b;
-}
-
-/* 2. CÍRCULOS MÁS PEGADOS (Reducimos el gap y el margin-top) */
-.categorias-grid-principal {
-  display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 15px !important; /* Antes era 30px, ahora están más juntos */
-  max-width: 600px;
-  margin: 10px auto 0 !important; /* Bajamos de 30px a 10px el margen superior */
-  padding: 0 10px;
-  justify-content: center !important; /* Centra el grupo de columnas */
-  justify-items: center !important;    /* Centra cada círculo en su columna */
-}
-
-/* MANTENEMOS TUS COLORES Y TAMAÑOS (No tocados) */
-.categoria-circulo {
-  width: 220px !important;
-  height: 220px !important;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: none !important;
-  margin: 0 auto;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-  transition: transform 0.2s ease;
-}
-
-/* TUS COLORES (Intactos como pediste) */
-.bg-comidas { background-color: #ffffff !important; color: #f59e0b !important; }
-.bg-cafe    { background-color: #feffff !important; color: #6367f1 !important; }
-.bg-bebidas { background-color: #fffffe !important; color: #06b6d4 !important; }
-.bg-entradas { background-color: #fefefe !important; color: #ec4998 !important; }
-
-.icon-main {
-  width: 90px !important;
-  height: 90px !important;
-}
-
-.categoria-label {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-top: 10px; /* Un poco más pegado al círculo */
-  display: block;
-  color: #1e293b;
-}
-
-/* 3. SOLUCIÓN DESCENTRADO EN CELULAR */
-@media (max-width: 480px) {
-  .admin-container.view-principal {
-    padding-top: 0 !important;
-  }
-  
-  .titulo-principal {
-    font-size: 2.2rem; /* Un poco más pequeño para que no ocupe tanto arriba */
-  }
-
-  .categorias-grid-principal {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important; /* Aún más pegados en celular */
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 10px 0 !important; /* Elimina márgenes laterales que descentran */
-    justify-content: center !important;
-  }
-
-  .categoria-circulo {
-    width: 160px !important; /* Ajuste para que quepan los dos en pantalla */
-    height: 160px !important;
-  }
-
-  .icon-main {
-    width: 70px !important;
-    height: 70px !important;
-  }
-}
-/* --- ANIMACIÓN DE CARGA PARA BOTONES --- */
-
-/* Contenedor del spinner */
-.spinner-loader {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 0.8s ease-in-out infinite;
-  margin: 0 auto;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Efecto visual cuando el botón está cargando */
-.btn-loading {
-  opacity: 0.8;
-  cursor: not-allowed;
-  filter: grayscale(0.5);
-}
-/* Esto centra el mensaje en toda la pantalla */
+/* --- S8: MODALES, ALERTAS Y SPINNERS --- */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Fondo oscuro transparente */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
+  display: flex; justify-content: center; align-items: center; z-index: 9999;
 }
 
 .mensaje-alerta {
-  padding: 20px 50px;
-  border-radius: 15px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  animation: aparecer 0.3s ease-out;
+  padding: 20px 50px; border-radius: 15px; font-size: 1.2rem; font-weight: bold;
+  color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: aparecer 0.3s ease-out;
+}
+.mensaje-alerta.exito { background-color: #22c55e; }
+.mensaje-alerta.error { background-color: #ef4444; }
+
+.spinner-loader {
+  width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite;
 }
 
-.mensaje-alerta.exito { background-color: #22c55e; } /* Verde */
-.mensaje-alerta.error { background-color: #ef4444; } /* Rojo */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes aparecer { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 
-@keyframes aparecer {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
+/* --- S9: RESPONSIVO (CELULARES) --- */
+@media (max-width: 480px) {
+  .titulo-principal { font-size: 2.2rem; }
+  .categorias-grid-principal { gap: 10px !important; width: 100% !important; margin: 10px 0 !important; }
+  .categoria-circulo { width: 160px !important; height: 160px !important; }
+  .icon-main { width: 70px !important; height: 70px !important; }
+  .img-producto-cliente { height: 160px; } /* Más pequeño para móviles */
 }

@@ -30,7 +30,6 @@ function App() {
       }
       
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
-      // Mantenemos al usuario y su estado de admin
       setAuthState({ loading: false, user: usuario, isAdmin: eraAdmin });
 
       if (!bienvenidaMostrada) {
@@ -51,27 +50,30 @@ function App() {
     setSeccion('menu');
   };
 
+  const alternarModoAdmin = (valor) => {
+    setAuthState(p => ({ ...p, isAdmin: valor }));
+    localStorage.setItem('esAdmin', valor.toString());
+  };
+
   if (authState.loading) return null;
 
   return (
     <div className="App">
-      {/* BARRA SUPERIOR - Se mantiene igual */}
-      <div className="top-bar">
+      {/* S2: BARRA SUPERIOR (TOP BAR) */}
+      <nav className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
             {!authState.isAdmin ? (
-              <button className="btn-top-gestion active" onClick={() => {
-                setAuthState(p => ({ ...p, isAdmin: true }));
-                localStorage.setItem('esAdmin', 'true');
-              }}>
+              /* Botón para regresar al panel si el usuario ya está logueado pero está viendo como cliente */
+              <button className="btn-top-gestion active" onClick={() => alternarModoAdmin(true)}>
                 <Settings size={18} /> Volver al Panel
               </button>
             ) : (
+              /* Navegación interna del Panel Admin */
               <>
-                <button className="btn-back-inline" onClick={() => {
-                  setAuthState(p => ({ ...p, isAdmin: false }));
-                  localStorage.setItem('esAdmin', 'false');
-                }}><ArrowLeft size={20} /></button>
+                <button className="btn-back-inline" title="Vista Cliente" onClick={() => alternarModoAdmin(false)}>
+                  <ArrowLeft size={20} />
+                </button>
 
                 <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} onClick={() => setSeccion('menu')}>
                   <Settings size={18} /> <span>Menú</span>
@@ -84,42 +86,44 @@ function App() {
                 </button>
               </>
             )}
-            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}><LogOut size={18} /></button>
+            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
+              <LogOut size={18} />
+            </button>
           </div>
         ) : (
-          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}><LogIn size={18} /> Admin</button>
+          /* Botón de Login para visitantes */
+          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
+            <LogIn size={18} /> Admin
+          </button>
         )}
-      </div>
+      </nav>
 
-      {/* MODALES - Se mantienen igual */}
+      {/* S8: MODALES Y ALERTAS */}
       {mostrarLogin && (
-        <div className="overlay-msg">
+        <div className="modal-overlay">
           <div className="msg-box">
-            <button className="btn-back-inline" onClick={() => setMostrarLogin(false)} style={{position: 'absolute', top: '15px', right: '15px'}}><X size={20}/></button>
-            <Login alCerrar={() => setMostrarLogin(false)} activarAdmin={() => {
-              setAuthState(p => ({ ...p, isAdmin: true }));
-              localStorage.setItem('esAdmin', 'true');
-            }} />
+            <button className="btn-back-inline" onClick={() => setMostrarLogin(false)} style={{position: 'absolute', top: '15px', right: '15px'}}>
+              <X size={20}/>
+            </button>
+            <Login alCerrar={() => setMostrarLogin(false)} activarAdmin={() => alternarModoAdmin(true)} />
           </div>
         </div>
       )}
 
       {mensajeBienvenida && (
-        <div className="overlay-msg">
-          <div className="msg-box">
-            <div className="icon-circle-warning">
-               <Clock size={40} color="var(--primary)" />
-            </div>
-            <pre style={{fontWeight: '700', whiteSpace: 'pre-wrap'}}>{mensajeBienvenida}</pre>
+        <div className="modal-overlay">
+          <div className="mensaje-alerta exito" style={{ textAlign: 'center' }}>
+             <Clock size={24} style={{ marginBottom: '10px' }} />
+             <pre style={{ margin: 0, fontSiz: '0.9rem', fontFamily: 'inherit' }}>{mensajeBienvenida}</pre>
           </div>
         </div>
       )}
 
       {confirmarSalida && (
-        <div className="overlay-msg">
+        <div className="modal-overlay">
           <div className="msg-box">
-            <div className="icon-circle-warning">
-              <LogOut size={35} color="var(--danger)" />
+            <div style={{ marginBottom: '15px' }}>
+              <LogOut size={40} color="var(--danger)" style={{ margin: '0 auto' }} />
             </div>
             <h3>¿Cerrar Sesión?</h3>
             <p className="text-muted">Deberás ingresar tus credenciales nuevamente.</p>
@@ -131,16 +135,13 @@ function App() {
         </div>
       )}
 
-      {/* CONTENIDO PRINCIPAL - Mejora aquí para evitar errores de permisos */}
-      <main className="admin-container">
-        <div className="content-wrapper">
-          {/* Solo mostramos Admin si el usuario está REALMENTE cargado en Firebase */}
-          {authState.user && authState.isAdmin ? (
-            <Admin seccion={seccion} user={authState.user} /> 
-          ) : (
-            <MenuCliente />
-          )}
-        </div>
+      {/* CONTENIDO PRINCIPAL */}
+      <main>
+        {authState.user && authState.isAdmin ? (
+          <Admin seccion={seccion} /> 
+        ) : (
+          <MenuCliente />
+        )}
       </main>
     </div>
   );
