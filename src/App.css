@@ -183,10 +183,10 @@ body {
 }
 
 /* Colores Pastel Suaves */
-.bg-comidas { background-color: #fff8ec !important; color: #f97316 !important; }
-.bg-cafe    { background-color: #f0fdf4 !important; color: #22c55e !important; }
-.bg-bebidas { background-color: #eff6ff !important; color: #3b82f6 !important; }
-.bg-entradas { background-color: #fdf2f2 !important; color: #f43f5e !important; }
+.bg-comidas { background-color: #ffffff !important; color: #f59e0b !important; }
+.bg-cafe    { background-color: #feffff !important; color: #6367f1 !important; }
+.bg-bebidas { background-color: #fffffe !important; color: #06b6d4 !important; }
+.bg-entradas { background-color: #fefefe !important; color: #ec4998 !important; }
 
 .icon-main {
   width: 90px !important;
@@ -203,7 +203,11 @@ body {
 
 /* Ajustes para móviles */
 @media (max-width: 480px) {
-  .categoria-circulo { width: 150px !important; height: 150px !important; }
-  .icon-main { width: 70px !important; height: 70px !important; }
-  .titulo-principal { font-size: 2.2rem; }
+  .categorias-grid-principal {
+    grid-template-columns: repeat(2, 1fr) !important; /* Mantiene 2 columnas */
+    gap: 15px !important; /* Espacio pequeño entre círculos */
+    width: 100% !important; /* Ocupa todo el ancho del celular */
+    padding: 10px !important; /* Margen interno igual en ambos lados */
+    justify-items: center !important; /* ESTA LÍNEA centra los círculos */
+  }
 }
