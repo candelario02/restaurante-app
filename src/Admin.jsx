@@ -97,9 +97,20 @@ const Admin = ({ seccion }) => {
               <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
             </label>
 
-            <button className="btn-login-submit" disabled={cargando} style={{width: '100%'}}>
-              {cargando ? 'Guardando...' : <><Save size={18} style={{marginRight: '10px'}}/> Guardar Producto</>}
-            </button>
+            <button 
+  className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
+  disabled={cargando} 
+  style={{ width: '100%', position: 'relative' }}
+>
+  {cargando ? (
+    <div className="spinner-loader"></div>
+  ) : (
+    <>
+      <Save size={18} style={{ marginRight: '10px' }} /> 
+      Guardar Producto
+    </>
+  )}
+</button>
           </form>
 
           <div style={{marginTop: '40px', overflowX: 'auto'}}>

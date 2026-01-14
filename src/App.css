@@ -234,3 +234,26 @@ body {
     height: 70px !important;
   }
 }
+/* --- ANIMACIÓN DE CARGA PARA BOTONES --- */
+
+/* Contenedor del spinner */
+.spinner-loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Efecto visual cuando el botón está cargando */
+.btn-loading {
+  opacity: 0.8;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
