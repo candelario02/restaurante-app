@@ -81,10 +81,11 @@ const MenuCliente = () => {
     }
   };
 
-  /* --- VISTA DE CATEGORÍAS (Usando clases CSS) --- */
+  /* --- VISTA DE CATEGORÍAS --- */
   if (!categoriaActual) {
     return (
-      <div className="admin-container">
+      /* Se añade la clase view-principal para quitar el padding superior del admin-container */
+      <div className="admin-container view-principal">
         <div className="menu-principal-wrapper">
           
           <div className="header-brand">
@@ -96,28 +97,28 @@ const MenuCliente = () => {
             
             <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
               <div className="categoria-circulo bg-comidas">
-                <Pizza size={80} className="icon-main" />
+                <Pizza size={90} className="icon-main" />
               </div>
               <span className="categoria-label">Comidas</span>
             </div>
 
             <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}>
               <div className="categoria-circulo bg-cafe">
-                <Coffee size={80} className="icon-main" />
+                <Coffee size={90} className="icon-main" />
               </div>
               <span className="categoria-label">Café</span>
             </div>
 
             <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
               <div className="categoria-circulo bg-bebidas">
-                <Droplet size={80} className="icon-main" />
+                <Droplet size={90} className="icon-main" />
               </div>
               <span className="categoria-label">Bebidas</span>
             </div>
 
             <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}>
               <div className="categoria-circulo bg-entradas">
-                <Utensils size={80} className="icon-main" />
+                <Utensils size={90} className="icon-main" />
               </div>
               <span className="categoria-label">Entradas</span>
             </div>
@@ -164,7 +165,7 @@ const MenuCliente = () => {
         </div>
       </div>
 
-      {/* MODALES - Lógica de pedido intacta */}
+      {/* MODALES */}
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
