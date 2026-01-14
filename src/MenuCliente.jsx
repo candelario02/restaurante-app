@@ -81,102 +81,52 @@ const MenuCliente = () => {
     }
   };
 
-  /* --- VISTA DE CATEGORÍAS (Corregida para imagen 2) --- */
+  /* --- VISTA DE CATEGORÍAS (Usando clases CSS) --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container">
-        <div className="menu-principal-wrapper" style={{ maxWidth: '600px', margin: '40px auto', textAlign: 'center' }}>
+        <div className="menu-principal-wrapper">
           
-          <div className="header-brand" style={{ marginBottom: '50px' }}>
-            <h1 className="titulo-principal" style={{ fontSize: '2.5rem', fontWeight: '800' }}>Nuestro Menú</h1>
-            <p className="subtitulo-principal" style={{ opacity: 0.7 }}>Selecciona una categoría</p>
+          <div className="header-brand">
+            <h1 className="titulo-principal">Nuestro Menú</h1>
+            <p className="subtitulo-principal">Selecciona una categoría</p>
           </div>
 
-          {/* Grid de 2 columnas para que los círculos se vean grandes */}
-          <div className="categorias-grid-principal" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '30px',
-            padding: '20px'
-          }}>
+          <div className="categorias-grid-principal">
             
-            <div className="categoria-item" onClick={() => setCategoriaActual('Menu')} style={{ cursor: 'pointer' }}>
-              <div className="categoria-circulo" style={{ 
-                width: '120px', 
-                height: '120px', 
-                backgroundColor: '#FFF4E5', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto 15px',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.05)'
-              }}>
-                <Pizza size={60} color="#FF9800" />
+            <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
+              <div className="categoria-circulo bg-comidas">
+                <Pizza size={80} className="icon-main" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>Comidas</span>
+              <span className="categoria-label">Comidas</span>
             </div>
 
-            <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')} style={{ cursor: 'pointer' }}>
-              <div className="categoria-circulo" style={{ 
-                width: '120px', 
-                height: '120px', 
-                backgroundColor: '#E8F5E9', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto 15px',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.05)'
-              }}>
-                <Coffee size={60} color="#4CAF50" />
+            <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}>
+              <div className="categoria-circulo bg-cafe">
+                <Coffee size={80} className="icon-main" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>Café</span>
+              <span className="categoria-label">Café</span>
             </div>
 
-            <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')} style={{ cursor: 'pointer' }}>
-              <div className="categoria-circulo" style={{ 
-                width: '120px', 
-                height: '120px', 
-                backgroundColor: '#E3F2FD', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto 15px',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.05)'
-              }}>
-                <Droplet size={60} color="#2196F3" />
+            <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
+              <div className="categoria-circulo bg-bebidas">
+                <Droplet size={80} className="icon-main" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>Bebidas</span>
+              <span className="categoria-label">Bebidas</span>
             </div>
 
-            <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')} style={{ cursor: 'pointer' }}>
-              <div className="categoria-circulo" style={{ 
-                width: '120px', 
-                height: '120px', 
-                backgroundColor: '#FCE4EC', 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                margin: '0 auto 15px',
-                boxShadow: '0 10px 20px rgba(0,0,0,0.05)'
-              }}>
-                <Utensils size={60} color="#E91E63" />
+            <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}>
+              <div className="categoria-circulo bg-entradas">
+                <Utensils size={80} className="icon-main" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '1.2rem' }}>Entradas</span>
+              <span className="categoria-label">Entradas</span>
             </div>
 
           </div>
         </div>
 
         {carrito.length > 0 && (
-          <button 
-            className="btn-top-gestion active" 
-            style={{ position: 'fixed', bottom: '30px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, padding: '15px 30px', borderRadius: '50px' }}
-            onClick={() => setVerCarrito(true)}
-          >
+          <button className="btn-carrito-flotante" onClick={() => setVerCarrito(true)}>
             <ShoppingCart size={22} />
             <span>Mi pedido (S/ {total.toFixed(2)})</span>
           </button>
@@ -188,29 +138,25 @@ const MenuCliente = () => {
   /* --- VISTA DE PRODUCTOS --- */
   return (
     <div className="admin-container">
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+      <div className="productos-wrapper">
+        <div className="view-header">
           <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
             <ArrowLeft size={24} />
           </button>
-          <h2 style={{ fontSize: '2rem' }}>{categoriaActual}</h2>
+          <h2>{categoriaActual}</h2>
         </div>
 
         <div className="productos-grid">
           {productos.map(p => (
             <div key={p.id} className="producto-card">
-              <div className="card-img-container" style={{ height: '200px' }}>
-                <img src={p.img} alt={p.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div className="card-img-container">
+                <img src={p.img} alt={p.nombre} />
               </div>
-              <div className="card-body" style={{ padding: '20px' }}>
-                <h3 style={{ marginBottom: '10px' }}>{p.nombre}</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="precio-text" style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)' }}>
-                    S/ {p.precio.toFixed(2)}
-                  </span>
-                  <button className="btn-add-cart" onClick={() => agregarAlCarrito(p)} style={{ 
-                    width: '45px', height: '45px', borderRadius: '50%', border: 'none', background: 'var(--primary)', color: 'white', fontSize: '1.5rem' 
-                  }}>+</button>
+              <div className="card-body">
+                <h3>{p.nombre}</h3>
+                <div className="card-footer">
+                  <span className="precio-text">S/ {p.precio.toFixed(2)}</span>
+                  <button className="btn-add-cart" onClick={() => agregarAlCarrito(p)}>+</button>
                 </div>
               </div>
             </div>
@@ -218,20 +164,20 @@ const MenuCliente = () => {
         </div>
       </div>
 
-      {/* MODALES - Lógica Intacta */}
+      {/* MODALES - Lógica de pedido intacta */}
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
             <h2>Tu Pedido</h2>
             <div className="carrito-lista">
               {carrito.map((item, i) => (
-                <div key={i} className="carrito-item-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #eee' }}>
+                <div key={i} className="carrito-item-row">
                   <span>{item.nombre}</span>
                   <strong>S/ {item.precio.toFixed(2)}</strong>
                 </div>
               ))}
             </div>
-            <h3 style={{ margin: '20px 0' }}>Total: S/ {total.toFixed(2)}</h3>
+            <h3 className="total-msg">Total: S/ {total.toFixed(2)}</h3>
             <div className="modal-buttons">
               <button className="btn-no" onClick={() => setVerCarrito(false)}>Atrás</button>
               <button className="btn-yes" onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
