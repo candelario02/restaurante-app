@@ -22,10 +22,11 @@ function Login({ alCerrar, activarAdmin }) {
 
     try {
       // 1️⃣ Login Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
 
-      // 2️⃣ Validación ADMIN por email (Tu lógica de seguridad original)
+      // 2️⃣ Validación ADMIN por email
+      // Esto coincide con tu lista y con los IDs que creamos en la colección 'usuarios_admin'
       if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         await signOut(auth);
         setError('Acceso denegado: este usuario no tiene permisos de administrador.');
@@ -33,15 +34,20 @@ function Login({ alCerrar, activarAdmin }) {
         return;
       }
 
-      // 3️⃣ ÉXITO: Activamos la vista admin y cerramos modal
+      // 3️⃣ ÉXITO: 
+      // Guardamos en localStorage antes de activar para asegurar persistencia
+      localStorage.setItem('esAdmin', 'true');
+      
       if (activarAdmin) activarAdmin(); 
       alCerrar();
 
     } catch (err) {
       console.error(err);
-      // Manejo de errores detallado
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      // Manejo de errores detallado (Actualizado para Firebase v9+)
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Demasiados intentos. Intenta más tarde.');
       } else {
         setError('Error al intentar iniciar sesión. Reintenta.');
       }
@@ -54,7 +60,7 @@ function Login({ alCerrar, activarAdmin }) {
     <div className="login-content">
       {/* Icono de cabecera dinámico según el error */}
       <div className="icon-circle-warning">
-        {error.includes('Acceso') ? (
+        {error && error.includes('Acceso') ? (
           <ShieldAlert size={40} color="var(--danger)" />
         ) : (
           <Lock size={40} color="var(--primary)" />
@@ -93,7 +99,7 @@ function Login({ alCerrar, activarAdmin }) {
           />
         </div>
 
-        {/* Caja de Error (Usando variables de tu CSS) */}
+        {/* Caja de Error */}
         {error && (
           <div style={{ 
             background: '#fef2f2', 
@@ -114,12 +120,12 @@ function Login({ alCerrar, activarAdmin }) {
           </div>
         )}
 
-        {/* Botón de envío con estado de carga */}
+        {/* Botón de envío */}
         <button 
           type="submit" 
           className="btn-login-submit" 
           disabled={cargando}
-          style={{ marginTop: '10px' }}
+          style={{ marginTop: '10px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
         >
           {cargando ? (
             'Verificando...'

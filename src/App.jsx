@@ -28,7 +28,9 @@ function App() {
         setBienvenidaMostrada(false);
         return;
       }
+      
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
+      // Mantenemos al usuario y su estado de admin
       setAuthState({ loading: false, user: usuario, isAdmin: eraAdmin });
 
       if (!bienvenidaMostrada) {
@@ -53,7 +55,7 @@ function App() {
 
   return (
     <div className="App">
-      {/* BARRA SUPERIOR */}
+      {/* BARRA SUPERIOR - Se mantiene igual */}
       <div className="top-bar">
         {authState.user ? (
           <div className="admin-buttons">
@@ -89,7 +91,7 @@ function App() {
         )}
       </div>
 
-      {/* MODAL LOGIN */}
+      {/* MODALES - Se mantienen igual */}
       {mostrarLogin && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -102,7 +104,6 @@ function App() {
         </div>
       )}
 
-      {/* MODAL BIENVENIDA */}
       {mensajeBienvenida && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -114,7 +115,6 @@ function App() {
         </div>
       )}
 
-      {/* MODAL CERRAR SESIÓN */}
       {confirmarSalida && (
         <div className="overlay-msg">
           <div className="msg-box">
@@ -131,13 +131,19 @@ function App() {
         </div>
       )}
 
-      {/* CONTENIDO PRINCIPAL CENTRADO */}
+      {/* CONTENIDO PRINCIPAL - Mejora aquí para evitar errores de permisos */}
       <main className="admin-container">
         <div className="content-wrapper">
-          {authState.user && authState.isAdmin ? <Admin seccion={seccion} /> : <MenuCliente />}
+          {/* Solo mostramos Admin si el usuario está REALMENTE cargado en Firebase */}
+          {authState.user && authState.isAdmin ? (
+            <Admin seccion={seccion} user={authState.user} /> 
+          ) : (
+            <MenuCliente />
+          )}
         </div>
       </main>
     </div>
   );
 }
+
 export default App;
