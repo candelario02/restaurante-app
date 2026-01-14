@@ -135,70 +135,80 @@ body {
 }
 
 /* ============================================================
-   SESIÓN 8: DISEÑO PANTALLA PRINCIPAL CLIENTE (CORREGIDO)
+   SESIÓN 8: DISEÑO FINAL MENÚ CLIENTE (ESTILO MODERNO)
    ============================================================ */
 
-.menu-principal-wrapper { text-align: center; padding: 20px; }
+/* 1. Pegar el título más arriba */
+.menu-principal-wrapper { 
+  text-align: center; 
+  padding-top: 10px !important; /* Reducimos el espacio superior */
+  margin-top: 0;
+}
 
-/* Forzamos la cuadrícula de 2 columnas */
+.titulo-principal {
+  margin-bottom: 5px; /* Menos espacio entre título y subtítulo */
+  font-size: 2.2rem;
+}
+
+/* 2. Cuadrícula centrada y optimizada */
 .categorias-grid-principal {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 30px !important;
-  max-width: 600px;
-  margin: 40px auto 0;
+  gap: 20px !important;
+  max-width: 500px; /* Estrechar un poco para que se vea más ordenado */
+  margin: 20px auto 0 !important; /* Menos margen arriba */
+  padding: 10px;
 }
 
-/* Tamaño de los círculos (Ajustado a GIGANTE) */
+/* 3. Círculos con colores pastel de la imagen */
 .categoria-circulo {
-  width: 150px !important; /* Tamaño grande */
-  height: 150px !important;
+  width: 160px !important; /* Tamaño grande y llamativo */
+  height: 160px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
+  border: none !important; /* Quitamos bordes si existen */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Sombra suave */
 }
 
-/* Colores de fondo */
-.bg-comidas { background-color: #FFF4E5 !important; color: #FF9800 !important; }
-.bg-cafe    { background-color: #E8F5E9 !important; color: #4CAF50 !important; }
-.bg-bebidas { background-color: #E3F2FD !important; color: #2196F3 !important; }
-.bg-entradas { background-color: #FCE4EC !important; color: #E91E63 !important; }
+/* Colores exactos de la imagen de referencia */
+.bg-comidas { background-color: #FFF8ED !important; color: #FF9800 !important; }
+.bg-cafe    { background-color: #F1F8E9 !important; color: #4CAF50 !important; }
+.bg-bebidas { background-color: #E3F2FD !important; color: #03A9F4 !important; }
+.bg-entradas { background-color: #FDF2F2 !important; color: #E91E63 !important; }
 
-/* Iconos dentro de los círculos */
+/* 4. Iconos y Etiquetas */
 .icon-main {
-  width: 70px !important;
-  height: 70px !important;
+  width: 80px !important; /* Icono grande y claro */
+  height: 80px !important;
 }
 
 .categoria-label {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-top: 15px;
+  margin-top: 12px;
   display: block;
-  color: var(--text-main);
+  color: #334155;
+  letter-spacing: -0.02em;
 }
 
-/* Botón flotante */
-.btn-carrito-flotante {
-  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-  background-color: var(--primary); color: white; border: none;
-  padding: 16px 32px; border-radius: 50px; font-weight: 700;
-  display: flex; align-items: center; gap: 12px;
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); z-index: 1000; cursor: pointer;
+/* Efecto al tocar/click */
+.categoria-item:active .categoria-circulo {
+  transform: scale(0.95);
+  filter: brightness(0.95);
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .btn-top-gestion span { display: none; }
-  .categoria-circulo { width: 130px !important; height: 130px !important; }
-}
-
-@media (max-width: 480px) {
-  .categorias-grid-principal { gap: 15px !important; }
-  .categoria-circulo { width: 115px !important; height: 115px !important; }
-  .icon-main { width: 50px !important; height: 50px !important; }
+/* Ajuste para móviles muy pequeños */
+@media (max-width: 400px) {
+  .categoria-circulo {
+    width: 130px !important;
+    height: 130px !important;
+  }
+  .icon-main {
+    width: 60px !important;
+    height: 60px !important;
+  }
 }
