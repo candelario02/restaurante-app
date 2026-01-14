@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, storage } from './firebase';
+import { db } from './firebase'; // Quitamos 'storage' porque ya no lo usaremos
 import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Trash2, Power, PowerOff, ImageIcon, Save, UserPlus, Mail, Truck, ChefHat, CheckCircle } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -22,25 +21,41 @@ const Admin = ({ seccion }) => {
     return () => { unsubProd(); unsubUser(); unsubPed(); };
   }, []);
 
+  // --- NUEVA FUNCIÓN PARA CLOUDINARY ---
+  const subirACloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'restaurante_preset'); // Tu preset sin punto
+
+    const resp = await fetch('https://api.cloudinary.com/v1_1/drkrsfxlc/image/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!resp.ok) throw new Error('Error al subir a Cloudinary');
+    const data = await resp.json();
+    return data.secure_url; 
+  };
+
   const subirProducto = async (e) => {
     e.preventDefault();
     if (!imagen) {
       alert("Por favor selecciona una imagen");
       return;
     }
+    
     setCargando(true);
+    
     try {
-      // 1. Subir imagen a Storage
-      const storageRef = ref(storage, `productos/${Date.now()}_${imagen.name}`);
-      await uploadBytes(storageRef, imagen);
-      const url = await getDownloadURL(storageRef);
+      // 1. Subir imagen a Cloudinary (Rápido y gratis)
+      const urlImagenCloudinary = await subirACloudinary(imagen);
 
-      // 2. Guardar datos en Firestore
+      // 2. Guardar datos en Firestore (Usando la URL de Cloudinary)
       await addDoc(collection(db, 'productos'), { 
         nombre, 
         precio: Number(precio), 
         categoria, 
-        img: url, 
+        img: urlImagenCloudinary, // Guardamos el link directo
         disponible: true 
       });
 
@@ -48,10 +63,10 @@ const Admin = ({ seccion }) => {
       setNombre(''); 
       setPrecio(''); 
       setImagen(null);
-      alert("Producto guardado con éxito");
+      alert("¡Producto guardado con éxito en Cloudinary!");
     } catch (e) { 
       console.error(e);
-      alert("Error al subir el producto"); 
+      alert("Error: " + e.message); 
     } finally { 
       setCargando(false); 
     }
@@ -98,19 +113,19 @@ const Admin = ({ seccion }) => {
             </label>
 
             <button 
-  className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
-  disabled={cargando} 
-  style={{ width: '100%', position: 'relative' }}
->
-  {cargando ? (
-    <div className="spinner-loader"></div>
-  ) : (
-    <>
-      <Save size={18} style={{ marginRight: '10px' }} /> 
-      Guardar Producto
-    </>
-  )}
-</button>
+              className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
+              disabled={cargando} 
+              style={{ width: '100%', position: 'relative' }}
+            >
+              {cargando ? (
+                <div className="spinner-loader"></div>
+              ) : (
+                <>
+                  <Save size={18} style={{ marginRight: '10px' }} /> 
+                  Guardar Producto
+                </>
+              )}
+            </button>
           </form>
 
           <div style={{marginTop: '40px', overflowX: 'auto'}}>
