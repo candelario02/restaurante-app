@@ -135,80 +135,79 @@ body {
 }
 
 /* ============================================================
-   SESIÓN 8: DISEÑO FINAL MENÚ CLIENTE (ESTILO MODERNO)
+   SESIÓN 8: DISEÑO FINAL (TÍTULO ARRIBA Y CÍRCULOS GRANDES)
    ============================================================ */
 
-/* 1. Pegar el título más arriba */
+/* 1. Pegar el título a la línea superior (Quitamos espacios vacíos) */
 .menu-principal-wrapper { 
   text-align: center; 
-  padding-top: 10px !important; /* Reducimos el espacio superior */
+  padding-top: 0px !important; /* Pegado totalmente arriba */
+  margin-top: -10px !important; 
+}
+
+.menu-principal-wrapper h1 {
   margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 2.5rem; /* Título un poco más imponente */
 }
 
-.titulo-principal {
-  margin-bottom: 5px; /* Menos espacio entre título y subtítulo */
-  font-size: 2.2rem;
-}
-
-/* 2. Cuadrícula centrada y optimizada */
+/* 2. Cuadrícula más ancha para permitir círculos grandes */
 .categorias-grid-principal {
   display: grid !important;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 20px !important;
-  max-width: 500px; /* Estrechar un poco para que se vea más ordenado */
-  margin: 20px auto 0 !important; /* Menos margen arriba */
-  padding: 10px;
+  gap: 30px !important;
+  max-width: 650px; /* Aumentado para que los círculos no se aplasten */
+  margin: 10px auto 0 !important;
+  padding: 20px;
 }
 
-/* 3. Círculos con colores pastel de la imagen */
+/* 3. Círculos GIGANTES y SUAVES (Estilo exacto a tu imagen) */
 .categoria-circulo {
-  width: 160px !important; /* Tamaño grande y llamativo */
-  height: 160px !important;
+  width: 180px !important; /* Tamaño aumentado */
+  height: 180px !important;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: none !important; /* Quitamos bordes si existen */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none !important;
+  transition: all 0.3s ease;
   margin: 0 auto;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Sombra suave */
+  /* Sombra muy difuminada para el efecto "suave" */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.04); 
 }
 
-/* Colores exactos de la imagen de referencia */
-.bg-comidas { background-color: #FFF8ED !important; color: #FF9800 !important; }
-.bg-cafe    { background-color: #F1F8E9 !important; color: #4CAF50 !important; }
-.bg-bebidas { background-color: #E3F2FD !important; color: #03A9F4 !important; }
-.bg-entradas { background-color: #FDF2F2 !important; color: #E91E63 !important; }
+/* Colores Pastel (Más suaves) */
+.bg-comidas { background-color: #fff9f0 !important; color: #ffa726 !important; }
+.bg-cafe    { background-color: #f4faf0 !important; color: #66bb6a !important; }
+.bg-bebidas { background-color: #f0f9ff !important; color: #29b6f6 !important; }
+.bg-entradas { background-color: #fff5f5 !important; color: #ef5350 !important; }
 
-/* 4. Iconos y Etiquetas */
+/* 4. Iconos más grandes dentro del círculo */
 .icon-main {
-  width: 80px !important; /* Icono grande y claro */
-  height: 80px !important;
+  width: 90px !important; 
+  height: 90px !important;
 }
 
+/* Etiquetas de texto debajo */
 .categoria-label {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-top: 12px;
+  margin-top: 15px;
   display: block;
-  color: #334155;
-  letter-spacing: -0.02em;
+  color: #2d3748;
 }
 
-/* Efecto al tocar/click */
-.categoria-item:active .categoria-circulo {
-  transform: scale(0.95);
-  filter: brightness(0.95);
-}
-
-/* Ajuste para móviles muy pequeños */
-@media (max-width: 400px) {
+/* Ajuste para móviles (para que no se corten) */
+@media (max-width: 480px) {
   .categoria-circulo {
-    width: 130px !important;
-    height: 130px !important;
+    width: 140px !important;
+    height: 140px !important;
   }
   .icon-main {
-    width: 60px !important;
-    height: 60px !important;
+    width: 70px !important;
+    height: 70px !important;
+  }
+  .categorias-grid-principal {
+    gap: 15px !important;
   }
 }
