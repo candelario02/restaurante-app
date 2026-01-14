@@ -26,14 +26,17 @@ const Admin = ({ seccion }) => {
     const user = auth.currentUser;
     if (!user) return;
 
+    // Escuchar Productos
     const unsubProd = onSnapshot(collection(db, 'productos'), (s) => 
       setProductos(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
+    // Escuchar Administradores
     const unsubUser = onSnapshot(collection(db, 'usuarios_admin'), (s) => 
       setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
+    // Escuchar Pedidos (Ordenados por fecha)
     const unsubPed = onSnapshot(collection(db, 'pedidos'), (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setPedidos(docs.sort((a,b) => b.fecha?.seconds - a.fecha?.seconds));
@@ -120,7 +123,7 @@ const Admin = ({ seccion }) => {
 
   return (
     <div className="admin-container">
-      {/* Alertas usando tus clases: overlay-msg y mensaje-alerta */}
+      {/* Alertas con tus clases de CSS */}
       {notificacion.texto && (
         <div className="overlay-msg">
           <div className={`mensaje-alerta ${notificacion.tipo}`}>
@@ -129,7 +132,7 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* GESTIÓN DE MENÚ */}
+      {/* SECCIÓN 1: GESTIÓN DE MENÚ */}
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={guardarProducto} className="login-form">
@@ -205,7 +208,7 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* ACCESOS ADMIN */}
+      {/* SECCIÓN 2: ACCESOS ADMIN */}
       {seccion === 'usuarios' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
@@ -216,56 +219,62 @@ const Admin = ({ seccion }) => {
             <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
           </form>
           
-          <table className="tabla-admin">
-            <thead><tr><th>Email</th><th>Quitar</th></tr></thead>
-            <tbody>
-              {usuarios.map(u => (
-                <tr key={u.id}>
-                  <td>{u.email}</td>
-                  <td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="var(--danger)" size={18}/></button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="tabla-admin-container">
+            <table className="tabla-admin">
+              <thead><tr><th>Email</th><th>Quitar</th></tr></thead>
+              <tbody>
+                {usuarios.map(u => (
+                  <tr key={u.id}>
+                    <td>{u.email}</td>
+                    <td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="var(--danger)" size={18}/></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* PANEL DE PEDIDOS */}
+      {/* SECCIÓN 3: PANEL DE PEDIDOS */}
       {seccion === 'pedidos' && (
         <div className="productos-grid">
-          {pedidos.map(p => (
-            <div key={p.id} className="producto-card-pedido">
-              <div className="pedido-header">
-                <h3>{p.cliente.nombre}</h3>
-                <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString()}</span>
-              </div>
-              <p className="text-muted">{p.cliente.direccion}</p>
-              
-              <div className="pedido-lista-productos">
-                {p.productos.map((prod, idx) => (
-                  <div key={idx} className="pedido-item-row">
-                    <span>{prod.nombre}</span>
-                    <span className="bold">S/ {prod.precio.toFixed(2)}</span>
+          {pedidos.length === 0 ? (
+            <p className="text-muted">No hay pedidos pendientes</p>
+          ) : (
+            pedidos.map(p => (
+              <div key={p.id} className="producto-card-pedido">
+                <div className="pedido-header">
+                  <h3>{p.cliente.nombre}</h3>
+                  <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString()}</span>
+                </div>
+                <p className="text-muted">{p.cliente.direccion}</p>
+                
+                <div className="pedido-lista-productos">
+                  {p.productos.map((prod, idx) => (
+                    <div key={idx} className="pedido-item-row">
+                      <span>{prod.nombre}</span>
+                      <span className="bold">S/ {prod.precio.toFixed(2)}</span>
+                    </div>
+                  ))}
+                  <div className="pedido-total-row">
+                    Total: S/ {p.total.toFixed(2)}
                   </div>
-                ))}
-                <div className="pedido-total-row">
-                  Total: S/ {p.total.toFixed(2)}
+                </div>
+
+                <div className="pedido-status-container">
+                  <span className={`status-badge ${p.estado || 'pendiente'}`}>
+                    {p.estado || 'pendiente'}
+                  </span>
+                </div>
+
+                <div className="modal-buttons">
+                  <button className="btn-no" title="Cocina" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={18}/></button>
+                  <button className="btn-no" title="Delivery" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={18}/></button>
+                  <button className="btn-yes-success" title="Entregado" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={18}/></button>
                 </div>
               </div>
-
-              <div className="pedido-status-container">
-                <span className={`status-badge ${p.estado}`}>
-                  {p.estado}
-                </span>
-              </div>
-
-              <div className="modal-buttons">
-                <button className="btn-no" title="Cocina" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={18}/></button>
-                <button className="btn-no" title="Delivery" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={18}/></button>
-                <button className="btn-yes-success" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={18}/></button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
     </div>

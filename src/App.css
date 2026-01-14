@@ -288,3 +288,111 @@ body {
   from { opacity: 0; transform: scale(0.5); }
   to { opacity: 1; transform: scale(1); }
 }
+/* --- SESIÓN 9: EXTRAS PARA ADMIN Y PEDIDOS --- */
+
+/* Contenedor de tabla con scroll horizontal para celulares */
+.tabla-admin-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 30px;
+  background: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.img-tabla {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.categoria-item-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.admin-buttons-acciones {
+  display: flex; 
+  gap: 8px;
+}
+
+/* Tarjetas de Pedidos */
+.producto-card-pedido {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.pedido-header h3 { margin: 0; font-size: 1.1rem; }
+
+.pedido-lista-productos {
+  flex-grow: 1;
+  margin: 15px 0;
+  padding: 12px;
+  background: var(--bg-body);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.pedido-item-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.pedido-total-row {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  font-weight: 800;
+  text-align: right;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.pedido-status-container {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Estados de los Pedidos */
+.status-badge {
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.entregado { background: #dcfce7; color: #166534; }
+.status-badge.preparando { background: #fef9c3; color: #854d0e; }
+.status-badge.enviado { background: #dbeafe; color: #1e40af; }
+.status-badge.pendiente { background: #f1f5f9; color: #475569; }
+
+.btn-yes-success {
+  background: var(--success);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bold { font-weight: 700; }
