@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from './firebase'; // Quitamos 'storage' porque ya no lo usaremos
+import { db } from './firebase'; 
 import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { Trash2, Power, PowerOff, ImageIcon, Save, UserPlus, Mail, Truck, ChefHat, CheckCircle } from 'lucide-react';
 
@@ -14,6 +14,9 @@ const Admin = ({ seccion }) => {
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
+  // --- NUEVO ESTADO PARA MENSAJES ---
+  const [notificacion, setNotificacion] = useState({ texto: '', tipo: '' });
+
   useEffect(() => {
     const unsubProd = onSnapshot(collection(db, 'productos'), s => setProductos(s.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubUser = onSnapshot(collection(db, 'usuarios_admin'), s => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -21,11 +24,16 @@ const Admin = ({ seccion }) => {
     return () => { unsubProd(); unsubUser(); unsubPed(); };
   }, []);
 
-  // --- NUEVA FUNCIÓN PARA CLOUDINARY ---
+  // Función para mostrar mensajes y que desaparezcan solos
+  const mostrarSms = (texto, tipo) => {
+    setNotificacion({ texto, tipo });
+    setTimeout(() => setNotificacion({ texto: '', tipo: '' }), 3000);
+  };
+
   const subirACloudinary = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'restaurante_preset'); // Tu preset sin punto
+    formData.append('upload_preset', 'restaurante_preset');
 
     const resp = await fetch('https://api.cloudinary.com/v1_1/drkrsfxlc/image/upload', {
       method: 'POST',
@@ -40,33 +48,30 @@ const Admin = ({ seccion }) => {
   const subirProducto = async (e) => {
     e.preventDefault();
     if (!imagen) {
-      alert("Por favor selecciona una imagen");
+      mostrarSms("Por favor selecciona una imagen", "error");
       return;
     }
     
     setCargando(true);
     
     try {
-      // 1. Subir imagen a Cloudinary (Rápido y gratis)
       const urlImagenCloudinary = await subirACloudinary(imagen);
 
-      // 2. Guardar datos en Firestore (Usando la URL de Cloudinary)
       await addDoc(collection(db, 'productos'), { 
         nombre, 
         precio: Number(precio), 
         categoria, 
-        img: urlImagenCloudinary, // Guardamos el link directo
+        img: urlImagenCloudinary, 
         disponible: true 
       });
 
-      // 3. Limpiar formulario
       setNombre(''); 
       setPrecio(''); 
       setImagen(null);
-      alert("¡Producto guardado con éxito en Cloudinary!");
+      mostrarSms("¡Producto guardado con éxito!", "exito");
     } catch (e) { 
       console.error(e);
-      alert("Error: " + e.message); 
+      mostrarSms("Error de permisos o conexión", "error"); 
     } finally { 
       setCargando(false); 
     }
@@ -77,18 +82,33 @@ const Admin = ({ seccion }) => {
     try {
       await setDoc(doc(db, 'usuarios_admin', userEmail), { email: userEmail, rol: 'admin' });
       setUserEmail('');
-      alert("Administrador registrado");
+      mostrarSms("Administrador registrado correctamente", "exito");
     } catch (error) {
-      alert("Error al registrar");
+      mostrarSms("Error al registrar administrador", "error");
     }
   };
 
   const cambiarEstado = async (id, estado) => { 
-    await updateDoc(doc(db, 'pedidos', id), { estado }); 
+    try {
+        await updateDoc(doc(db, 'pedidos', id), { estado }); 
+        mostrarSms(`Pedido marcado como ${estado}`, "exito");
+    } catch (error) {
+        mostrarSms("No se pudo cambiar el estado", "error");
+    }
   };
 
   return (
     <div className="admin-container">
+      
+      {/* --- EL SMS (NOTIFICACIÓN FLOTANTE) --- */}
+      {notificacion.texto && (
+        <div className="modal-overlay">
+          <div className={`mensaje-alerta ${notificacion.tipo}`}>
+            {notificacion.texto}
+          </div>
+        </div>
+      )}
+
       {/* SECCIÓN PRODUCTOS */}
       {seccion === 'menu' && (
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -227,4 +247,5 @@ const Admin = ({ seccion }) => {
     </div>
   );
 };
+
 export default Admin;
