@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase';
 import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
-import { Trash2, Power, PowerOff, ImageIcon, Save, UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, X } from 'lucide-react';
+import { 
+  Trash2, Power, PowerOff, ImageIcon, Save, 
+  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit 
+} from 'lucide-react';
 
 const Admin = ({ seccion }) => {
   const [productos, setProductos] = useState([]);
@@ -117,7 +120,7 @@ const Admin = ({ seccion }) => {
 
   return (
     <div className="admin-container">
-      {/* Alertas usando tu clase overlay-msg y animaciones */}
+      {/* Alertas usando tus clases: overlay-msg y mensaje-alerta */}
       {notificacion.texto && (
         <div className="overlay-msg">
           <div className={`mensaje-alerta ${notificacion.tipo}`}>
@@ -126,10 +129,11 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
+      {/* GESTIÓN DE MENÚ */}
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
-          <form onSubmit={guardarProducto} className="login-form" style={{maxWidth: '500px', margin: '0 auto'}}>
-            <h2 className="titulo-principal" style={{fontSize: '2rem'}}>{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
+          <form onSubmit={guardarProducto} className="login-form">
+            <h2 className="titulo-principal">{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
             
             <div className="input-group">
               <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del plato" required />
@@ -140,7 +144,7 @@ const Admin = ({ seccion }) => {
             </div>
 
             <div className="input-group">
-              <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)} style={{width: '100%', paddingLeft: '15px', border: '2px solid var(--border)'}}>
+              <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
                 <option value="Menu">Comidas</option>
                 <option value="Cafeteria">Cafetería</option>
                 <option value="Bebidas">Bebidas</option>
@@ -148,9 +152,9 @@ const Admin = ({ seccion }) => {
               </select>
             </div>
 
-            <label className="btn-top-login" style={{cursor: 'pointer', justifyContent: 'center', background: '#f1f5f9'}}>
+            <label className="btn-top-login">
               <ImageIcon size={18} /> 
-              <span style={{marginLeft: '10px'}}>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
+              <span>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
               <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
             </label>
 
@@ -162,11 +166,10 @@ const Admin = ({ seccion }) => {
             </div>
           </form>
 
-          <div style={{marginTop: '40px', overflowX: 'auto'}}>
+          <div className="tabla-admin-container">
             <table className="tabla-admin">
               <thead>
                 <tr>
-                  <th>Imagen</th>
                   <th>Plato</th>
                   <th>Precio</th>
                   <th>Disp.</th>
@@ -176,8 +179,12 @@ const Admin = ({ seccion }) => {
               <tbody>
                 {productos.map(p => (
                   <tr key={p.id}>
-                    <td><img src={p.img} alt={p.nombre} style={{width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover'}} /></td>
-                    <td style={{fontWeight: '600'}}>{p.nombre}</td>
+                    <td>
+                      <div className="categoria-item-mini">
+                        <img src={p.img} alt="" className="img-tabla" />
+                        <span>{p.nombre}</span>
+                      </div>
+                    </td>
                     <td>S/ {p.precio.toFixed(2)}</td>
                     <td>
                       <button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>
@@ -185,7 +192,7 @@ const Admin = ({ seccion }) => {
                       </button>
                     </td>
                     <td>
-                      <div style={{display: 'flex', gap: '5px'}}>
+                      <div className="admin-buttons-acciones">
                         <button className="btn-back-inline" onClick={() => prepararEdicion(p)}><Edit size={16}/></button>
                         <button className="btn-back-inline" onClick={() => window.confirm('¿Eliminar?') && deleteDoc(doc(db, 'productos', p.id))}><Trash2 color="var(--danger)" size={16}/></button>
                       </div>
@@ -198,18 +205,19 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
+      {/* ACCESOS ADMIN */}
       {seccion === 'usuarios' && (
-        <div className="menu-principal-wrapper" style={{maxWidth: '600px', margin: '0 auto'}}>
+        <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
-            <h2 className="titulo-principal" style={{fontSize: '2rem'}}>Accesos Admin</h2>
+            <h2 className="titulo-principal">Accesos Admin</h2>
             <div className="input-group">
               <Mail className="input-icon"/><input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Correo electrónico" required />
             </div>
             <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
           </form>
           
-          <table className="tabla-admin" style={{marginTop: '30px'}}>
-            <thead><tr><th>Email</th><th>Acción</th></tr></thead>
+          <table className="tabla-admin">
+            <thead><tr><th>Email</th><th>Quitar</th></tr></thead>
             <tbody>
               {usuarios.map(u => (
                 <tr key={u.id}>
@@ -222,39 +230,31 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
+      {/* PANEL DE PEDIDOS */}
       {seccion === 'pedidos' && (
         <div className="productos-grid">
-          {pedidos.length === 0 ? <p style={{gridColumn: '1/-1', textAlign: 'center'}} className="text-muted">No hay pedidos pendientes</p> : 
-          pedidos.map(p => (
-            <div key={p.id} className="producto-card" style={{padding: '20px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                <h3 style={{margin: 0}}>{p.cliente.nombre}</h3>
-                <span className="text-muted" style={{fontSize: '0.8rem'}}>{p.fecha?.toDate().toLocaleTimeString()}</span>
+          {pedidos.map(p => (
+            <div key={p.id} className="producto-card-pedido">
+              <div className="pedido-header">
+                <h3>{p.cliente.nombre}</h3>
+                <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString()}</span>
               </div>
-              <p className="text-muted" style={{fontSize: '0.85rem', marginBottom: '15px'}}>{p.cliente.direccion}</p>
+              <p className="text-muted">{p.cliente.direccion}</p>
               
-              <div style={{margin: '15px 0', padding: '12px', background: 'var(--bg-body)', borderRadius: '10px', border: '1px solid var(--border)'}}>
+              <div className="pedido-lista-productos">
                 {p.productos.map((prod, idx) => (
-                  <div key={idx} style={{fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                  <div key={idx} className="pedido-item-row">
                     <span>{prod.nombre}</span>
-                    <span style={{fontWeight: '600'}}>S/ {prod.precio.toFixed(2)}</span>
+                    <span className="bold">S/ {prod.precio.toFixed(2)}</span>
                   </div>
                 ))}
-                <div style={{marginTop: '10px', borderTop: '1px dashed var(--border)', paddingTop: '8px', fontWeight: '800', textAlign: 'right', color: 'var(--primary)', fontSize: '1.1rem'}}>
+                <div className="pedido-total-row">
                   Total: S/ {p.total.toFixed(2)}
                 </div>
               </div>
 
-              <div style={{marginBottom: '15px'}}>
-                <span style={{
-                  padding: '4px 12px', 
-                  borderRadius: '20px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: '700', 
-                  textTransform: 'uppercase',
-                  background: p.estado === 'entregado' ? '#dcfce7' : '#fef9c3',
-                  color: p.estado === 'entregado' ? '#166534' : '#854d0e'
-                }}>
+              <div className="pedido-status-container">
+                <span className={`status-badge ${p.estado}`}>
                   {p.estado}
                 </span>
               </div>
@@ -262,7 +262,7 @@ const Admin = ({ seccion }) => {
               <div className="modal-buttons">
                 <button className="btn-no" title="Cocina" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={18}/></button>
                 <button className="btn-no" title="Delivery" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={18}/></button>
-                <button className="btn-yes" style={{background: 'var(--success)'}} title="Listo" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={18}/></button>
+                <button className="btn-yes-success" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={18}/></button>
               </div>
             </div>
           ))}

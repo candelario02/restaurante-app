@@ -52,7 +52,7 @@ const MenuCliente = () => {
     setCarrito(prev => [...prev, producto]);
   };
 
-  const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+  const total = carrito.reduce((acc, item) => acc + (Number(item.precio) || 0), 0);
 
   const enviarPedido = async () => {
     if (!nombre || !telefono || !direccion) return;
@@ -67,7 +67,6 @@ const MenuCliente = () => {
         fecha: new Date()
       });
       
-      // Limpiar estados
       setCarrito([]);
       setNombre('');
       setTelefono('');
@@ -76,7 +75,6 @@ const MenuCliente = () => {
       setVerCarrito(false);
       setCategoriaActual(null);
       
-      // Mostrar notificación de éxito
       setPedidoExitoso(true);
       setTimeout(() => setPedidoExitoso(false), 4000);
 
@@ -87,19 +85,17 @@ const MenuCliente = () => {
     }
   };
 
-  /* --- VISTA 1: CATEGORÍAS (Respetando Círculos de 220px) --- */
+  /* --- VISTA 1: CATEGORÍAS --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container view-principal">
         <div className="menu-principal-wrapper">
-          
           <div className="header-brand">
             <h1 className="titulo-principal">Nuestro Menú</h1>
             <p className="text-muted">Selecciona una categoría para ver los platos</p>
           </div>
 
           <div className="categorias-grid-principal">
-            
             <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
               <div className="categoria-circulo bg-comidas">
                 <Pizza size={90} className="icon-main" />
@@ -127,23 +123,17 @@ const MenuCliente = () => {
               </div>
               <span className="categoria-label">Entradas</span>
             </div>
-
           </div>
         </div>
 
+        {/* Solo mostramos el carrito si hay algo agregado */}
         {carrito.length > 0 && (
           <button 
             className="btn-login-submit" 
             onClick={() => setVerCarrito(true)}
             style={{
-              position: 'fixed', 
-              bottom: '20px', 
-              left: '50%', 
-              transform: 'translateX(-50%)', 
-              width: '90%', 
-              maxWidth: '400px', 
-              zIndex: 1100,
-              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)'
+              position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
+              width: '90%', maxWidth: '400px', zIndex: 1100, boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)'
             }}
           >
             <ShoppingCart size={22} />
@@ -151,14 +141,12 @@ const MenuCliente = () => {
           </button>
         )}
 
-        {/* Notificación de éxito con tu animación 'aparecer' */}
         {pedidoExitoso && (
           <div className="overlay-msg">
             <div className="mensaje-alerta exito" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
               <CheckCircle size={50} color="white" />
               <div style={{ textAlign: 'center' }}>
-                ¡Pedido enviado con éxito!<br/>
-                Pronto nos comunicaremos contigo.
+                ¡Pedido enviado con éxito!<br/>Pronto nos comunicaremos contigo.
               </div>
             </div>
           </div>
@@ -167,7 +155,7 @@ const MenuCliente = () => {
     );
   }
 
-  /* --- VISTA 2: LISTADO DE PRODUCTOS --- */
+  /* --- VISTA 2: PRODUCTOS --- */
   return (
     <div className="admin-container">
       <div className="view-header" style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px'}}>
@@ -180,22 +168,31 @@ const MenuCliente = () => {
       <div className="productos-grid">
         {productos.length === 0 ? (
           <p className="text-muted" style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}>
-            No hay productos disponibles en esta categoría.
+            No hay productos disponibles.
           </p>
         ) : (
           productos.map(p => (
             <div key={p.id} className="producto-card">
-              <img src={p.img} alt={p.nombre} style={{width: '100%', height: '200px', objectFit: 'cover'}} />
+              <div style={{ position: 'relative' }}>
+                <img src={p.img} alt={p.nombre} style={{width: '100%', height: '200px', objectFit: 'cover'}} />
+                {/* BOTÓN SOBRE LA FOTO */}
+                <button 
+                  className="btn-back-inline" 
+                  onClick={() => agregarAlCarrito(p)}
+                  style={{
+                    position: 'absolute', bottom: '10px', right: '10px',
+                    background: 'var(--primary)', color: 'white', borderRadius: '50%', padding: '10px',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  <Plus size={24} />
+                </button>
+              </div>
               <div style={{ padding: '20px' }}>
                 <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.3rem' }}>
-                    S/ {p.precio.toFixed(2)}
-                  </span>
-                  <button className="btn-back-inline" style={{ background: 'var(--primary)', color: 'white' }} onClick={() => agregarAlCarrito(p)}>
-                    <Plus size={22} />
-                  </button>
-                </div>
+                <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.3rem' }}>
+                  S/ {p.precio.toFixed(2)}
+                </span>
               </div>
             </div>
           ))
@@ -206,12 +203,12 @@ const MenuCliente = () => {
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2 className="titulo-principal" style={{ fontSize: '1.8rem', marginBottom: '20px' }}>Tu Pedido</h2>
-            <div style={{ maxHeight: '350px', overflowY: 'auto', marginBottom: '20px', paddingRight: '5px' }}>
+            <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Tu Pedido</h2>
+            <div style={{ maxHeight: '350px', overflowY: 'auto', marginBottom: '20px' }}>
               {carrito.map((item, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ fontWeight: '500' }}>{item.nombre}</span>
-                  <strong style={{ color: 'var(--text-main)' }}>S/ {item.precio.toFixed(2)}</strong>
+                  <span>{item.nombre}</span>
+                  <strong>S/ {item.precio.toFixed(2)}</strong>
                 </div>
               ))}
             </div>
@@ -226,11 +223,11 @@ const MenuCliente = () => {
         </div>
       )}
 
-      {/* MODAL FORMULARIO ENTREGA */}
+      {/* MODAL FORMULARIO */}
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2 className="titulo-principal" style={{ fontSize: '1.8rem', marginBottom: '20px' }}>Datos de Entrega</h2>
+            <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Datos de Entrega</h2>
             <div className="login-form">
               <div className="input-group">
                 <User className="input-icon" size={18} />
@@ -246,11 +243,7 @@ const MenuCliente = () => {
               </div>
               <div className="modal-buttons">
                 <button className="btn-no" type="button" onClick={() => setMostrarFormulario(false)}>Atrás</button>
-                <button 
-                  className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} 
-                  onClick={enviarPedido} 
-                  disabled={enviando}
-                >
+                <button className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} onClick={enviarPedido} disabled={enviando}>
                   {enviando ? <div className="spinner-loader"></div> : "Confirmar Pedido"}
                 </button>
               </div>
