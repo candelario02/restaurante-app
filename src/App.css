@@ -1,5 +1,5 @@
 /* =========================================
-   APP.CSS - ESTRUCTURA PROFESIONAL ORGANIZADA
+   APP.CSS - VERSIÓN COMPLETA REESTRUCTURADA
    ========================================= */
 
 /* --- SESIÓN 1: VARIABLES Y RESET --- */
@@ -8,7 +8,8 @@
 :root {
   --primary: #6366f1;
   --primary-dark: #4f46e5;
-  --success: #22c55e;
+  --success: #10b981;
+  --success-dark: #059669;
   --danger: #ef4444;
   --warning: #f59e0b;
   --bg-body: #f8fafc;
@@ -17,7 +18,7 @@
   --text-muted: #64748b;
   --border: #e2e8f0;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
   --radius: 12px;
 }
@@ -50,6 +51,17 @@ body {
 
 .admin-buttons { display: flex; gap: 12px; align-items: center; }
 
+/* AJUSTE PARA CELULAR: BOTONES MÁS PEGADOS */
+@media (max-width: 480px) {
+  .top-bar { padding: 0 5px; }
+  .admin-buttons { gap: 4px; } /* Espacio mínimo para que entren todos */
+  .btn-top-login, .btn-top-admin, .btn-top-gestion {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    gap: 3px;
+  }
+}
+
 .btn-top-login, .btn-top-admin, .btn-top-gestion {
   display: flex; align-items: center; gap: 8px; padding: 10px 18px;
   border-radius: var(--radius); border: 1px solid var(--border);
@@ -71,117 +83,86 @@ body {
   align-items: center; justify-content: center; transition: all 0.2s;
 }
 
-/* Ajuste Celular: Botones más pegados para verlos todos */
-@media (max-width: 480px) {
-  .top-bar { padding: 0 10px; }
-  .admin-buttons { gap: 6px; }
-  .btn-top-login, .btn-top-admin, .btn-top-gestion {
-    padding: 8px 10px;
-    font-size: 0.75rem;
-    gap: 4px;
-  }
+/* --- SESIÓN 3: CATEGORÍAS (ESTILO BASE) --- */
+.categorias-container {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 40px; padding: 40px 20px;
 }
 
-/* --- SESIÓN 3: CATEGORÍAS (VISTA PRINCIPAL) --- */
-.admin-container.view-principal { padding-top: 0; margin-top: -10px; }
-.menu-principal-wrapper { text-align: center; padding-top: 0; }
-.header-brand { margin-top: 0; margin-bottom: 10px; }
-
-.titulo-principal {
-  margin: 0;
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #1e293b;
+.categoria-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 15px; cursor: pointer; transition: transform 0.3s ease;
 }
+.categoria-item:hover { transform: translateY(-8px); }
 
-.categorias-grid-principal {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  max-width: 600px;
-  margin: 10px auto 0;
-  padding: 0 10px;
-  justify-items: center;
+/* --- SESIÓN 4: MODALES Y DIÁLOGOS --- */
+.overlay-msg, .modal-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(6px); display: flex; justify-content: center;
+  align-items: center; z-index: 2000; padding: 20px;
 }
-
-.categoria-circulo {
-  width: 220px; height: 220px; border-radius: 50%;
-  display: flex; justify-content: center; align-items: center;
-  border: none; transition: transform 0.2s ease;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+.msg-box {
+  background: white; padding: 32px; border-radius: 24px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 420px; position: relative;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center;
 }
+.modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.btn-no { background: #f1f5f9; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+.btn-yes { background: var(--danger); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 
-.bg-comidas { background-color: #ffffff; color: #f59e0b; }
-.bg-cafe    { background-color: #feffff; color: #6367f1; }
-.bg-bebidas { background-color: #fffffe; color: #06b6d4; }
-.bg-entradas { background-color: #fefefe; color: #ec4998; }
+@keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.icon-main { width: 90px; height: 90px; }
-.categoria-label { font-size: 1.4rem; font-weight: 700; margin-top: 10px; color: #1e293b; }
-
-@media (max-width: 480px) {
-  .titulo-principal { font-size: 2.2rem; }
-  .categorias-grid-principal { gap: 10px; margin: 10px 0; }
-  .categoria-circulo { width: 160px; height: 160px; }
-  .icon-main { width: 70px; height: 70px; }
+/* --- SESIÓN 5: PANEL ADMIN Y TABLAS --- */
+.admin-container { padding: 40px 20px; }
+.tabla-admin {
+  width: 100%; background: white; border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow-md); border-collapse: collapse;
 }
+.tabla-admin th { background: #f1f5f9; padding: 16px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); }
+.tabla-admin td { padding: 16px; border-bottom: 1px solid var(--border); }
 
-/* --- SESIÓN 4: TARJETAS DE PRODUCTO (CLIENTE) --- */
+/* --- SESIÓN 6: TARJETAS DE PRODUCTO --- */
 .productos-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px; padding: 20px;
 }
-
 .producto-card {
   background: var(--bg-card); border-radius: 20px; overflow: hidden;
-  box-shadow: var(--shadow-md); transition: transform 0.3s; border: 1px solid var(--border);
-  position: relative; /* Necesario para el botón posicionado */
+  box-shadow: var(--shadow-md); transition: transform 0.3s, box-shadow 0.3s; border: 1px solid var(--border);
 }
+.producto-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 
-.producto-card:hover { transform: translateY(-8px); }
-
-/* CUADRO BLANCO DE TEXTO */
+/* MEJORA: BOTÓN ABAJO A LA DERECHA DEL NOMBRE */
 .producto-info {
-  padding: 20px;
-  position: relative; /* El botón se ancla aquí */
+  padding: 16px;
+  position: relative; /* Para que el botón se pegue a esta caja blanca */
   display: flex;
   flex-direction: column;
-  gap: 5px;
 }
 
-/* BOTÓN AGREGAR (+) EN LA ESQUINA DERECHA DEL CUADRO */
 .btn-agregar-carrito {
   position: absolute !important;
-  right: 15px;
   bottom: 15px;
-  width: 45px;
-  height: 45px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
   background: var(--primary);
   color: white;
-  border: none;
   border-radius: 50%;
+  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-md);
-  transition: transform 0.2s;
 }
 
-.btn-agregar-carrito:hover { transform: scale(1.1); }
-
-/* --- SESIÓN 5: PANEL ADMIN Y FORMULARIOS --- */
-.admin-container { padding: 40px 20px; }
-
+/* --- SESIÓN 7: LOGIN Y FORMULARIOS --- */
 .login-form { 
-  display: flex; flex-direction: column; gap: 16px; 
-  margin: 24px auto; 
-  width: 100%;
-}
-
-/* Evita que el formulario ocupe todo en PC */
-@media (min-width: 768px) {
-  .login-form { max-width: 500px; }
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  margin: 24px auto; /* Centrado */
+  max-width: 450px; /* Evita que ocupe todo en PC */
 }
 
 .input-group { position: relative; display: flex; align-items: center; }
@@ -190,70 +171,66 @@ body {
   width: 100%; padding: 14px 14px 14px 45px;
   border: 2px solid var(--border); border-radius: var(--radius); font-size: 1rem;
 }
-
 .btn-login-submit {
   background: var(--primary); color: white; padding: 14px; border: none;
   border-radius: var(--radius); font-weight: 700; cursor: pointer;
   display: flex; justify-content: center; align-items: center; gap: 10px;
 }
 
-/* --- SESIÓN 6: TABLAS DE GESTIÓN --- */
-.tabla-admin-container {
-  width: 100%; overflow-x: auto; margin-top: 30px;
-  background: white; border-radius: var(--radius); border: 1px solid var(--border);
+/* --- SESIÓN 8: ESTILO FINAL - CELULAR Y CATEGORÍAS --- */
+
+.admin-container.view-principal { padding-top: 0 !important; margin-top: -10px !important; }
+.menu-principal-wrapper { text-align: center; padding-top: 0 !important; }
+.header-brand { margin-top: 0 !important; margin-bottom: 10px !important; }
+
+.titulo-principal {
+  margin: 0 !important; padding-top: 0 !important;
+  font-size: 2.8rem; font-weight: 800; color: #1e293b;
 }
 
-.tabla-admin {
-  width: 100%; border-collapse: collapse; min-width: 600px;
+.categorias-grid-principal {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 15px !important;
+  max-width: 600px;
+  margin: 10px auto 0 !important;
+  padding: 0 10px;
+  justify-content: center !important;
+  justify-items: center !important;
 }
 
-.tabla-admin th { 
-  background: #f1f5f9; padding: 16px; text-align: left; 
-  font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); 
+.categoria-circulo {
+  width: 220px !important; height: 220px !important;
+  border-radius: 50%; display: flex; justify-content: center; align-items: center;
+  border: none !important; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease;
 }
 
-.tabla-admin td { padding: 16px; border-bottom: 1px solid var(--border); }
+.bg-comidas { background-color: #ffffff !important; color: #f59e0b !important; }
+.bg-cafe    { background-color: #feffff !important; color: #6367f1 !important; }
+.bg-bebidas { background-color: #fffffe !important; color: #06b6d4 !important; }
+.bg-entradas { background-color: #fefefe !important; color: #ec4998 !important; }
 
-.img-tabla { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-.categoria-item-mini { display: flex; align-items: center; gap: 10px; font-weight: 600; }
-.admin-buttons-acciones { display: flex; gap: 8px; }
+.icon-main { width: 90px !important; height: 90px !important; }
+.categoria-label { font-size: 1.4rem; font-weight: 700; margin-top: 10px; display: block; color: #1e293b; }
 
-/* --- SESIÓN 7: GESTIÓN DE PEDIDOS (TARJETAS) --- */
-.producto-card-pedido {
-  background: var(--bg-card); border-radius: 20px; padding: 20px;
-  display: flex; flex-direction: column; border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
+@media (max-width: 480px) {
+  .titulo-principal { font-size: 2.2rem; }
+  .categorias-grid-principal { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; margin: 10px 0 !important; }
+  .categoria-circulo { width: 155px !important; height: 155px !important; }
+  .icon-main { width: 65px !important; height: 65px !important; }
 }
 
-.pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.pedido-header h3 { margin: 0; font-size: 1.1rem; }
+/* --- SESIÓN 9: EXTRAS, PEDIDOS Y ANIMACIONES --- */
 
-.pedido-lista-productos {
-  flex-grow: 1; margin: 15px 0; padding: 12px;
-  background: var(--bg-body); border-radius: 10px; border: 1px solid var(--border);
+.spinner-loader {
+  width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%; border-top-color: #fff;
+  animation: spin 0.8s ease-in-out infinite; margin: 0 auto;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.pedido-item-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; }
-.pedido-total-row {
-  margin-top: 10px; border-top: 1px dashed var(--border);
-  padding-top: 8px; font-weight: 800; text-align: right;
-  color: var(--primary); font-size: 1.1rem;
-}
-
-.status-badge {
-  padding: 5px 15px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-}
-.status-badge.entregado { background: #dcfce7; color: #166534; }
-.status-badge.preparando { background: #fef9c3; color: #854d0e; }
-.status-badge.enviado { background: #dbeafe; color: #1e40af; }
-.status-badge.pendiente { background: #f1f5f9; color: #475569; }
-
-/* --- SESIÓN 8: MODALES Y ALERTAS --- */
-.overlay-msg, .modal-overlay {
-  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(6px); display: flex; justify-content: center;
-  align-items: center; z-index: 2000; padding: 20px;
-}
+.btn-loading { opacity: 0.8; cursor: not-allowed; filter: grayscale(0.5); }
 
 .mensaje-alerta {
   padding: 20px 50px; border-radius: 15px; font-size: 1.2rem;
@@ -265,19 +242,23 @@ body {
 
 @keyframes aparecer { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 
-.modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
-.btn-no { background: #f1f5f9; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+.tabla-admin-container { width: 100%; overflow-x: auto; margin-top: 30px; background: white; border-radius: var(--radius); border: 1px solid var(--border); }
+.img-tabla { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+.categoria-item-mini { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
+.admin-buttons-acciones { display: flex; gap: 8px; }
+
+.producto-card-pedido { background: var(--bg-card); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; border: 1px solid var(--border); box-shadow: var(--shadow-md); }
+.pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.pedido-header h3 { margin: 0; font-size: 1.1rem; }
+.pedido-lista-productos { flex-grow: 1; margin: 15px 0; padding: 12px; background: var(--bg-body); border-radius: 10px; border: 1px solid var(--border); }
+.pedido-item-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 6px; }
+.pedido-total-row { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; font-weight: 800; text-align: right; color: var(--primary); font-size: 1.1rem; }
+
+.status-badge { padding: 5px 15px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.status-badge.entregado { background: #dcfce7; color: #166534; }
+.status-badge.preparando { background: #fef9c3; color: #854d0e; }
+.status-badge.enviado { background: #dbeafe; color: #1e40af; }
+.status-badge.pendiente { background: #f1f5f9; color: #475569; }
+
 .btn-yes-success { background: var(--success); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
-
-/* --- SESIÓN 9: SPINNERS Y CARGA --- */
-.spinner-loader {
-  width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%; border-top-color: #fff;
-  animation: spin 0.8s ease-in-out infinite; margin: 0 auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.btn-loading { opacity: 0.8; cursor: not-allowed; filter: grayscale(0.5); }
-
-/* --- SESIÓN 10: UTILIDADES --- */
 .bold { font-weight: 700; }
-.text-muted { color: var(--text-muted); font-size: 0.9rem; }
