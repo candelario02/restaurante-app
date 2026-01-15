@@ -376,3 +376,100 @@ body {
 
 .btn-yes-success { background: var(--success); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 .bold { font-weight: 700; }
+/* --- SESIÓN 10: OPTIMIZACIÓN PANEL PEDIDOS Y CONTABILIDAD --- */
+
+/* Contenedor de estadísticas compacto */
+.contabilidad-resumen {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px !important;
+  margin-bottom: 20px !important;
+  padding: 0 5px;
+}
+
+.card-stat {
+  padding: 12px !important;
+  text-align: center;
+  border-radius: 15px !important;
+  background: white !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.card-stat p {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.card-stat h2 {
+  margin: 5px 0 0 0 !important;
+  font-size: 1.2rem !important;
+  font-weight: 800;
+}
+
+/* Estilo para el input de fecha (Calendario) */
+.historial-header {
+  background: #f1f5f9;
+  padding: 15px;
+  border-radius: var(--radius);
+  margin-top: 30px;
+}
+
+input[type="date"] {
+  font-family: 'Inter', sans-serif;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: white;
+  color: var(--text-main);
+  font-weight: 600;
+  outline: none;
+}
+
+input[type="date"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Botones deshabilitados (Seguridad de flujo) */
+.btn-disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(1);
+  pointer-events: none; /* Evita que el clic funcione visualmente */
+}
+
+.btn-active {
+  border: 2px solid var(--primary) !important;
+  background: rgba(99, 102, 241, 0.1) !important;
+  color: var(--primary) !important;
+}
+
+/* Tarjetas de historial más compactas */
+.status-entregado-card {
+  padding: 12px 18px !important;
+  background: #fdfdfd !important;
+}
+
+.status-entregado-card h3 {
+  font-size: 0.95rem !important;
+  color: var(--text-muted);
+}
+
+/* Ajustes para móviles */
+@media (max-width: 480px) {
+  .contabilidad-resumen {
+    gap: 8px !important;
+  }
+  .card-stat h2 {
+    font-size: 1rem !important;
+  }
+  .historial-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 10px;
+  }
+}
