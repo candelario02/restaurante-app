@@ -3,7 +3,7 @@ import { db, auth } from './firebase';
 import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
-  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit 
+  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Phone 
 } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -26,17 +26,14 @@ const Admin = ({ seccion }) => {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Escuchar Productos
     const unsubProd = onSnapshot(collection(db, 'productos'), (s) => 
       setProductos(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    // Escuchar Administradores
     const unsubUser = onSnapshot(collection(db, 'usuarios_admin'), (s) => 
       setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    // Escuchar Pedidos (Ordenados por fecha)
     const unsubPed = onSnapshot(collection(db, 'pedidos'), (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setPedidos(docs.sort((a,b) => b.fecha?.seconds - a.fecha?.seconds));
@@ -116,14 +113,26 @@ const Admin = ({ seccion }) => {
     } catch (e) { mostrarSms("Error de permisos", "error"); }
   };
 
-  const cambiarEstado = async (id, estado) => {
-    await updateDoc(doc(db, 'pedidos', id), { estado });
-    mostrarSms(`Pedido: ${estado}`, "exito");
+  const cambiarEstado = async (id, nuevoEstado, estadoActual) => {
+    if (estadoActual === 'entregado') {
+      mostrarSms("Este pedido ya fue finalizado", "error");
+      return;
+    }
+    if (estadoActual === nuevoEstado) {
+      mostrarSms(`El pedido ya está en: ${nuevoEstado}`, "error");
+      return;
+    }
+
+    await updateDoc(doc(db, 'pedidos', id), { estado: nuevoEstado });
+    mostrarSms(`Pedido: ${nuevoEstado}`, "exito");
   };
+
+  // Filtrar pedidos
+  const pedidosActivos = pedidos.filter(p => (p.estado || 'pendiente') !== 'entregado');
+  const pedidosHistorial = pedidos.filter(p => p.estado === 'entregado');
 
   return (
     <div className="admin-container">
-      {/* Alertas con tus clases de CSS */}
       {notificacion.texto && (
         <div className="overlay-msg">
           <div className={`mensaje-alerta ${notificacion.tipo}`}>
@@ -132,20 +141,16 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN 1: GESTIÓN DE MENÚ */}
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={guardarProducto} className="login-form">
             <h2 className="titulo-principal">{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
-            
             <div className="input-group">
               <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del plato" required />
             </div>
-            
             <div className="input-group">
               <input type="number" step="0.1" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio (S/)" required />
             </div>
-
             <div className="input-group">
               <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
                 <option value="Menu">Comidas</option>
@@ -154,13 +159,11 @@ const Admin = ({ seccion }) => {
                 <option value="Entradas">Entradas</option>
               </select>
             </div>
-
             <label className="btn-top-login">
               <ImageIcon size={18} /> 
               <span>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
               <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
             </label>
-
             <div className="modal-buttons">
               {editandoId && <button type="button" className="btn-no" onClick={cancelarEdicion}>Cancelar</button>}
               <button className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} disabled={cargando}>
@@ -173,10 +176,7 @@ const Admin = ({ seccion }) => {
             <table className="tabla-admin">
               <thead>
                 <tr>
-                  <th>Plato</th>
-                  <th>Precio</th>
-                  <th>Disp.</th>
-                  <th>Acciones</th>
+                  <th>Plato</th><th>Precio</th><th>Disp.</th><th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -208,7 +208,6 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN 2: ACCESOS ADMIN */}
       {seccion === 'usuarios' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
@@ -218,7 +217,6 @@ const Admin = ({ seccion }) => {
             </div>
             <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
           </form>
-          
           <div className="tabla-admin-container">
             <table className="tabla-admin">
               <thead><tr><th>Email</th><th>Quitar</th></tr></thead>
@@ -235,46 +233,82 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN 3: PANEL DE PEDIDOS */}
       {seccion === 'pedidos' && (
-        <div className="productos-grid">
-          {pedidos.length === 0 ? (
-            <p className="text-muted">No hay pedidos pendientes</p>
-          ) : (
-            pedidos.map(p => (
-              <div key={p.id} className="producto-card-pedido">
-                <div className="pedido-header">
-                  <h3>{p.cliente.nombre}</h3>
-                  <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString()}</span>
-                </div>
-                <p className="text-muted">{p.cliente.direccion}</p>
-                
-                <div className="pedido-lista-productos">
-                  {p.productos.map((prod, idx) => (
-                    <div key={idx} className="pedido-item-row">
-                      <span>{prod.nombre}</span>
-                      <span className="bold">S/ {prod.precio.toFixed(2)}</span>
-                    </div>
-                  ))}
-                  <div className="pedido-total-row">
-                    Total: S/ {p.total.toFixed(2)}
+        <div className="pedidos-seccion-wrapper">
+          <h2 className="titulo-principal" style={{fontSize: '1.5rem', marginBottom: '20px'}}>Pendientes ({pedidosActivos.length})</h2>
+          <div className="productos-grid">
+            {pedidosActivos.length === 0 ? (
+              <p className="text-muted" style={{gridColumn: '1/-1', textAlign: 'center'}}>No hay pedidos activos</p>
+            ) : (
+              pedidosActivos.map(p => (
+                <div key={p.id} className="producto-card-pedido">
+                  <div className="pedido-header">
+                    <h3>{p.cliente.nombre}</h3>
+                    <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString()}</span>
+                  </div>
+                  <p className="text-muted" style={{display: 'flex', alignItems: 'center', gap: '5px', margin: '5px 0'}}>
+                    <Truck size={14}/> {p.cliente.direccion}
+                  </p>
+                  <p className="text-muted" style={{display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600', color: 'var(--primary)'}}>
+                    <Phone size={14}/> {p.cliente.telefono}
+                  </p>
+                  
+                  <div className="pedido-lista-productos">
+                    {p.productos.map((prod, idx) => (
+                      <div key={idx} className="pedido-item-row">
+                        <span>{prod.nombre}</span>
+                        <span className="bold">S/ {prod.precio.toFixed(2)}</span>
+                      </div>
+                    ))}
+                    <div className="pedido-total-row">Total: S/ {p.total.toFixed(2)}</div>
+                  </div>
+
+                  <div className="pedido-status-container">
+                    <span className={`status-badge ${p.estado || 'pendiente'}`}>
+                      {p.estado || 'pendiente'}
+                    </span>
+                  </div>
+
+                  <div className="modal-buttons">
+                    <button 
+                      className={`btn-no ${p.estado === 'preparando' ? 'btn-disabled' : ''}`} 
+                      onClick={() => cambiarEstado(p.id, 'preparando', p.estado)}
+                    >
+                      <ChefHat size={18}/>
+                    </button>
+                    <button 
+                      className={`btn-no ${p.estado === 'enviado' ? 'btn-disabled' : ''}`} 
+                      onClick={() => cambiarEstado(p.id, 'enviado', p.estado)}
+                    >
+                      <Truck size={18}/>
+                    </button>
+                    <button 
+                      className="btn-yes-success" 
+                      onClick={() => cambiarEstado(p.id, 'entregado', p.estado)}
+                    >
+                      <CheckCircle size={18}/>
+                    </button>
                   </div>
                 </div>
+              ))
+            )}
+          </div>
 
-                <div className="pedido-status-container">
-                  <span className={`status-badge ${p.estado || 'pendiente'}`}>
-                    {p.estado || 'pendiente'}
-                  </span>
+          <hr style={{margin: '40px 0', border: 'none', borderTop: '1px solid var(--border)'}} />
+          
+          <h2 className="titulo-principal" style={{fontSize: '1.5rem', marginBottom: '20px', color: 'var(--text-muted)'}}>Historial de Hoy ({pedidosHistorial.length})</h2>
+          <div className="productos-grid" style={{opacity: 0.7}}>
+            {pedidosHistorial.map(p => (
+              <div key={p.id} className="producto-card-pedido status-entregado-card">
+                <div className="pedido-header">
+                  <h3>{p.cliente.nombre}</h3>
+                  <CheckCircle size={16} color="var(--success)"/>
                 </div>
-
-                <div className="modal-buttons">
-                  <button className="btn-no" title="Cocina" onClick={() => cambiarEstado(p.id, 'preparando')}><ChefHat size={18}/></button>
-                  <button className="btn-no" title="Delivery" onClick={() => cambiarEstado(p.id, 'enviado')}><Truck size={18}/></button>
-                  <button className="btn-yes-success" title="Entregado" onClick={() => cambiarEstado(p.id, 'entregado')}><CheckCircle size={18}/></button>
-                </div>
+                <p className="text-muted">{p.cliente.telefono}</p>
+                <div className="pedido-total-row" style={{marginTop: '10px'}}>Finalizado: S/ {p.total.toFixed(2)}</div>
               </div>
-            ))
-          )}
+            ))}
+          </div>
         </div>
       )}
     </div>
