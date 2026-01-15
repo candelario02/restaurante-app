@@ -22,6 +22,7 @@ const MenuCliente = () => {
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [pedidoExitoso, setPedidoExitoso] = useState(false);
+  const [avisoAgregado, setAvisoAgregado] = useState(null);
 
   // Datos del cliente
   const [nombre, setNombre] = useState('');
@@ -50,6 +51,9 @@ const MenuCliente = () => {
 
   const agregarAlCarrito = (producto) => {
     setCarrito(prev => [...prev, producto]);
+    // Mostrar pequeño comentario de confirmación
+    setAvisoAgregado(producto.nombre);
+    setTimeout(() => setAvisoAgregado(null), 1500);
   };
 
   const total = carrito.reduce((acc, item) => acc + (Number(item.precio) || 0), 0);
@@ -61,7 +65,7 @@ const MenuCliente = () => {
     try {
       await addDoc(collection(db, "pedidos"), {
         cliente: { nombre, telefono, direccion },
-        productos: carrito,
+        productos: carrito.map(p => ({ nombre: p.nombre, precio: p.precio })),
         total,
         estado: "pendiente",
         fecha: new Date()
@@ -80,15 +84,31 @@ const MenuCliente = () => {
 
     } catch (error) {
       console.error("Error al enviar pedido:", error);
+      alert("Error al enviar el pedido. Revisa las reglas de Firebase.");
     } finally {
       setEnviando(false);
     }
   };
 
+  // Componente del Botón Flotante (Se usa en ambas vistas)
+  const BotonCarritoFlotante = () => (
+    carrito.length > 0 && (
+      <button 
+        className="btn-carrito-flotante" 
+        onClick={() => setVerCarrito(true)}
+      >
+        <ShoppingCart size={20} />
+        <span>S/ {total.toFixed(2)} ({carrito.length})</span>
+      </button>
+    )
+  );
+
   /* --- VISTA 1: CATEGORÍAS --- */
   if (!categoriaActual) {
     return (
       <div className="admin-container view-principal">
+        <BotonCarritoFlotante />
+        
         <div className="menu-principal-wrapper">
           <div className="header-brand">
             <h1 className="titulo-principal">Nuestro Menú</h1>
@@ -126,30 +146,10 @@ const MenuCliente = () => {
           </div>
         </div>
 
-        {carrito.length > 0 && (
-          <button 
-            className="btn-login-submit" 
-            onClick={() => setVerCarrito(true)}
-            style={{
-              position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
-              width: '90%', maxWidth: '400px', zIndex: 1100, boxShadow: '0 10px 25px rgba(99, 102, 241, 0.4)'
-            }}
-          >
-            <ShoppingCart size={22} />
-            <span>Ver mi pedido (S/ {total.toFixed(2)})</span>
-          </button>
-        )}
-
-        {pedidoExitoso && (
-          <div className="overlay-msg">
-            <div className="mensaje-alerta exito" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              <CheckCircle size={50} color="white" />
-              <div style={{ textAlign: 'center' }}>
-                ¡Pedido enviado con éxito!<br/>Pronto nos comunicaremos contigo.
-              </div>
-            </div>
-          </div>
-        )}
+        {/* MODALES DE CARRITO Y ÉXITO */}
+        {verCarrito && <ModalCarrito />}
+        {mostrarFormulario && <ModalFormulario />}
+        {pedidoExitoso && <AlertaExito />}
       </div>
     );
   }
@@ -157,6 +157,15 @@ const MenuCliente = () => {
   /* --- VISTA 2: PRODUCTOS --- */
   return (
     <div className="admin-container">
+      {/* Toast de confirmación al agregar */}
+      {avisoAgregado && (
+        <div className="toast-agregado">
+          <CheckCircle size={18} /> {avisoAgregado} agregado
+        </div>
+      )}
+
+      <BotonCarritoFlotante />
+
       <div className="view-header" style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px'}}>
         <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}>
           <ArrowLeft size={24} />
@@ -172,86 +181,102 @@ const MenuCliente = () => {
         ) : (
           productos.map(p => (
             <div key={p.id} className="producto-card">
-              {/* Contenedor de Imagen */}
               <div className="producto-imagen-wrapper">
-                <img src={p.img} alt={p.nombre} style={{width: '100%', height: '200px', objectFit: 'cover'}} />
+                <img src={p.img} alt={p.nombre} className="producto-foto" />
               </div>
 
-              {/* Contenedor de Información (Aquí es donde se posiciona el botón) */}
               <div className="producto-info">
-                <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
-                <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.3rem' }}>
-                  S/ {p.precio.toFixed(2)}
-                </span>
-
-                {/* BOTÓN "+" CORREGIDO: Ahora usa la clase correcta y está dentro de producto-info */}
-                <button 
-                  className="btn-agregar-carrito" 
-                  onClick={() => agregarAlCarrito(p)}
-                  title="Agregar al pedido"
-                >
-                  <Plus size={24} />
-                </button>
+                <h3>{p.nombre}</h3>
+                <div className="precio-y-accion">
+                  <span className="precio-tag">S/ {p.precio.toFixed(2)}</span>
+                  <button 
+                    className="btn-plus-item" 
+                    onClick={() => agregarAlCarrito(p)}
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* MODAL CARRITO */}
-      {verCarrito && (
-        <div className="overlay-msg">
-          <div className="msg-box">
-            <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Tu Pedido</h2>
-            <div style={{ maxHeight: '350px', overflowY: 'auto', marginBottom: '20px' }}>
-              {carrito.map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-                  <span>{item.nombre}</span>
-                  <strong>S/ {item.precio.toFixed(2)}</strong>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: '900', marginBottom: '25px', color: 'var(--primary)' }}>
-              Total: S/ {total.toFixed(2)}
-            </div>
-            <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setVerCarrito(false)}>Cerrar</button>
-              <button className="btn-yes" style={{ background: 'var(--success)' }} onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL FORMULARIO */}
-      {mostrarFormulario && (
-        <div className="overlay-msg">
-          <div className="msg-box">
-            <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Datos de Entrega</h2>
-            <div className="login-form">
-              <div className="input-group">
-                <User className="input-icon" size={18} />
-                <input placeholder="Nombre completo" value={nombre} onChange={e => setNombre(e.target.value)} required />
-              </div>
-              <div className="input-group">
-                <Phone className="input-icon" size={18} />
-                <input type="tel" placeholder="WhatsApp / Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} required />
-              </div>
-              <div className="input-group">
-                <MapPin className="input-icon" size={18} />
-                <input placeholder="Dirección de entrega" value={direccion} onChange={e => setDireccion(e.target.value)} required />
-              </div>
-              <div className="modal-buttons">
-                <button className="btn-no" type="button" onClick={() => setMostrarFormulario(false)}>Atrás</button>
-                <button className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} onClick={enviarPedido} disabled={enviando}>
-                  {enviando ? <div className="spinner-loader"></div> : "Confirmar Pedido"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {verCarrito && <ModalCarrito />}
+      {mostrarFormulario && <ModalFormulario />}
+      {pedidoExitoso && <AlertaExito />}
     </div>
   );
+
+  /* --- SUB-COMPONENTES (MODALES) --- */
+
+  function ModalCarrito() {
+    return (
+      <div className="overlay-msg">
+        <div className="msg-box modal-carrito">
+          <h2 className="titulo-principal">Tu Pedido</h2>
+          <div className="carrito-lista">
+            {carrito.map((item, i) => (
+              <div key={i} className="carrito-item-fila">
+                <span>{item.nombre}</span>
+                <strong>S/ {item.precio.toFixed(2)}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="carrito-total">
+            Total: S/ {total.toFixed(2)}
+          </div>
+          <div className="modal-buttons">
+            <button className="btn-no" onClick={() => setVerCarrito(false)}>Cerrar</button>
+            <button className="btn-yes" onClick={() => setMostrarFormulario(true)}>Pedir ahora</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function ModalFormulario() {
+    return (
+      <div className="overlay-msg">
+        <div className="msg-box">
+          <h2 className="titulo-principal">Datos de Entrega</h2>
+          <div className="login-form">
+            <div className="input-group">
+              <User className="input-icon" size={18} />
+              <input placeholder="Nombre completo" value={nombre} onChange={e => setNombre(e.target.value)} required />
+            </div>
+            <div className="input-group">
+              <Phone className="input-icon" size={18} />
+              <input type="tel" placeholder="WhatsApp / Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} required />
+            </div>
+            <div className="input-group">
+              <MapPin className="input-icon" size={18} />
+              <input placeholder="Dirección de entrega" value={direccion} onChange={e => setDireccion(e.target.value)} required />
+            </div>
+            <div className="modal-buttons">
+              <button className="btn-no" type="button" onClick={() => setMostrarFormulario(false)}>Atrás</button>
+              <button className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} onClick={enviarPedido} disabled={enviando}>
+                {enviando ? "Enviando..." : "Confirmar Pedido"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function AlertaExito() {
+    return (
+      <div className="overlay-msg">
+        <div className="mensaje-alerta exito">
+          <CheckCircle size={50} color="white" />
+          <div style={{ textAlign: 'center' }}>
+            ¡Pedido enviado con éxito!<br/>Pronto nos comunicaremos contigo.
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default MenuCliente;

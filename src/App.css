@@ -134,10 +134,12 @@ body {
 .tabla-admin th { background: #f1f5f9; padding: 16px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); }
 .tabla-admin td { padding: 16px; border-bottom: 1px solid var(--border); }
 
-/* --- SESIÓN 6: TARJETAS DE PRODUCTO --- */
+/* --- SESIÓN 6: TARJETAS DE PRODUCTO Y CARRITO --- */
 .productos-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px; padding: 20px;
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px; 
+  padding: 20px;
 }
 
 .producto-card {
@@ -152,32 +154,121 @@ body {
 
 .producto-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
 
+.producto-foto {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
 .producto-info {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  position: relative; /* CAMBIO: Ahora el botón se posiciona AQUÍ dentro */
-  min-height: 90px; /* Asegura espacio para que el nombre y el botón no choquen */
 }
 
-.btn-agregar-carrito {
-  position: absolute !important;
-  bottom: 15px !important; /* Distancia desde el fondo del cuadro blanco */
-  right: 15px !important;  /* Distancia desde la derecha del cuadro blanco */
-  top: auto !important;    /* Resetea cualquier posición vieja */
-  left: auto !important;   /* Resetea cualquier posición vieja */
-  width: 40px;
-  height: 40px;
+/* Contenedor para alinear precio y botón circular */
+.precio-y-accion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.precio-tag {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 1.3rem;
+}
+
+/* Botón "+" circular pequeño al lado del precio */
+.btn-plus-item {
   background: var(--primary);
   color: white;
-  border-radius: 50%;
   border: none;
-  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
-  z-index: 10;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.btn-plus-item:active { transform: scale(0.9); }
+
+/* --- NUEVOS ELEMENTOS DEL CARRITO --- */
+
+/* Carrito flotante pequeño y centrado (No tapa nombres) */
+.btn-carrito-flotante {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  z-index: 2000;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+/* Aviso de "Plato Agregado" arriba centrado */
+.toast-agregado {
+  position: fixed;
+  top: 85px; 
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981; /* Verde éxito */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  animation: slideDownUp 2s ease-in-out forwards;
+}
+
+@keyframes slideDownUp {
+  0% { opacity: 0; transform: translate(-50%, -30px); }
+  15% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -30px); }
+}
+
+/* Ajuste del modal del carrito para que se vea limpio */
+.carrito-lista {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 15px 0;
+}
+
+.carrito-item-fila {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.carrito-total {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--primary);
+  text-align: center;
+  margin: 20px 0;
 }
 /* --- SESIÓN 7: LOGIN Y FORMULARIOS --- */
 .login-form { 
