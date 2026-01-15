@@ -126,7 +126,6 @@ const MenuCliente = () => {
           </div>
         </div>
 
-        {/* Solo mostramos el carrito si hay algo agregado */}
         {carrito.length > 0 && (
           <button 
             className="btn-login-submit" 
@@ -173,26 +172,26 @@ const MenuCliente = () => {
         ) : (
           productos.map(p => (
             <div key={p.id} className="producto-card">
-              <div style={{ position: 'relative' }}>
+              {/* Contenedor de Imagen */}
+              <div className="producto-imagen-wrapper">
                 <img src={p.img} alt={p.nombre} style={{width: '100%', height: '200px', objectFit: 'cover'}} />
-                {/* BOTÓN SOBRE LA FOTO */}
-                <button 
-                  className="btn-back-inline" 
-                  onClick={() => agregarAlCarrito(p)}
-                  style={{
-                    position: 'absolute', bottom: '10px', right: '10px',
-                    background: 'var(--primary)', color: 'white', borderRadius: '50%', padding: '10px',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  <Plus size={24} />
-                </button>
               </div>
-              <div style={{ padding: '20px' }}>
+
+              {/* Contenedor de Información (Aquí es donde se posiciona el botón) */}
+              <div className="producto-info">
                 <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{p.nombre}</h3>
                 <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.3rem' }}>
                   S/ {p.precio.toFixed(2)}
                 </span>
+
+                {/* BOTÓN "+" CORREGIDO: Ahora usa la clase correcta y está dentro de producto-info */}
+                <button 
+                  className="btn-agregar-carrito" 
+                  onClick={() => agregarAlCarrito(p)}
+                  title="Agregar al pedido"
+                >
+                  <Plus size={24} />
+                </button>
               </div>
             </div>
           ))

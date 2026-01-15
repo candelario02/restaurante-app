@@ -62,32 +62,42 @@ function App() {
       {/* SESIÓN 2: BARRA SUPERIOR */}
       <nav className="top-bar">
         {authState.user ? (
-          <div className="admin-buttons">
-            {!authState.isAdmin ? (
-              <button className="btn-top-gestion active" onClick={() => alternarModoAdmin(true)}>
-                <Settings size={18} /> Volver al Panel
+          <>
+            {/* 1. Flecha de regreso (FUERA de admin-buttons para encuadre correcto) */}
+            {authState.isAdmin ? (
+              <button className="btn-back-inline" title="Vista Cliente" onClick={() => alternarModoAdmin(false)}>
+                <ArrowLeft size={20} />
               </button>
             ) : (
-              <>
-                <button className="btn-back-inline" title="Vista Cliente" onClick={() => alternarModoAdmin(false)}>
-                  <ArrowLeft size={20} />
-                </button>
-
-                <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} onClick={() => setSeccion('menu')}>
-                  <Settings size={18} /> <span>Menú</span>
-                </button>
-                <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`} onClick={() => setSeccion('usuarios')}>
-                  <Users size={18} /> <span>Usuarios</span>
-                </button>
-                <button className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`} onClick={() => setSeccion('pedidos')}>
-                  <Package size={18} /> <span>Pedidos</span>
-                </button>
-              </>
+              <div style={{ width: '40px' }}></div> /* Espaciador para mantener simetría */
             )}
-            <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
-              <LogOut size={18} />
-            </button>
-          </div>
+
+            {/* 2. Grupo de botones de gestión */}
+            <div className="admin-buttons">
+              {!authState.isAdmin ? (
+                <button className="btn-top-gestion active" onClick={() => alternarModoAdmin(true)}>
+                  <Settings size={18} /> <span>Volver al Panel</span>
+                </button>
+              ) : (
+                <>
+                  <button className={`btn-top-gestion ${seccion === 'menu' ? 'active' : ''}`} onClick={() => setSeccion('menu')}>
+                    <Settings size={18} /> <span>Menú</span>
+                  </button>
+                  <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`} onClick={() => setSeccion('usuarios')}>
+                    <Users size={18} /> <span>Usuarios</span>
+                  </button>
+                  <button className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`} onClick={() => setSeccion('pedidos')}>
+                    <Package size={18} /> <span>Pedidos</span>
+                  </button>
+                </>
+              )}
+              
+              {/* Botón Salir */}
+              <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
+                <LogOut size={18} />
+              </button>
+            </div>
+          </>
         ) : (
           <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
             <LogIn size={18} /> Admin
@@ -95,7 +105,7 @@ function App() {
         )}
       </nav>
 
-      {/* SESIÓN 4: MODALES Y ALERTAS (Usando overlay-msg de tu CSS) */}
+      {/* SESIÓN 4: MODALES Y ALERTAS */}
       {mostrarLogin && (
         <div className="overlay-msg">
           <div className="msg-box">
