@@ -5,7 +5,10 @@ import Admin from './Admin';
 import Login from './Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LogIn, LogOut, Settings, Clock, ArrowLeft, X, Users, Package } from 'lucide-react';
+import { 
+  LogIn, LogOut, Settings, Clock, ArrowLeft, 
+  X, Users, Package, TrendingUp 
+} from 'lucide-react'; // Añadido TrendingUp
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -59,20 +62,18 @@ function App() {
 
   return (
     <div className="App">
-      {/* SESIÓN 2: BARRA SUPERIOR */}
+      {/* BARRA SUPERIOR */}
       <nav className="top-bar">
         {authState.user ? (
           <>
-            {/* 1. Flecha de regreso (FUERA de admin-buttons para encuadre correcto) */}
             {authState.isAdmin ? (
               <button className="btn-back-inline" title="Vista Cliente" onClick={() => alternarModoAdmin(false)}>
                 <ArrowLeft size={20} />
               </button>
             ) : (
-              <div style={{ width: '40px' }}></div> /* Espaciador para mantener simetría */
+              <div style={{ width: '40px' }}></div>
             )}
 
-            {/* 2. Grupo de botones de gestión */}
             <div className="admin-buttons">
               {!authState.isAdmin ? (
                 <button className="btn-top-gestion active" onClick={() => alternarModoAdmin(true)}>
@@ -89,10 +90,13 @@ function App() {
                   <button className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`} onClick={() => setSeccion('pedidos')}>
                     <Package size={18} /> <span>Pedidos</span>
                   </button>
+                  {/* NUEVO BOTÓN PARA CAJA/VENTAS */}
+                  <button className={`btn-top-gestion ${seccion === 'ventas' ? 'active' : ''}`} onClick={() => setSeccion('ventas')}>
+                    <TrendingUp size={18} /> <span>Caja</span>
+                  </button>
                 </>
               )}
               
-              {/* Botón Salir */}
               <button className="btn-top-admin" onClick={() => setConfirmarSalida(true)}>
                 <LogOut size={18} />
               </button>
@@ -105,7 +109,7 @@ function App() {
         )}
       </nav>
 
-      {/* SESIÓN 4: MODALES Y ALERTAS */}
+      {/* MODALES */}
       {mostrarLogin && (
         <div className="overlay-msg">
           <div className="msg-box">

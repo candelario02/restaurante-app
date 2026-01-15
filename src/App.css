@@ -473,3 +473,83 @@ input[type="date"]:focus {
     gap: 10px;
   }
 }
+/* --- SESIÓN 11: SEGUIMIENTO DE PEDIDO Y MODO MESA (NUEVO) --- */
+
+/* Contenedor de iconos de seguimiento */
+.status-tracker {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin: 25px 0;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 1px dashed var(--border);
+}
+
+.status-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.5s ease;
+}
+
+/* Animación de pulso para el estado activo */
+.status-badge.preparando, .status-badge.enviado {
+  animation: pulse-light 2s infinite;
+}
+
+@keyframes pulse-light {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* Estilo para los botones de selección (Mesa vs Delivery) */
+.tipo-pedido-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn-tipo-selector {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-muted);
+}
+
+.btn-tipo-selector.active {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.05);
+  color: var(--primary);
+}
+
+/* Ajuste para que el seguimiento se vea bien en celulares */
+@media (max-width: 480px) {
+  .status-tracker {
+    padding: 15px 5px;
+  }
+  
+  .status-tracker p {
+    font-size: 0.6rem !important;
+  }
+
+  .status-tracker svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Clase para resaltar el nombre del cliente en el seguimiento */
+.cliente-highlight {
+  color: var(--primary);
+  font-weight: 800;
+  text-decoration: underline;
+}
