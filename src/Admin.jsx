@@ -9,7 +9,7 @@ import {
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const Admin = ({ seccion, restauranteId = "local_demo" }) => { 
+const Admin = ({ seccion, restauranteId }) => { 
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -38,7 +38,8 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
     const titulo = `Reporte de Ventas - ${fechaFiltro}`;
     
     doc.setFontSize(18);
-    doc.text(restauranteId.toUpperCase(), 14, 20);
+    // Usamos el ID del restaurante en el encabezado
+    doc.text(restauranteId ? restauranteId.toUpperCase().replace('_', ' ') : 'REPORTE', 14, 20);
     doc.setFontSize(12);
     doc.text(titulo, 14, 30);
     doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 38);
@@ -69,13 +70,14 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
   const abrirWhatsApp = (pedido) => {
     const numeroLimpio = pedido.cliente.telefono.replace(/\D/g, '');
     const listaProductos = pedido.productos.map(p => `- ${p.nombre}`).join('\n');
-    const mensaje = `Hola ${pedido.cliente.nombre}, somos del restaurante. Tu pedido está en proceso y pronto llegará a ${pedido.cliente.direccion}.\n\n*Detalle del pedido:*\n${listaProductos}\n\n*Total:* S/ ${pedido.total.toFixed(2)}`;
+    const mensaje = `Hola ${pedido.cliente.nombre}, somos del restaurante. Tu pedido está en proceso.\n\n*Detalle:*\n${listaProductos}\n\n*Total:* S/ ${pedido.total.toFixed(2)}`;
     const url = `https://wa.me/51${numeroLimpio}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   };
 
   // --- SONIDO DE NUEVOS PEDIDOS ---
   useEffect(() => {
+    if (!restauranteId) return;
     const q = query(
       collection(db, 'pedidos'), 
       where('restauranteId', '==', restauranteId),
@@ -100,8 +102,7 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
 
   // --- CARGA DE DATOS ---
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
+    if (!restauranteId) return;
 
     const qProd = query(collection(db, 'productos'), where('restauranteId', '==', restauranteId));
     const unsubProd = onSnapshot(qProd, (s) => 
@@ -116,7 +117,7 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
     const qPed = query(collection(db, 'pedidos'), where('restauranteId', '==', restauranteId));
     const unsubPed = onSnapshot(qPed, (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
-      setPedidos(docs.sort((a,b) => b.fecha?.seconds - a.fecha?.seconds));
+      setPedidos(docs.sort((a,b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0)));
     });
 
     return () => { unsubProd(); unsubUser(); unsubPed(); };
@@ -185,8 +186,8 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
   const registrarAdmin = async (e) => {
     e.preventDefault();
     try {
-      const docRef = doc(db, 'usuarios_admin', userEmail);
-      await setDoc(docRef, { email: userEmail, rol: 'admin', restauranteId });
+      const docRef = doc(db, 'usuarios_admin', userEmail.toLowerCase());
+      await setDoc(docRef, { email: userEmail.toLowerCase(), rol: 'admin', restauranteId });
       setUserEmail('');
       mostrarSms("Acceso concedido", "exito");
     } catch (e) { mostrarSms("Error de permisos", "error"); }
@@ -363,10 +364,10 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => {
 
           <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', gap: '10px'}}>
             <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-               <h2 className="titulo-principal" style={{fontSize: '1rem', margin: 0}}>Historial</h2>
-               <button onClick={generarReportePDF} className="btn-top-gestion" style={{width: 'auto', padding: '5px 10px', backgroundColor: '#e74c3c', color: 'white', border: 'none'}}>
-                 <FileText size={16} /> PDF
-               </button>
+                <h2 className="titulo-principal" style={{fontSize: '1rem', margin: 0}}>Historial</h2>
+                <button onClick={generarReportePDF} className="btn-top-gestion" style={{width: 'auto', padding: '5px 10px', backgroundColor: '#e74c3c', color: 'white', border: 'none'}}>
+                  <FileText size={16} /> PDF
+                </button>
             </div>
             <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} className="btn-top-gestion" style={{width: 'auto'}}/>
           </div>
