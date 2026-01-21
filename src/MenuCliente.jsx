@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, query, where, onSnapshot, addDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, doc, limit, orderBy } from 'firebase/firestore';
 import {
   Utensils,
   Coffee,
@@ -30,14 +30,40 @@ const MenuCliente = () => {
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
   const [direccion, setDireccion] = useState('');
-  const [tipoPedido, setTipoPedido] = useState('mesa'); // 'mesa' o 'delivery'
+  const [tipoPedido, setTipoPedido] = useState('mesa'); 
   const [enviando, setEnviando] = useState(false);
 
-  // Estado para el seguimiento del pedido en curso
+  // Estado para el seguimiento
   const [pedidoActivoId, setPedidoActivoId] = useState(localStorage.getItem('ultimoPedidoId'));
   const [datosPedidoRealtime, setDatosPedidoRealtime] = useState(null);
 
-  // 1. Efecto para cargar productos por categoría
+  // --- AUDIO DE NOTIFICACIÓN PARA EL ADMIN ---
+  // (Aunque este archivo es del cliente, incluimos la lógica aquí por si el admin tiene abierta esta pestaña 
+  // o para que aprendas cómo integrarlo en el componente Admin.jsx)
+  useEffect(() => {
+    const q = query(
+      collection(db, "pedidos"),
+      orderBy("fecha", "desc"),
+      limit(1)
+    );
+
+    const unsubSnap = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const nuevoPedido = snapshot.docs[0].data();
+        const ahora = new Date().getTime();
+        const fechaPedido = nuevoPedido.fecha?.seconds * 1000;
+        
+        // Si el pedido tiene menos de 10 segundos de creado, suena
+        if (ahora - fechaPedido < 10000) {
+          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+          audio.play().catch(e => console.log("Audio bloqueado por navegador"));
+        }
+      }
+    });
+    return () => unsubSnap();
+  }, []);
+
+  // 1. Cargar productos
   useEffect(() => {
     if (!categoriaActual) return;
     const q = query(
@@ -51,7 +77,7 @@ const MenuCliente = () => {
     return () => unsubscribe();
   }, [categoriaActual]);
 
-  // 2. Efecto para SEGUIMIENTO en tiempo real del pedido enviado
+  // 2. SEGUIMIENTO en tiempo real mejorado
   useEffect(() => {
     if (!pedidoActivoId) return;
 
@@ -59,14 +85,18 @@ const MenuCliente = () => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setDatosPedidoRealtime(data);
-        // Si el admin ya lo marcó como entregado, lo quitamos de la vista después de 10 segundos
+        
         if (data.estado === 'entregado') {
           setTimeout(() => {
             setPedidoActivoId(null);
             localStorage.removeItem('ultimoPedidoId');
             setDatosPedidoRealtime(null);
-          }, 10000);
+          }, 15000); // 15 seg para que vea el check de entregado
         }
+      } else {
+        // Si el admin borra el pedido por error
+        setPedidoActivoId(null);
+        localStorage.removeItem('ultimoPedidoId');
       }
     });
     return () => unsub();
@@ -82,18 +112,16 @@ const MenuCliente = () => {
 
   const enviarPedido = async (e) => {
     if (e) e.preventDefault();
-    
-    // Validación según tipo de pedido
-    if (tipoPedido === 'mesa' && !nombre) return alert("Por favor, ingresa tu nombre");
-    if (tipoPedido === 'delivery' && (!nombre || !telefono || !direccion)) return alert("Completa todos los datos");
+    if (tipoPedido === 'mesa' && !nombre) return alert("Ingresa tu nombre");
+    if (tipoPedido === 'delivery' && (!nombre || !telefono || !direccion)) return alert("Completa los datos");
     
     setEnviando(true);
     try {
       const nuevoPedido = {
         cliente: { 
           nombre, 
-          telefono: tipoPedido === 'mesa' ? 'En Mesa' : telefono, 
-          direccion: tipoPedido === 'mesa' ? 'Mesa del Local' : direccion,
+          telefono: tipoPedido === 'mesa' ? 'En Local' : telefono, 
+          direccion: tipoPedido === 'mesa' ? 'Atención en Local' : direccion,
           tipo: tipoPedido 
         },
         productos: carrito.map(p => ({ nombre: p.nombre, precio: p.precio })),
@@ -103,31 +131,18 @@ const MenuCliente = () => {
       };
 
       const docRef = await addDoc(collection(db, "pedidos"), nuevoPedido);
-      
-      // Guardamos el ID para el seguimiento
       setPedidoActivoId(docRef.id);
       localStorage.setItem('ultimoPedidoId', docRef.id);
 
       setCarrito([]);
       setMostrarFormulario(false);
       setVerCarrito(false);
-      setCategoriaActual(null);
     } catch (error) {
-      console.error("Error:", error);
-      alert("Error al enviar el pedido.");
+      alert("Error al enviar.");
     } finally {
       setEnviando(false);
     }
   };
-
-  const renderBotonFlotante = () => (
-    carrito.length > 0 && !verCarrito && !mostrarFormulario && !pedidoActivoId && (
-      <button className="btn-carrito-flotante" onClick={() => setVerCarrito(true)}>
-        <ShoppingCart size={20} />
-        <span>S/ {total.toFixed(2)} ({carrito.length})</span>
-      </button>
-    )
-  );
 
   return (
     <div className="admin-container">
@@ -137,50 +152,65 @@ const MenuCliente = () => {
         </div>
       )}
 
-      {renderBotonFlotante()}
+      {/* BOTÓN FLOTANTE */}
+      {carrito.length > 0 && !verCarrito && !mostrarFormulario && !pedidoActivoId && (
+        <button className="btn-carrito-flotante" onClick={() => setVerCarrito(true)}>
+          <ShoppingCart size={20} />
+          <span>Ver Mi Orden (S/ {total.toFixed(2)})</span>
+        </button>
+      )}
 
-      {/* --- VISTA DE SEGUIMIENTO (Si hay un pedido en curso) --- */}
+      {/* SEGUIMIENTO DE PEDIDO */}
       {pedidoActivoId && datosPedidoRealtime && (
         <div className="view-principal" style={{padding: '20px'}}>
-           <div className="msg-box" style={{maxWidth: '100%', border: '2px solid var(--primary)'}}>
-              <h2 className="titulo-principal" style={{fontSize: '1.5rem'}}>¡Pedido Recibido!</h2>
-              <p>Hola <strong>{datosPedidoRealtime.cliente.nombre}</strong>, estamos trabajando en ello.</p>
+           <div className="msg-box" style={{maxWidth: '100%', border: '3px solid var(--primary)'}}>
+              <h2 className="titulo-principal" style={{fontSize: '1.8rem'}}>¡Hola, {datosPedidoRealtime.cliente.nombre}!</h2>
+              <p>Tu pedido está siendo procesado en este momento.</p>
               
-              <div className="status-tracker" style={{margin: '30px 0', display: 'flex', justifyContent: 'space-around'}}>
-                <div style={{opacity: 1, textAlign: 'center', color: 'var(--primary)'}}>
-                  <Clock size={32} />
-                  <p style={{fontSize: '0.7rem', fontWeight: 'bold'}}>RECIBIDO</p>
+              <div className="status-tracker">
+                {/* PASO 1: RECIBIDO */}
+                <div className="status-step" style={{color: 'var(--primary)', opacity: 1}}>
+                  <Clock size={35} />
+                  <p style={{fontSize: '0.7rem', fontWeight: '800'}}>RECIBIDO</p>
                 </div>
-                <div style={{opacity: datosPedidoRealtime.estado === 'preparando' || datosPedidoRealtime.estado === 'enviado' || datosPedidoRealtime.estado === 'entregado' ? 1 : 0.2, textAlign: 'center', color: 'var(--warning)'}}>
-                  <ChefHat size={32} />
-                  <p style={{fontSize: '0.7rem', fontWeight: 'bold'}}>COCINANDO</p>
+
+                {/* PASO 2: COCINANDO */}
+                <div className="status-step" style={{
+                  color: 'var(--warning)', 
+                  opacity: (['preparando', 'enviado', 'entregado'].includes(datosPedidoRealtime.estado)) ? 1 : 0.2
+                }}>
+                  <ChefHat size={35} className={datosPedidoRealtime.estado === 'preparando' ? 'anim-pulse' : ''} />
+                  <p style={{fontSize: '0.7rem', fontWeight: '800'}}>EN COCINA</p>
                 </div>
-                <div style={{opacity: datosPedidoRealtime.estado === 'enviado' || datosPedidoRealtime.estado === 'entregado' ? 1 : 0.2, textAlign: 'center', color: 'var(--success)'}}>
-                  <Truck size={32} />
-                  <p style={{fontSize: '0.7rem', fontWeight: 'bold'}}>EN CAMINO</p>
+
+                {/* PASO 3: CAMINO / LISTO */}
+                <div className="status-step" style={{
+                  color: 'var(--success)', 
+                  opacity: (['enviado', 'entregado'].includes(datosPedidoRealtime.estado)) ? 1 : 0.2
+                }}>
+                  <Truck size={35} className={datosPedidoRealtime.estado === 'enviado' ? 'anim-pulse' : ''} />
+                  <p style={{fontSize: '0.7rem', fontWeight: '800'}}>EN CAMINO</p>
                 </div>
               </div>
 
-              <div className={`status-badge ${datosPedidoRealtime.estado}`}>
-                Estado: {datosPedidoRealtime.estado.toUpperCase()}
+              <div className={`status-badge ${datosPedidoRealtime.estado}`} style={{fontSize: '1rem', padding: '10px 20px'}}>
+                {datosPedidoRealtime.estado === 'pendiente' && "Esperando confirmación..."}
+                {datosPedidoRealtime.estado === 'preparando' && "¡El chef está cocinando!"}
+                {datosPedidoRealtime.estado === 'enviado' && "¡Tu pedido va hacia ti!"}
+                {datosPedidoRealtime.estado === 'entregado' && "¡Pedido Entregado! Gracias."}
               </div>
-
-              <p className="text-muted" style={{marginTop: '20px', fontSize: '0.8rem'}}>
-                No cierres esta ventana para ver cuándo tu plato esté listo.
-              </p>
            </div>
         </div>
       )}
 
-      {/* --- FLUJO NORMAL DE COMPRA (Solo se muestra si no hay pedido activo) --- */}
+      {/* MENU Y CATEGORIAS */}
       {!pedidoActivoId && (
         <>
           {!categoriaActual ? (
             <div className="view-principal">
               <div className="menu-principal-wrapper">
                 <div className="header-brand">
-                  <h1 className="titulo-principal">Nuestro Menú</h1>
-                  <p className="text-muted">Selecciona para empezar tu pedido</p>
+                  <h1 className="titulo-principal">¿Qué te apetece hoy?</h1>
                 </div>
                 <div className="categorias-grid-principal">
                   <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}><div className="categoria-circulo bg-comidas"><Pizza size={90} className="icon-main" /></div><span className="categoria-label">Comidas</span></div>
@@ -192,16 +222,16 @@ const MenuCliente = () => {
             </div>
           ) : (
             <>
-              <div className="view-header" style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px'}}>
+              <div className="view-header" style={{display: 'flex', alignItems: 'center', gap: '15px', padding: '10px'}}>
                 <button className="btn-back-inline" onClick={() => setCategoriaActual(null)}><ArrowLeft size={24} /></button>
-                <h2 className="titulo-principal" style={{ fontSize: '2rem', margin: 0 }}>{categoriaActual}</h2>
+                <h2 className="titulo-principal" style={{ fontSize: '1.8rem', margin: 0 }}>{categoriaActual}</h2>
               </div>
               <div className="productos-grid">
                 {productos.map(p => (
                   <div key={p.id} className="producto-card">
                     <img src={p.img} alt={p.nombre} className="producto-foto" />
                     <div className="producto-info">
-                      <h3>{p.nombre}</h3>
+                      <h3 style={{fontSize: '1.1rem', marginBottom: '5px'}}>{p.nombre}</h3>
                       <div className="precio-y-accion">
                         <span className="precio-tag">S/ {p.precio.toFixed(2)}</span>
                         <button className="btn-plus-item" onClick={() => agregarAlCarrito(p)}><Plus size={20} /></button>
@@ -215,11 +245,11 @@ const MenuCliente = () => {
         </>
       )}
 
-      {/* MODAL 1: RESUMEN CARRITO */}
+      {/* MODAL CARRITO */}
       {verCarrito && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2 className="titulo-principal">Tu Pedido</h2>
+            <h2 className="titulo-principal">Tu Orden</h2>
             <div className="carrito-lista">
               {carrito.map((item, i) => (
                 <div key={i} className="carrito-item-fila"><span>{item.nombre}</span><strong>S/ {item.precio.toFixed(2)}</strong></div>
@@ -227,60 +257,35 @@ const MenuCliente = () => {
             </div>
             <div className="carrito-total">Total: S/ {total.toFixed(2)}</div>
             <div className="modal-buttons">
-              <button className="btn-no" onClick={() => setVerCarrito(false)}>Atrás</button>
-              <button className="btn-yes" onClick={() => { setVerCarrito(false); setMostrarFormulario(true); }}>Continuar</button>
+              <button className="btn-no" onClick={() => setVerCarrito(false)}>Añadir más</button>
+              <button className="btn-yes" style={{background: 'var(--success)'}} onClick={() => { setVerCarrito(false); setMostrarFormulario(true); }}>Pedir Ahora</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: FORMULARIO DINÁMICO (MESA O DELIVERY) */}
+      {/* MODAL FORMULARIO */}
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2 className="titulo-principal">¿Cómo recibes tu pedido?</h2>
-            
-            <div style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
-               <button 
-                className={`btn-top-gestion ${tipoPedido === 'mesa' ? 'active' : ''}`}
-                style={{flex: 1, padding: '10px'}}
-                onClick={() => setTipoPedido('mesa')}
-               >En Mesa</button>
-               <button 
-                className={`btn-top-gestion ${tipoPedido === 'delivery' ? 'active' : ''}`}
-                style={{flex: 1, padding: '10px'}}
-                onClick={() => setTipoPedido('delivery')}
-               >Delivery</button>
+            <h2 className="titulo-principal">Datos de Entrega</h2>
+            <div className="tipo-pedido-selector" style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
+               <button className={`btn-tipo-selector ${tipoPedido === 'mesa' ? 'active' : ''}`} onClick={() => setTipoPedido('mesa')}>Local / Mesa</button>
+               <button className={`btn-tipo-selector ${tipoPedido === 'delivery' ? 'active' : ''}`} onClick={() => setTipoPedido('delivery')}>Para Delivery</button>
             </div>
-
             <div className="login-form">
               <div className="input-group">
-                <User className="input-icon" size={18} />
-                <input type="text" placeholder="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                <User className="input-icon" size={18} /><input type="text" placeholder="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
               </div>
-
               {tipoPedido === 'delivery' && (
                 <>
-                  <div className="input-group">
-                    <Phone className="input-icon" size={18} />
-                    <input type="tel" placeholder="WhatsApp" value={telefono} onChange={(e) => setTelefono(e.target.value)} required />
-                  </div>
-                  <div className="input-group">
-                    <MapPin className="input-icon" size={18} />
-                    <input type="text" placeholder="Dirección exacta" value={direccion} onChange={(e) => setDireccion(e.target.value)} required />
-                  </div>
+                  <div className="input-group"><Phone className="input-icon" size={18} /><input type="tel" placeholder="Celular" value={telefono} onChange={(e) => setTelefono(e.target.value)} /></div>
+                  <div className="input-group"><MapPin className="input-icon" size={18} /><input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} /></div>
                 </>
               )}
-
               <div className="modal-buttons">
-                <button className="btn-no" type="button" onClick={() => setMostrarFormulario(false)}>Atrás</button>
-                <button 
-                  className={`btn-login-submit ${enviando ? 'btn-loading' : ''}`} 
-                  onClick={enviarPedido} 
-                  disabled={enviando}
-                >
-                  {enviando ? "Enviando..." : "Confirmar Ahora"}
-                </button>
+                <button className="btn-no" onClick={() => setMostrarFormulario(false)}>Cancelar</button>
+                <button className="btn-login-submit" onClick={enviarPedido} disabled={enviando}>{enviando ? "Enviando..." : "Confirmar Pedido"}</button>
               </div>
             </div>
           </div>
