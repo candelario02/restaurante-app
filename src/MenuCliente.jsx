@@ -18,7 +18,7 @@ import {
   Truck
 } from 'lucide-react';
 
-const MenuCliente = () => {
+const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
   const [categoriaActual, setCategoriaActual] = useState(null);
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
@@ -37,47 +37,25 @@ const MenuCliente = () => {
   const [pedidoActivoId, setPedidoActivoId] = useState(localStorage.getItem('ultimoPedidoId'));
   const [datosPedidoRealtime, setDatosPedidoRealtime] = useState(null);
 
-  // --- AUDIO DE NOTIFICACIÓN PARA EL ADMIN ---
-  // (Aunque este archivo es del cliente, incluimos la lógica aquí por si el admin tiene abierta esta pestaña 
-  // o para que aprendas cómo integrarlo en el componente Admin.jsx)
-  useEffect(() => {
-    const q = query(
-      collection(db, "pedidos"),
-      orderBy("fecha", "desc"),
-      limit(1)
-    );
-
-    const unsubSnap = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const nuevoPedido = snapshot.docs[0].data();
-        const ahora = new Date().getTime();
-        const fechaPedido = nuevoPedido.fecha?.seconds * 1000;
-        
-        // Si el pedido tiene menos de 10 segundos de creado, suena
-        if (ahora - fechaPedido < 10000) {
-          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-          audio.play().catch(e => console.log("Audio bloqueado por navegador"));
-        }
-      }
-    });
-    return () => unsubSnap();
-  }, []);
-
-  // 1. Cargar productos
+  // 1. Cargar productos filtrados por Restaurante y Categoría
   useEffect(() => {
     if (!categoriaActual) return;
+    
+    // IMPORTANTE: Aquí añadimos el filtro de restauranteId
     const q = query(
       collection(db, "productos"),
+      where("restauranteId", "==", restauranteId),
       where("categoria", "==", categoriaActual),
       where("disponible", "==", true)
     );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setProductos(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
     return () => unsubscribe();
-  }, [categoriaActual]);
+  }, [categoriaActual, restauranteId]);
 
-  // 2. SEGUIMIENTO en tiempo real mejorado
+  // 2. SEGUIMIENTO en tiempo real
   useEffect(() => {
     if (!pedidoActivoId) return;
 
@@ -91,10 +69,9 @@ const MenuCliente = () => {
             setPedidoActivoId(null);
             localStorage.removeItem('ultimoPedidoId');
             setDatosPedidoRealtime(null);
-          }, 15000); // 15 seg para que vea el check de entregado
+          }, 15000);
         }
       } else {
-        // Si el admin borra el pedido por error
         setPedidoActivoId(null);
         localStorage.removeItem('ultimoPedidoId');
       }
@@ -118,6 +95,7 @@ const MenuCliente = () => {
     setEnviando(true);
     try {
       const nuevoPedido = {
+        restauranteId, // Vinculamos el pedido a tu restaurante
         cliente: { 
           nombre, 
           telefono: tipoPedido === 'mesa' ? 'En Local' : telefono, 
@@ -138,7 +116,7 @@ const MenuCliente = () => {
       setMostrarFormulario(false);
       setVerCarrito(false);
     } catch (error) {
-      alert("Error al enviar.");
+      alert("Error al enviar el pedido.");
     } finally {
       setEnviando(false);
     }
@@ -165,16 +143,14 @@ const MenuCliente = () => {
         <div className="view-principal" style={{padding: '20px'}}>
            <div className="msg-box" style={{maxWidth: '100%', border: '3px solid var(--primary)'}}>
               <h2 className="titulo-principal" style={{fontSize: '1.8rem'}}>¡Hola, {datosPedidoRealtime.cliente.nombre}!</h2>
-              <p>Tu pedido está siendo procesado en este momento.</p>
+              <p>Tu pedido está siendo procesado.</p>
               
               <div className="status-tracker">
-                {/* PASO 1: RECIBIDO */}
                 <div className="status-step" style={{color: 'var(--primary)', opacity: 1}}>
                   <Clock size={35} />
                   <p style={{fontSize: '0.7rem', fontWeight: '800'}}>RECIBIDO</p>
                 </div>
 
-                {/* PASO 2: COCINANDO */}
                 <div className="status-step" style={{
                   color: 'var(--warning)', 
                   opacity: (['preparando', 'enviado', 'entregado'].includes(datosPedidoRealtime.estado)) ? 1 : 0.2
@@ -183,7 +159,6 @@ const MenuCliente = () => {
                   <p style={{fontSize: '0.7rem', fontWeight: '800'}}>EN COCINA</p>
                 </div>
 
-                {/* PASO 3: CAMINO / LISTO */}
                 <div className="status-step" style={{
                   color: 'var(--success)', 
                   opacity: (['enviado', 'entregado'].includes(datosPedidoRealtime.estado)) ? 1 : 0.2
@@ -213,10 +188,22 @@ const MenuCliente = () => {
                   <h1 className="titulo-principal">¿Qué te apetece hoy?</h1>
                 </div>
                 <div className="categorias-grid-principal">
-                  <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}><div className="categoria-circulo bg-comidas"><Pizza size={90} className="icon-main" /></div><span className="categoria-label">Comidas</span></div>
-                  <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}><div className="categoria-circulo bg-cafe"><Coffee size={90} className="icon-main" /></div><span className="categoria-label">Cafetería</span></div>
-                  <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}><div className="categoria-circulo bg-bebidas"><Droplet size={90} className="icon-main" /></div><span className="categoria-label">Bebidas</span></div>
-                  <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}><div className="categoria-circulo bg-entradas"><Utensils size={90} className="icon-main" /></div><span className="categoria-label">Entradas</span></div>
+                  <div className="categoria-item" onClick={() => setCategoriaActual('Menu')}>
+                    <div className="categoria-circulo bg-comidas"><Pizza size={90} className="icon-main" /></div>
+                    <span className="categoria-label">Comidas</span>
+                  </div>
+                  <div className="categoria-item" onClick={() => setCategoriaActual('Cafeteria')}>
+                    <div className="categoria-circulo bg-cafe"><Coffee size={90} className="icon-main" /></div>
+                    <span className="categoria-label">Cafetería</span>
+                  </div>
+                  <div className="categoria-item" onClick={() => setCategoriaActual('Bebidas')}>
+                    <div className="categoria-circulo bg-bebidas"><Droplet size={90} className="icon-main" /></div>
+                    <span className="categoria-label">Bebidas</span>
+                  </div>
+                  <div className="categoria-item" onClick={() => setCategoriaActual('Entradas')}>
+                    <div className="categoria-circulo bg-entradas"><Utensils size={90} className="icon-main" /></div>
+                    <span className="categoria-label">Entradas</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -252,7 +239,10 @@ const MenuCliente = () => {
             <h2 className="titulo-principal">Tu Orden</h2>
             <div className="carrito-lista">
               {carrito.map((item, i) => (
-                <div key={i} className="carrito-item-fila"><span>{item.nombre}</span><strong>S/ {item.precio.toFixed(2)}</strong></div>
+                <div key={i} className="carrito-item-fila">
+                  <span>{item.nombre}</span>
+                  <strong>S/ {item.precio.toFixed(2)}</strong>
+                </div>
               ))}
             </div>
             <div className="carrito-total">Total: S/ {total.toFixed(2)}</div>
@@ -275,12 +265,19 @@ const MenuCliente = () => {
             </div>
             <div className="login-form">
               <div className="input-group">
-                <User className="input-icon" size={18} /><input type="text" placeholder="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                <User className="input-icon" size={18} />
+                <input type="text" placeholder="Tu nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} />
               </div>
               {tipoPedido === 'delivery' && (
                 <>
-                  <div className="input-group"><Phone className="input-icon" size={18} /><input type="tel" placeholder="Celular" value={telefono} onChange={(e) => setTelefono(e.target.value)} /></div>
-                  <div className="input-group"><MapPin className="input-icon" size={18} /><input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} /></div>
+                  <div className="input-group">
+                    <Phone className="input-icon" size={18} />
+                    <input type="tel" placeholder="Celular" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+                  </div>
+                  <div className="input-group">
+                    <MapPin className="input-icon" size={18} />
+                    <input type="text" placeholder="Dirección" value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+                  </div>
                 </>
               )}
               <div className="modal-buttons">
