@@ -9,7 +9,7 @@ import {
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId vendría del perfil del usuario logueado
+const Admin = ({ seccion, restauranteId = "local_demo" }) => { 
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -29,6 +29,11 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
 
   // --- FUNCIÓN PARA GENERAR PDF ---
   const generarReportePDF = () => {
+    if (historialFiltrado.length === 0) {
+      mostrarSms("No hay ventas para exportar en esta fecha", "error");
+      return;
+    }
+
     const doc = new jsPDF();
     const titulo = `Reporte de Ventas - ${fechaFiltro}`;
     
@@ -69,7 +74,7 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
     window.open(url, '_blank');
   };
 
-  // --- SONIDO DE NUEVOS PEDIDOS (Filtrado por restaurante) ---
+  // --- SONIDO DE NUEVOS PEDIDOS ---
   useEffect(() => {
     const q = query(
       collection(db, 'pedidos'), 
@@ -93,24 +98,21 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
     return () => unsubSonido();
   }, [restauranteId]);
 
-  // --- CARGA DE DATOS (Filtrado por restaurante) ---
+  // --- CARGA DE DATOS ---
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Filtramos productos por restauranteId
     const qProd = query(collection(db, 'productos'), where('restauranteId', '==', restauranteId));
     const unsubProd = onSnapshot(qProd, (s) => 
       setProductos(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    // Filtramos usuarios admin por restauranteId
     const qUser = query(collection(db, 'usuarios_admin'), where('restauranteId', '==', restauranteId));
     const unsubUser = onSnapshot(qUser, (s) => 
       setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    // Filtramos pedidos por restauranteId
     const qPed = query(collection(db, 'pedidos'), where('restauranteId', '==', restauranteId));
     const unsubPed = onSnapshot(qPed, (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -142,7 +144,6 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
     setCargando(true);
     try {
       let urlImagen = imagen ? await subirACloudinary(imagen) : null;
-      // Añadimos restauranteId a la data del producto
       const datos = { 
         nombre, 
         precio: Number(precio), 
@@ -184,7 +185,6 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
   const registrarAdmin = async (e) => {
     e.preventDefault();
     try {
-      // Guardamos el usuario asociado a este restaurante
       const docRef = doc(db, 'usuarios_admin', userEmail);
       await setDoc(docRef, { email: userEmail, rol: 'admin', restauranteId });
       setUserEmail('');
@@ -364,7 +364,7 @@ const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId 
           <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', gap: '10px'}}>
             <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
                <h2 className="titulo-principal" style={{fontSize: '1rem', margin: 0}}>Historial</h2>
-               <button onClick={generarReportePDF} className="btn-top-gestion" style={{width: 'auto', padding: '5px 10px'}}>
+               <button onClick={generarReportePDF} className="btn-top-gestion" style={{width: 'auto', padding: '5px 10px', backgroundColor: '#e74c3c', color: 'white', border: 'none'}}>
                  <FileText size={16} /> PDF
                </button>
             </div>
