@@ -8,13 +8,14 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { 
   LogIn, LogOut, Settings, Clock, ArrowLeft, 
   X, Users, Package, TrendingUp 
-} from 'lucide-react'; // Añadido TrendingUp
+} from 'lucide-react';
 
 function App() {
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
-    isAdmin: localStorage.getItem('esAdmin') === 'true'
+    isAdmin: localStorage.getItem('esAdmin') === 'true',
+    restauranteId: localStorage.getItem('restauranteId') || null
   });
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
@@ -26,14 +27,22 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
-        setAuthState({ loading: false, user: null, isAdmin: false });
+        setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: null });
         localStorage.removeItem('esAdmin');
+        localStorage.removeItem('restauranteId');
         setBienvenidaMostrada(false);
         return;
       }
       
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
-      setAuthState({ loading: false, user: usuario, isAdmin: eraAdmin });
+      const idRes = localStorage.getItem('restauranteId');
+
+      setAuthState({ 
+        loading: false, 
+        user: usuario, 
+        isAdmin: eraAdmin,
+        restauranteId: idRes
+      });
 
       if (!bienvenidaMostrada) {
         const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -48,14 +57,22 @@ function App() {
   const manejarCerrarSesion = async () => {
     await signOut(auth);
     localStorage.removeItem('esAdmin');
-    setAuthState({ loading: false, user: null, isAdmin: false });
+    localStorage.removeItem('restauranteId');
+    setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: null });
     setConfirmarSalida(false);
     setSeccion('menu');
   };
 
-  const alternarModoAdmin = (valor) => {
-    setAuthState(p => ({ ...p, isAdmin: valor }));
+  const alternarModoAdmin = (valor, idRestaurante = null) => {
+    setAuthState(p => ({ 
+      ...p, 
+      isAdmin: valor,
+      restauranteId: idRestaurante || p.restauranteId 
+    }));
     localStorage.setItem('esAdmin', valor.toString());
+    if (idRestaurante) {
+      localStorage.setItem('restauranteId', idRestaurante);
+    }
   };
 
   if (authState.loading) return null;
@@ -90,7 +107,6 @@ function App() {
                   <button className={`btn-top-gestion ${seccion === 'pedidos' ? 'active' : ''}`} onClick={() => setSeccion('pedidos')}>
                     <Package size={18} /> <span>Pedidos</span>
                   </button>
-                  {/* NUEVO BOTÓN PARA CAJA/VENTAS */}
                   <button className={`btn-top-gestion ${seccion === 'ventas' ? 'active' : ''}`} onClick={() => setSeccion('ventas')}>
                     <TrendingUp size={18} /> <span>Caja</span>
                   </button>
@@ -116,7 +132,10 @@ function App() {
             <button className="btn-back-inline" onClick={() => setMostrarLogin(false)} style={{position: 'absolute', top: '15px', right: '15px'}}>
               <X size={20}/>
             </button>
-            <Login alCerrar={() => setMostrarLogin(false)} activarAdmin={() => alternarModoAdmin(true)} />
+            <Login 
+              alCerrar={() => setMostrarLogin(false)} 
+              activarAdmin={(id) => alternarModoAdmin(true, id)} 
+            />
           </div>
         </div>
       )}
@@ -147,7 +166,10 @@ function App() {
       {/* CONTENIDO PRINCIPAL */}
       <main>
         {authState.user && authState.isAdmin ? (
-          <Admin seccion={seccion} /> 
+          <Admin 
+            seccion={seccion} 
+            restauranteId={authState.restauranteId || "local_demo"} 
+          /> 
         ) : (
           <MenuCliente />
         )}

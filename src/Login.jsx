@@ -3,11 +3,11 @@ import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-// 🔐 Lista de correos autorizados como Administradores
-const ADMIN_EMAILS = [
-  'huamancarrioncande24@gmail.com',
-  'jec02021994@gmail.com' 
-];
+// 🔐 Mapeo de correos a sus respectivos Restaurantes
+const ADMIN_CONFIG = {
+  'huamancarrioncande24@gmail.com': { restauranteId: 'restaurante_cande' },
+  'jec02021994@gmail.com': { restauranteId: 'jekito_restobar' }
+};
 
 function Login({ alCerrar, activarAdmin }) {
   const [email, setEmail] = useState('');
@@ -23,16 +23,22 @@ function Login({ alCerrar, activarAdmin }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
+      const userEmail = user.email.toLowerCase();
 
-      if (!ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+      // Verificar si el correo está en nuestra lista de configuración
+      if (!ADMIN_CONFIG[userEmail]) {
         await signOut(auth);
         setError('Acceso denegado: no tienes permisos de administrador.');
         setCargando(false);
         return;
       }
 
+      // Guardamos el restauranteId en localStorage para que toda la app lo sepa
+      const config = ADMIN_CONFIG[userEmail];
       localStorage.setItem('esAdmin', 'true');
-      if (activarAdmin) activarAdmin(); 
+      localStorage.setItem('restauranteId', config.restauranteId);
+
+      if (activarAdmin) activarAdmin(config.restauranteId); 
       alCerrar();
 
     } catch (err) {
@@ -51,7 +57,6 @@ function Login({ alCerrar, activarAdmin }) {
 
   return (
     <div className="login-content">
-      {/* Icono dinámico según estado */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         {error ? (
           <ShieldAlert size={50} color="var(--danger)" />
@@ -66,7 +71,6 @@ function Login({ alCerrar, activarAdmin }) {
       </div>
 
       <form onSubmit={manejarLogin} className="login-form">
-        {/* Email */}
         <div className="input-group">
           <Mail size={18} className="input-icon" />
           <input
@@ -79,7 +83,6 @@ function Login({ alCerrar, activarAdmin }) {
           />
         </div>
 
-        {/* Contraseña */}
         <div className="input-group">
           <Lock size={18} className="input-icon" />
           <input
@@ -92,14 +95,12 @@ function Login({ alCerrar, activarAdmin }) {
           />
         </div>
 
-        {/* Caja de Error usando clases de tu CSS */}
         {error && (
           <div className="mensaje-alerta error" style={{ padding: '10px', fontSize: '0.9rem', position: 'relative' }}>
             {error}
           </div>
         )}
 
-        {/* Botón de envío con Spinner de tu CSS */}
         <button 
           type="submit" 
           className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
