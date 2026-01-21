@@ -3,7 +3,7 @@ import { db, auth } from './firebase';
 import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
-  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Calendar, Eye, EyeOff
+  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Calendar, Eye, EyeOff, Phone, MessageCircle
 } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -24,19 +24,28 @@ const Admin = ({ seccion }) => {
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
   const [pedidoExpandido, setPedidoExpandido] = useState(null);
 
+  // --- FUNCIÓN PARA WHATSAPP CON DETALLE DE PRODUCTOS ---
+  const abrirWhatsApp = (pedido) => {
+    const numeroLimpio = pedido.cliente.telefono.replace(/\D/g, '');
+    
+    // Creamos la lista de productos para el mensaje
+    const listaProductos = pedido.productos.map(p => `- ${p.nombre}`).join('\n');
+    
+    const mensaje = `Hola ${pedido.cliente.nombre}, somos del restaurante. Tu pedido está en proceso y pronto llegará a ${pedido.cliente.direccion}.\n\n*Detalle del pedido:*\n${listaProductos}\n\n*Total:* S/ ${pedido.total.toFixed(2)}`;
+    
+    const url = `https://wa.me/51${numeroLimpio}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, '_blank');
+  };
+
   // --- EFECTO PARA SONIDO DE NUEVOS PEDIDOS ---
   useEffect(() => {
-    // Escuchamos solo el último pedido que entre
     const q = query(collection(db, 'pedidos'), orderBy('fecha', 'desc'), limit(1));
-    
     const unsubSonido = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
           const nuevoP = change.doc.data();
           const ahora = new Date().getTime();
           const fechaP = nuevoP.fecha?.seconds * 1000;
-
-          // Si el pedido tiene menos de 10 segundos, hacemos sonar la alerta
           if (ahora - fechaP < 10000) {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
             audio.play().catch(() => console.log("Interacción requerida para audio"));
@@ -133,15 +142,11 @@ const Admin = ({ seccion }) => {
 
   const cambiarEstado = async (id, nuevoEstado, estadoActual) => {
     if (estadoActual === 'entregado') return;
-    
-    // Validación lógica: no entregar si no se ha cocinado o enviado
     if (nuevoEstado === 'entregado' && (estadoActual !== 'preparando' && estadoActual !== 'enviado')) {
       mostrarSms("Debe pasar por cocina o delivery", "error");
       return;
     }
-    
     if (estadoActual === nuevoEstado) return;
-
     try {
       await updateDoc(doc(db, 'pedidos', id), { estado: nuevoEstado });
       mostrarSms(`Estado: ${nuevoEstado}`, "exito");
@@ -174,7 +179,6 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: MENÚ */}
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={guardarProducto} className="login-form">
@@ -224,7 +228,6 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: USUARIOS */}
       {seccion === 'usuarios' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
@@ -247,79 +250,63 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: PEDIDOS (COCINA) */}
       {seccion === 'pedidos' && (
         <div className="pedidos-seccion-wrapper">
           <h2 className="titulo-principal">En Cocina ({pedidosActivos.length})</h2>
           <div className="productos-grid">
-            {pedidosActivos.length === 0 ? (
-              <p className="text-muted" style={{gridColumn: '1/-1', textAlign: 'center'}}>Sin pedidos pendientes</p>
-            ) : (
-              pedidosActivos.map(p => (
-                <div key={p.id} className="producto-card-pedido">
-                  <div className="pedido-header">
-                    <h3>{p.cliente.nombre}</h3>
-                    <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                  </div>
-                  <p className="text-muted" style={{fontSize: '0.85rem', marginBottom: '10px'}}>
-                    <Truck size={14}/> {p.cliente.direccion || 'Local'}
-                  </p>
-                  
-                  <div className="pedido-lista-productos">
-                    {p.productos.map((prod, idx) => (
-                      <div key={idx} className="pedido-item-row">
-                        <span>{prod.nombre}</span>
-                        <span className="bold">S/ {prod.precio.toFixed(2)}</span>
-                      </div>
-                    ))}
-                    <div className="pedido-total-row">Total: S/ {p.total.toFixed(2)}</div>
-                  </div>
-
-                  <div className="pedido-status-container">
-                    <span className={`status-badge ${p.estado || 'pendiente'}`}>
-                      {p.estado ? p.estado.toUpperCase() : 'PENDIENTE'}
-                    </span>
-                  </div>
-
-                  <div className="modal-buttons" style={{marginTop: '15px'}}>
-                    <button 
-                      className={`btn-no ${p.estado === 'preparando' ? 'btn-active' : ''}`} 
-                      onClick={() => cambiarEstado(p.id, 'preparando', p.estado)}
-                    >
-                      <ChefHat size={18}/>
+            {pedidosActivos.map(p => (
+              <div key={p.id} className="producto-card-pedido">
+                <div className="pedido-header">
+                  <h3>{p.cliente.nombre}</h3>
+                  {p.cliente.tipo === 'delivery' && (
+                    <button className="btn-back-inline" onClick={() => abrirWhatsApp(p)} style={{color: '#25D366'}}>
+                      <Phone size={20} />
                     </button>
-                    <button 
-                      className={`btn-no ${p.estado === 'enviado' ? 'btn-active' : ''}`} 
-                      onClick={() => cambiarEstado(p.id, 'enviado', p.estado)}
-                    >
-                      <Truck size={18}/>
-                    </button>
-                    <button 
-                      className="btn-yes-success" 
-                      onClick={() => cambiarEstado(p.id, 'entregado', p.estado)}
-                    >
-                      <CheckCircle size={18}/>
-                    </button>
-                  </div>
+                  )}
+                  <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
-              ))
-            )}
+                <p className="text-muted" style={{fontSize: '0.85rem', marginBottom: '10px'}}>
+                  <Truck size={14}/> {p.cliente.direccion || 'Local'}
+                </p>
+                
+                <div className="pedido-lista-productos">
+                  {p.productos.map((prod, idx) => (
+                    <div key={idx} className="pedido-item-row">
+                      <span>{prod.nombre}</span>
+                      <span className="bold">S/ {prod.precio.toFixed(2)}</span>
+                    </div>
+                  ))}
+                  <div className="pedido-total-row">Total: S/ {p.total.toFixed(2)}</div>
+                </div>
+
+                <div className="pedido-status-container">
+                  <span className={`status-badge ${p.estado || 'pendiente'}`}>
+                    {p.estado ? p.estado.toUpperCase() : 'PENDIENTE'}
+                  </span>
+                </div>
+
+                <div className="modal-buttons" style={{marginTop: '15px'}}>
+                  <button className={`btn-no ${p.estado === 'preparando' ? 'btn-active' : ''}`} onClick={() => cambiarEstado(p.id, 'preparando', p.estado)}>
+                    <ChefHat size={18}/>
+                  </button>
+                  <button className={`btn-no ${p.estado === 'enviado' ? 'btn-active' : ''}`} onClick={() => cambiarEstado(p.id, 'enviado', p.estado)}>
+                    <Truck size={18}/>
+                  </button>
+                  <button className="btn-yes-success" onClick={() => cambiarEstado(p.id, 'entregado', p.estado)}>
+                    <CheckCircle size={18}/>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* SECCIÓN: VENTAS */}
       {seccion === 'ventas' && (
         <div className="pedidos-seccion-wrapper">
           <div className="contabilidad-resumen">
-            <div className="card-stat">
-              <p>Vendido Hoy</p>
-              <h2>S/ {totalDia.toFixed(2)}</h2>
-            </div>
-            <div className="card-stat">
-              <p>Total Mes</p>
-              <h2>S/ {totalMes.toFixed(2)}</h2>
-            </div>
+            <div className="card-stat"><p>Vendido Hoy</p><h2>S/ {totalDia.toFixed(2)}</h2></div>
+            <div className="card-stat"><p>Total Mes</p><h2>S/ {totalMes.toFixed(2)}</h2></div>
           </div>
 
           <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', marginTop: '20px'}}>
@@ -332,9 +319,16 @@ const Admin = ({ seccion }) => {
               <div key={p.id} className="producto-card-pedido status-entregado-card">
                 <div className="pedido-header">
                   <h3>{p.cliente.nombre}</h3>
-                  <button className="btn-back-inline" onClick={() => setPedidoExpandido(pedidoExpandido === p.id ? null : p.id)}>
-                    {pedidoExpandido === p.id ? <EyeOff size={18}/> : <Eye size={18}/>}
-                  </button>
+                  <div style={{display: 'flex', gap: '10px'}}>
+                    {p.cliente.tipo === 'delivery' && (
+                      <button className="btn-back-inline" onClick={() => abrirWhatsApp(p)} style={{color: '#25D366'}}>
+                        <MessageCircle size={18} />
+                      </button>
+                    )}
+                    <button className="btn-back-inline" onClick={() => setPedidoExpandido(pedidoExpandido === p.id ? null : p.id)}>
+                      {pedidoExpandido === p.id ? <EyeOff size={18}/> : <Eye size={18}/>}
+                    </button>
+                  </div>
                 </div>
                 {pedidoExpandido === p.id && (
                   <div className="pedido-lista-productos">
