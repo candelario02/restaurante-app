@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase';
-import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, orderBy, limit, where } from 'firebase/firestore';
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
-  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Calendar, Eye, EyeOff, Phone, MessageCircle
+  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Calendar, Eye, EyeOff, Phone, MessageCircle, FileText
 } from 'lucide-react';
+// Librerías para el PDF
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-const Admin = ({ seccion }) => {
+const Admin = ({ seccion, restauranteId = "local_demo" }) => { // restauranteId vendría del perfil del usuario logueado
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -24,22 +27,56 @@ const Admin = ({ seccion }) => {
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
   const [pedidoExpandido, setPedidoExpandido] = useState(null);
 
-  // --- FUNCIÓN PARA WHATSAPP CON DETALLE DE PRODUCTOS ---
+  // --- FUNCIÓN PARA GENERAR PDF ---
+  const generarReportePDF = () => {
+    const doc = new jsPDF();
+    const titulo = `Reporte de Ventas - ${fechaFiltro}`;
+    
+    doc.setFontSize(18);
+    doc.text(restauranteId.toUpperCase(), 14, 20);
+    doc.setFontSize(12);
+    doc.text(titulo, 14, 30);
+    doc.text(`Generado el: ${new Date().toLocaleString()}`, 14, 38);
+
+    const filasTabla = historialFiltrado.map(p => [
+      p.fecha?.toDate().toLocaleTimeString() || '',
+      p.cliente.nombre,
+      p.cliente.tipo === 'delivery' ? 'Delivery' : 'Local',
+      `S/ ${p.total.toFixed(2)}`
+    ]);
+
+    doc.autoTable({
+      startY: 45,
+      head: [['Hora', 'Cliente', 'Tipo', 'Total']],
+      body: filasTabla,
+      theme: 'grid',
+      headStyles: { fillColor: [46, 204, 113] }
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text(`VENTA TOTAL DEL DÍA: S/ ${totalDia.toFixed(2)}`, 14, finalY);
+
+    doc.save(`Reporte_${restauranteId}_${fechaFiltro}.pdf`);
+  };
+
+  // --- FUNCIÓN PARA WHATSAPP ---
   const abrirWhatsApp = (pedido) => {
     const numeroLimpio = pedido.cliente.telefono.replace(/\D/g, '');
-    
-    // Creamos la lista de productos para el mensaje
     const listaProductos = pedido.productos.map(p => `- ${p.nombre}`).join('\n');
-    
     const mensaje = `Hola ${pedido.cliente.nombre}, somos del restaurante. Tu pedido está en proceso y pronto llegará a ${pedido.cliente.direccion}.\n\n*Detalle del pedido:*\n${listaProductos}\n\n*Total:* S/ ${pedido.total.toFixed(2)}`;
-    
     const url = `https://wa.me/51${numeroLimpio}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   };
 
-  // --- EFECTO PARA SONIDO DE NUEVOS PEDIDOS ---
+  // --- SONIDO DE NUEVOS PEDIDOS (Filtrado por restaurante) ---
   useEffect(() => {
-    const q = query(collection(db, 'pedidos'), orderBy('fecha', 'desc'), limit(1));
+    const q = query(
+      collection(db, 'pedidos'), 
+      where('restauranteId', '==', restauranteId),
+      orderBy('fecha', 'desc'), 
+      limit(1)
+    );
     const unsubSonido = onSnapshot(q, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
@@ -48,34 +85,40 @@ const Admin = ({ seccion }) => {
           const fechaP = nuevoP.fecha?.seconds * 1000;
           if (ahora - fechaP < 10000) {
             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
-            audio.play().catch(() => console.log("Interacción requerida para audio"));
+            audio.play().catch(() => {});
           }
         }
       });
     });
     return () => unsubSonido();
-  }, []);
+  }, [restauranteId]);
 
-  // --- CARGA DE DATOS ---
+  // --- CARGA DE DATOS (Filtrado por restaurante) ---
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
 
-    const unsubProd = onSnapshot(collection(db, 'productos'), (s) => 
+    // Filtramos productos por restauranteId
+    const qProd = query(collection(db, 'productos'), where('restauranteId', '==', restauranteId));
+    const unsubProd = onSnapshot(qProd, (s) => 
       setProductos(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    const unsubUser = onSnapshot(collection(db, 'usuarios_admin'), (s) => 
+    // Filtramos usuarios admin por restauranteId
+    const qUser = query(collection(db, 'usuarios_admin'), where('restauranteId', '==', restauranteId));
+    const unsubUser = onSnapshot(qUser, (s) => 
       setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() })))
     );
 
-    const unsubPed = onSnapshot(collection(db, 'pedidos'), (s) => {
+    // Filtramos pedidos por restauranteId
+    const qPed = query(collection(db, 'pedidos'), where('restauranteId', '==', restauranteId));
+    const unsubPed = onSnapshot(qPed, (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setPedidos(docs.sort((a,b) => b.fecha?.seconds - a.fecha?.seconds));
     });
 
     return () => { unsubProd(); unsubUser(); unsubPed(); };
-  }, []);
+  }, [restauranteId]);
 
   const mostrarSms = (texto, tipo) => {
     setNotificacion({ texto, tipo });
@@ -99,7 +142,14 @@ const Admin = ({ seccion }) => {
     setCargando(true);
     try {
       let urlImagen = imagen ? await subirACloudinary(imagen) : null;
-      const datos = { nombre, precio: Number(precio), categoria, disponible: true };
+      // Añadimos restauranteId a la data del producto
+      const datos = { 
+        nombre, 
+        precio: Number(precio), 
+        categoria, 
+        disponible: true, 
+        restauranteId 
+      };
       if (urlImagen) datos.img = urlImagen;
 
       if (editandoId) {
@@ -107,7 +157,7 @@ const Admin = ({ seccion }) => {
         mostrarSms("Producto actualizado", "exito");
       } else {
         if (!urlImagen) throw new Error("Imagen requerida");
-        await addDoc(collection(db, 'productos'), { ...datos, img: urlImagen });
+        await addDoc(collection(db, 'productos'), datos);
         mostrarSms("Producto creado", "exito");
       }
       cancelarEdicion();
@@ -134,7 +184,9 @@ const Admin = ({ seccion }) => {
   const registrarAdmin = async (e) => {
     e.preventDefault();
     try {
-      await setDoc(doc(db, 'usuarios_admin', userEmail), { email: userEmail, rol: 'admin' });
+      // Guardamos el usuario asociado a este restaurante
+      const docRef = doc(db, 'usuarios_admin', userEmail);
+      await setDoc(docRef, { email: userEmail, rol: 'admin', restauranteId });
       setUserEmail('');
       mostrarSms("Acceso concedido", "exito");
     } catch (e) { mostrarSms("Error de permisos", "error"); }
@@ -309,8 +361,13 @@ const Admin = ({ seccion }) => {
             <div className="card-stat"><p>Total Mes</p><h2>S/ {totalMes.toFixed(2)}</h2></div>
           </div>
 
-          <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', marginTop: '20px'}}>
-            <h2 className="titulo-principal" style={{fontSize: '1rem'}}>Historial de Ventas</h2>
+          <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', gap: '10px'}}>
+            <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+               <h2 className="titulo-principal" style={{fontSize: '1rem', margin: 0}}>Historial</h2>
+               <button onClick={generarReportePDF} className="btn-top-gestion" style={{width: 'auto', padding: '5px 10px'}}>
+                 <FileText size={16} /> PDF
+               </button>
+            </div>
             <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} className="btn-top-gestion" style={{width: 'auto'}}/>
           </div>
 
