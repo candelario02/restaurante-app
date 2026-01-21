@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase';
-import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
-  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Phone, Calendar, Eye, EyeOff, TrendingUp
+  UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, Calendar, Eye, EyeOff
 } from 'lucide-react';
 
 const Admin = ({ seccion }) => {
@@ -24,6 +24,30 @@ const Admin = ({ seccion }) => {
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
   const [pedidoExpandido, setPedidoExpandido] = useState(null);
 
+  // --- EFECTO PARA SONIDO DE NUEVOS PEDIDOS ---
+  useEffect(() => {
+    // Escuchamos solo el último pedido que entre
+    const q = query(collection(db, 'pedidos'), orderBy('fecha', 'desc'), limit(1));
+    
+    const unsubSonido = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const nuevoP = change.doc.data();
+          const ahora = new Date().getTime();
+          const fechaP = nuevoP.fecha?.seconds * 1000;
+
+          // Si el pedido tiene menos de 10 segundos, hacemos sonar la alerta
+          if (ahora - fechaP < 10000) {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+            audio.play().catch(() => console.log("Interacción requerida para audio"));
+          }
+        }
+      });
+    });
+    return () => unsubSonido();
+  }, []);
+
+  // --- CARGA DE DATOS ---
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
@@ -110,9 +134,9 @@ const Admin = ({ seccion }) => {
   const cambiarEstado = async (id, nuevoEstado, estadoActual) => {
     if (estadoActual === 'entregado') return;
     
-    // Validación de seguridad para entrega final
+    // Validación lógica: no entregar si no se ha cocinado o enviado
     if (nuevoEstado === 'entregado' && (estadoActual !== 'preparando' && estadoActual !== 'enviado')) {
-      mostrarSms("Primero debe pasar por cocina o delivery", "error");
+      mostrarSms("Debe pasar por cocina o delivery", "error");
       return;
     }
     
@@ -120,13 +144,12 @@ const Admin = ({ seccion }) => {
 
     try {
       await updateDoc(doc(db, 'pedidos', id), { estado: nuevoEstado });
-      mostrarSms(`Pedido: ${nuevoEstado}`, "exito");
+      mostrarSms(`Estado: ${nuevoEstado}`, "exito");
     } catch (error) {
-      mostrarSms("Error al actualizar estado", "error");
+      mostrarSms("Error al actualizar", "error");
     }
   };
 
-  // --- LÓGICA DE FILTROS Y CÁLCULOS ---
   const pedidosActivos = pedidos.filter(p => (p.estado || 'pendiente') !== 'entregado');
   
   const historialFiltrado = pedidos.filter(p => {
@@ -136,7 +159,6 @@ const Admin = ({ seccion }) => {
   });
 
   const totalDia = historialFiltrado.reduce((acc, p) => acc + (p.total || 0), 0);
-
   const totalMes = pedidos.filter(p => {
     if (!p.fecha || p.estado !== 'entregado') return false;
     const date = p.fecha.toDate();
@@ -152,7 +174,7 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: GESTIÓN DE MENÚ */}
+      {/* SECCIÓN: MENÚ */}
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={guardarProducto} className="login-form">
@@ -202,7 +224,7 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: USUARIOS / ADMINS */}
+      {/* SECCIÓN: USUARIOS */}
       {seccion === 'usuarios' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
@@ -225,13 +247,13 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: PANEL DE PEDIDOS (COCINA) */}
+      {/* SECCIÓN: PEDIDOS (COCINA) */}
       {seccion === 'pedidos' && (
         <div className="pedidos-seccion-wrapper">
-          <h2 className="titulo-principal" style={{fontSize: '1.5rem', marginBottom: '20px'}}>En Cocina ({pedidosActivos.length})</h2>
+          <h2 className="titulo-principal">En Cocina ({pedidosActivos.length})</h2>
           <div className="productos-grid">
             {pedidosActivos.length === 0 ? (
-              <p className="text-muted" style={{gridColumn: '1/-1', textAlign: 'center'}}>No hay pedidos pendientes</p>
+              <p className="text-muted" style={{gridColumn: '1/-1', textAlign: 'center'}}>Sin pedidos pendientes</p>
             ) : (
               pedidosActivos.map(p => (
                 <div key={p.id} className="producto-card-pedido">
@@ -239,8 +261,8 @@ const Admin = ({ seccion }) => {
                     <h3>{p.cliente.nombre}</h3>
                     <span className="text-muted">{p.fecha?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                   </div>
-                  <p className="text-muted" style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                    <Truck size={14}/> {p.cliente.direccion || 'Entrega en Local'}
+                  <p className="text-muted" style={{fontSize: '0.85rem', marginBottom: '10px'}}>
+                    <Truck size={14}/> {p.cliente.direccion || 'Local'}
                   </p>
                   
                   <div className="pedido-lista-productos">
@@ -253,30 +275,27 @@ const Admin = ({ seccion }) => {
                     <div className="pedido-total-row">Total: S/ {p.total.toFixed(2)}</div>
                   </div>
 
-                  <div className="pedido-status-container" style={{marginBottom: '15px'}}>
+                  <div className="pedido-status-container">
                     <span className={`status-badge ${p.estado || 'pendiente'}`}>
                       {p.estado ? p.estado.toUpperCase() : 'PENDIENTE'}
                     </span>
                   </div>
 
-                  <div className="modal-buttons">
+                  <div className="modal-buttons" style={{marginTop: '15px'}}>
                     <button 
-                      title="Cocinar"
                       className={`btn-no ${p.estado === 'preparando' ? 'btn-active' : ''}`} 
                       onClick={() => cambiarEstado(p.id, 'preparando', p.estado)}
                     >
                       <ChefHat size={18}/>
                     </button>
                     <button 
-                      title="Enviar"
                       className={`btn-no ${p.estado === 'enviado' ? 'btn-active' : ''}`} 
                       onClick={() => cambiarEstado(p.id, 'enviado', p.estado)}
                     >
                       <Truck size={18}/>
                     </button>
                     <button 
-                      title="Entregar y Cobrar"
-                      className={`btn-yes-success ${(p.estado !== 'preparando' && p.estado !== 'enviado') ? 'btn-disabled' : ''}`} 
+                      className="btn-yes-success" 
                       onClick={() => cambiarEstado(p.id, 'entregado', p.estado)}
                     >
                       <CheckCircle size={18}/>
@@ -289,62 +308,44 @@ const Admin = ({ seccion }) => {
         </div>
       )}
 
-      {/* SECCIÓN: CONTROL DE CAJA / VENTAS */}
+      {/* SECCIÓN: VENTAS */}
       {seccion === 'ventas' && (
         <div className="pedidos-seccion-wrapper">
           <div className="contabilidad-resumen">
-            <div className="card-stat" style={{borderLeft: '5px solid var(--success)'}}>
-              <p className="text-muted">Vendido Hoy</p>
-              <h2 style={{color: 'var(--success)'}}>S/ {totalDia.toFixed(2)}</h2>
+            <div className="card-stat">
+              <p>Vendido Hoy</p>
+              <h2>S/ {totalDia.toFixed(2)}</h2>
             </div>
-            <div className="card-stat" style={{borderLeft: '5px solid var(--primary)'}}>
-              <p className="text-muted">Total Mes</p>
-              <h2 style={{color: 'var(--primary)'}}>S/ {totalMes.toFixed(2)}</h2>
-            </div>
-          </div>
-
-          <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px'}}>
-            <h2 className="titulo-principal" style={{fontSize: '1.2rem'}}>Cierre de Caja</h2>
-            <div className="input-group" style={{width: 'auto'}}>
-              <Calendar size={18} style={{marginRight: '10px'}}/>
-              <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)}/>
+            <div className="card-stat">
+              <p>Total Mes</p>
+              <h2>S/ {totalMes.toFixed(2)}</h2>
             </div>
           </div>
 
-          <div className="productos-grid" style={{marginTop: '20px'}}>
-            {historialFiltrado.length === 0 ? (
-              <p className="text-muted" style={{gridColumn: '1/-1', textAlign: 'center', padding: '40px'}}>
-                No se registraron ventas para esta fecha.
-              </p>
-            ) : (
-              historialFiltrado.map(p => (
-                <div key={p.id} className="producto-card-pedido status-entregado-card">
-                  <div className="pedido-header">
-                    <h3>{p.cliente.nombre}</h3>
-                    <button className="btn-back-inline" onClick={() => setPedidoExpandido(pedidoExpandido === p.id ? null : p.id)}>
-                      {pedidoExpandido === p.id ? <EyeOff size={18}/> : <Eye size={18}/>}
-                    </button>
-                  </div>
-                  <p className="text-muted">
-                    {p.fecha?.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {p.cliente.tipo === 'mesa' ? 'Mesa' : 'Delivery'}
-                  </p>
-                  
-                  {pedidoExpandido === p.id && (
-                    <div className="pedido-lista-productos" style={{background: 'rgba(0,0,0,0.03)', border: '1px solid #eee'}}>
-                      {p.productos.map((prod, idx) => (
-                        <div key={idx} className="pedido-item-row">
-                          <span>{prod.nombre}</span>
-                          <span>S/ {prod.precio.toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="pedido-total-row" style={{borderTop: '1px solid #eee', paddingTop: '10px'}}>
-                    Total Cobrado: S/ {p.total.toFixed(2)}
-                  </div>
+          <div className="historial-header" style={{display: 'flex', justifyContent: 'space-between', marginTop: '20px'}}>
+            <h2 className="titulo-principal" style={{fontSize: '1rem'}}>Historial de Ventas</h2>
+            <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} className="btn-top-gestion" style={{width: 'auto'}}/>
+          </div>
+
+          <div className="productos-grid">
+            {historialFiltrado.map(p => (
+              <div key={p.id} className="producto-card-pedido status-entregado-card">
+                <div className="pedido-header">
+                  <h3>{p.cliente.nombre}</h3>
+                  <button className="btn-back-inline" onClick={() => setPedidoExpandido(pedidoExpandido === p.id ? null : p.id)}>
+                    {pedidoExpandido === p.id ? <EyeOff size={18}/> : <Eye size={18}/>}
+                  </button>
                 </div>
-              ))
-            )}
+                {pedidoExpandido === p.id && (
+                  <div className="pedido-lista-productos">
+                    {p.productos.map((prod, idx) => (
+                      <div key={idx} className="pedido-item-row"><span>{prod.nombre}</span><span>S/ {prod.precio.toFixed(2)}</span></div>
+                    ))}
+                  </div>
+                )}
+                <div className="pedido-total-row">Cobrado: S/ {p.total.toFixed(2)}</div>
+              </div>
+            ))}
           </div>
         </div>
       )}
