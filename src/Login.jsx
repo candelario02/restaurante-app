@@ -3,7 +3,7 @@ import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-// 🔐 Mapeo de correos a sus respectivos Restaurantes
+// 🔐 Mapeo estricto de correos a sus respectivos Restaurantes
 const ADMIN_CONFIG = {
   'huamancarrioncande24@gmail.com': { restauranteId: 'restaurante_cande' },
   'jec02021994@gmail.com': { restauranteId: 'jekito_restobar' }
@@ -21,34 +21,44 @@ function Login({ alCerrar, activarAdmin }) {
     setCargando(true);
 
     try {
+      // 1. Intentar autenticación con Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
-      const userEmail = user.email.toLowerCase();
+      
+      // Convertimos a minúsculas para evitar errores de coincidencia
+      const userEmail = user.email.toLowerCase().trim();
 
-      // Verificar si el correo está en nuestra lista de configuración
-      if (!ADMIN_CONFIG[userEmail]) {
+      // 2. Verificar si el correo tiene un restaurante asignado en ADMIN_CONFIG
+      const config = ADMIN_CONFIG[userEmail];
+
+      if (!config) {
         await signOut(auth);
-        setError('Acceso denegado: no tienes permisos de administrador.');
+        setError('Acceso denegado: este correo no está vinculado a ningún restaurante.');
         setCargando(false);
         return;
       }
 
-      // Guardamos el restauranteId en localStorage para que toda la app lo sepa
-      const config = ADMIN_CONFIG[userEmail];
+      // 3. Persistencia de datos: Guardamos TODO antes de activar el modo admin
       localStorage.setItem('esAdmin', 'true');
       localStorage.setItem('restauranteId', config.restauranteId);
 
-      if (activarAdmin) activarAdmin(config.restauranteId); 
+      // 4. Notificar a App.jsx pasándole el ID correcto
+      if (activarAdmin) {
+        activarAdmin(config.restauranteId); 
+      }
+      
+      // 5. Cerrar el modal de login
       alCerrar();
 
     } catch (err) {
-      console.error(err);
+      console.error("Error en login:", err);
+      // Errores comunes de Firebase Auth
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos');
       } else if (err.code === 'auth/too-many-requests') {
         setError('Demasiados intentos. Intenta más tarde.');
       } else {
-        setError('Error al iniciar sesión. Reintenta.');
+        setError('Error de conexión. Reintenta.');
       }
     } finally {
       setCargando(false);
