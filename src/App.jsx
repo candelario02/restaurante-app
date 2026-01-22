@@ -11,11 +11,15 @@ import {
 } from 'lucide-react';
 
 function App() {
+  // Capturamos el ID del restaurante directamente de la URL
+  // Ejemplo: localhost:5173/jekito_restobar -> idDesdeURL será "jekito_restobar"
+  const idDesdeURL = window.location.pathname.split('/')[1] || null;
+
   const [authState, setAuthState] = useState({
     loading: true,
     user: null,
     isAdmin: localStorage.getItem('esAdmin') === 'true',
-    restauranteId: localStorage.getItem('restauranteId') || null
+    restauranteId: idDesdeURL || localStorage.getItem('restauranteId')
   });
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
@@ -27,7 +31,7 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usuario) => {
       if (!usuario) {
-        setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: null });
+        setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: idDesdeURL });
         localStorage.removeItem('esAdmin');
         localStorage.removeItem('restauranteId');
         setBienvenidaMostrada(false);
@@ -35,7 +39,8 @@ function App() {
       }
       
       const eraAdmin = localStorage.getItem('esAdmin') === 'true';
-      const idRes = localStorage.getItem('restauranteId');
+      // Si hay un ID en la URL lo usamos, si no, el del localstorage
+      const idRes = idDesdeURL || localStorage.getItem('restauranteId');
 
       setAuthState({ 
         loading: false, 
@@ -52,26 +57,27 @@ function App() {
       }
     });
     return () => unsubscribe();
-  }, [bienvenidaMostrada]);
+  }, [bienvenidaMostrada, idDesdeURL]);
 
   const manejarCerrarSesion = async () => {
     await signOut(auth);
     localStorage.removeItem('esAdmin');
     localStorage.removeItem('restauranteId');
-    setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: null });
+    setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: idDesdeURL });
     setConfirmarSalida(false);
     setSeccion('menu');
   };
 
   const alternarModoAdmin = (valor, idRestaurante = null) => {
+    const idFinal = idRestaurante || idDesdeURL || authState.restauranteId;
     setAuthState(p => ({ 
       ...p, 
       isAdmin: valor,
-      restauranteId: idRestaurante || p.restauranteId 
+      restauranteId: idFinal 
     }));
     localStorage.setItem('esAdmin', valor.toString());
-    if (idRestaurante) {
-      localStorage.setItem('restauranteId', idRestaurante);
+    if (idFinal) {
+      localStorage.setItem('restauranteId', idFinal);
     }
   };
 
@@ -168,10 +174,10 @@ function App() {
         {authState.user && authState.isAdmin ? (
           <Admin 
             seccion={seccion} 
-            restauranteId={authState.restauranteId || "local_demo"} 
+            restauranteId={authState.restauranteId} 
           /> 
         ) : (
-          <MenuCliente />
+          <MenuCliente restauranteId={authState.restauranteId} />
         )}
       </main>
     </div>
