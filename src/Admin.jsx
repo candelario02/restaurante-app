@@ -38,7 +38,6 @@ const Admin = ({ seccion, restauranteId }) => {
     const titulo = `Reporte de Ventas - ${fechaFiltro}`;
     
     doc.setFontSize(18);
-    // Usamos el ID del restaurante en el encabezado
     doc.text(restauranteId ? restauranteId.toUpperCase().replace('_', ' ') : 'REPORTE', 14, 20);
     doc.setFontSize(12);
     doc.text(titulo, 14, 30);
@@ -150,7 +149,7 @@ const Admin = ({ seccion, restauranteId }) => {
         precio: Number(precio), 
         categoria, 
         disponible: true, 
-        restauranteId 
+        restauranteId // Usamos el restauranteId de las props
       };
       if (urlImagen) datos.img = urlImagen;
 
@@ -187,6 +186,7 @@ const Admin = ({ seccion, restauranteId }) => {
     e.preventDefault();
     try {
       const docRef = doc(db, 'usuarios_admin', userEmail.toLowerCase());
+      // Forzamos que el nuevo admin pertenezca al mismo restaurante
       await setDoc(docRef, { email: userEmail.toLowerCase(), rol: 'admin', restauranteId });
       setUserEmail('');
       mostrarSms("Acceso concedido", "exito");
@@ -217,6 +217,8 @@ const Admin = ({ seccion, restauranteId }) => {
   });
 
   const totalDia = historialFiltrado.reduce((acc, p) => acc + (p.total || 0), 0);
+  
+  // Total Mes filtrado por restauranteId ya garantizado por el useEffect
   const totalMes = pedidos.filter(p => {
     if (!p.fecha || p.estado !== 'entregado') return false;
     const date = p.fecha.toDate();

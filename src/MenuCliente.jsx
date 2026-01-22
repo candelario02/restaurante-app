@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { collection, query, where, onSnapshot, addDoc, doc, limit, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, doc, getDoc } from 'firebase/firestore';
 import {
   Utensils,
   Coffee,
@@ -25,6 +25,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [avisoAgregado, setAvisoAgregado] = useState(null);
+  const [logoRestaurante, setLogoRestaurante] = useState("/logo_resturante.gif");
 
   // Datos del cliente
   const [nombre, setNombre] = useState('');
@@ -34,14 +35,25 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
   const [enviando, setEnviando] = useState(false);
 
   // Estado para el seguimiento
-  const [pedidoActivoId, setPedidoActivoId] = useState(localStorage.getItem('ultimoPedidoId'));
+  const [pedidoActivoId, setPedidoActivoId] = useState(localStorage.getItem(`ultimoPedido_${restauranteId}`));
   const [datosPedidoRealtime, setDatosPedidoRealtime] = useState(null);
+
+  // 0. Cargar Logo y Configuración del Restaurante
+  useEffect(() => {
+    const cargarConfig = async () => {
+      const docRef = doc(db, "configuraciones", restauranteId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists() && docSnap.data().logoUrl) {
+        setLogoRestaurante(docSnap.data().logoUrl);
+      }
+    };
+    cargarConfig();
+  }, [restauranteId]);
 
   // 1. Cargar productos filtrados por Restaurante y Categoría
   useEffect(() => {
     if (!categoriaActual) return;
     
-    // IMPORTANTE: Aquí añadimos el filtro de restauranteId
     const q = query(
       collection(db, "productos"),
       where("restauranteId", "==", restauranteId),
@@ -67,17 +79,17 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
         if (data.estado === 'entregado') {
           setTimeout(() => {
             setPedidoActivoId(null);
-            localStorage.removeItem('ultimoPedidoId');
+            localStorage.removeItem(`ultimoPedido_${restauranteId}`);
             setDatosPedidoRealtime(null);
           }, 15000);
         }
       } else {
         setPedidoActivoId(null);
-        localStorage.removeItem('ultimoPedidoId');
+        localStorage.removeItem(`ultimoPedido_${restauranteId}`);
       }
     });
     return () => unsub();
-  }, [pedidoActivoId]);
+  }, [pedidoActivoId, restauranteId]);
 
   const agregarAlCarrito = (producto) => {
     setCarrito(prev => [...prev, producto]);
@@ -95,7 +107,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
     setEnviando(true);
     try {
       const nuevoPedido = {
-        restauranteId, // Vinculamos el pedido a tu restaurante
+        restauranteId, 
         cliente: { 
           nombre, 
           telefono: tipoPedido === 'mesa' ? 'En Local' : telefono, 
@@ -110,7 +122,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
 
       const docRef = await addDoc(collection(db, "pedidos"), nuevoPedido);
       setPedidoActivoId(docRef.id);
-      localStorage.setItem('ultimoPedidoId', docRef.id);
+      localStorage.setItem(`ultimoPedido_${restauranteId}`, docRef.id);
 
       setCarrito([]);
       setMostrarFormulario(false);
@@ -185,6 +197,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
             <div className="view-principal">
               <div className="menu-principal-wrapper">
                 <div className="header-brand">
+                  <img src={logoRestaurante} alt="Logo Restaurante" className="img-tabla" style={{width: '80px', height: '80px', marginBottom: '10px', borderRadius: '50%'}} />
                   <h1 className="titulo-principal">¿Qué te apetece hoy?</h1>
                 </div>
                 <div className="categorias-grid-principal">
