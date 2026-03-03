@@ -4,12 +4,12 @@ import {
   collection, addDoc, onSnapshot, deleteDoc, doc, 
   updateDoc, setDoc, query, orderBy, limit, where 
 } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth'; // 👈 Añadido para registro real
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
   UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, 
-  Eye, EyeOff, Phone, MessageCircle, FileText, ShieldCheck
+  Eye, EyeOff, Phone, FileText, ShieldCheck, Key
 } from 'lucide-react';
-// Librerías para el PDF
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -26,6 +26,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userPass, setUserPass] = useState(''); // 👈 Estado para contraseña
   const [userRol, setUserRol] = useState('mozo'); 
   const [notificacion, setNotificacion] = useState({ texto: '', tipo: '' });
 
@@ -160,19 +161,36 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
     setNombre(''); setPrecio(''); setImagen(null);
   };
 
+  // --- REGISTRO DE USUARIOS MEJORADO ---
   const registrarAdmin = async (e) => {
     e.preventDefault();
+    if (userPass.length < 6) return mostrarSms("Contraseña mínimo 6 caracteres", "error");
+    setCargando(true);
+
     try {
       const emailLimpio = userEmail.toLowerCase().trim();
+      
+      // 1. Crear usuario en Firebase Authentication (Para que puedan hacer login)
+      // Nota: Esto creará la cuenta globalmente en Firebase
+      await createUserWithEmailAndPassword(auth, emailLimpio, userPass);
+
+      // 2. Guardar rol en la base de datos Firestore
       const docRef = doc(db, 'usuarios_admin', emailLimpio);
       await setDoc(docRef, { 
         email: emailLimpio, 
         rol: userRol, 
         restauranteId 
       });
+
       setUserEmail('');
+      setUserPass('');
       mostrarSms(`Acceso como ${userRol} concedido`, "exito");
-    } catch (e) { mostrarSms("Error de permisos", "error"); }
+    } catch (err) { 
+      console.error(err);
+      mostrarSms("Error al registrar (Email ya existe o inválido)", "error"); 
+    } finally {
+      setCargando(false);
+    }
   };
 
   const cambiarEstado = async (id, nuevoEstado, estadoActual) => {
@@ -217,14 +235,14 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                 <input type="number" step="0.1" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio (S/)" required />
               </div>
               <div className="input-group">
-                <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
+                <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)} style={{width:'100%'}}>
                   <option value="Menu">Comidas</option>
                   <option value="Cafeteria">Cafetería</option>
                   <option value="Bebidas">Bebidas</option>
                   <option value="Entradas">Entradas</option>
                 </select>
               </div>
-              <label className="btn-top-login" style={{cursor: 'pointer'}}>
+              <label className="btn-top-login" style={{cursor: 'pointer', display:'flex', justifyContent:'center', gap:'10px'}}>
                 <ImageIcon size={18} /> 
                 <span>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
                 <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
@@ -273,15 +291,21 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {seccion === 'usuarios' && (
+      {seccion === 'usuarios' && rolUsuario === 'superadmin' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
             <h2 className="titulo-principal">Registrar Personal</h2>
-            <div className="input-group"><Mail className="input-icon"/><input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Correo electrónico" required /></div>
-            
-            {/* LÓGICA DE ROLES SEGÚN QUIÉN ESTÉ LOGUEADO */}
             <div className="input-group">
-              <ShieldCheck className="input-icon"/>
+              <Mail className="input-icon" size={18}/>
+              <input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Correo electrónico" required />
+            </div>
+            <div className="input-group">
+              <Key className="input-icon" size={18}/>
+              <input type="password" value={userPass} onChange={e => setUserPass(e.target.value)} placeholder="Contraseña (Mín. 6)" required />
+            </div>
+            
+            <div className="input-group">
+              <ShieldCheck className="input-icon" size={18}/>
               <select 
                 className="btn-top-gestion" 
                 style={{width: '100%', marginLeft: '10px'}} 
@@ -289,12 +313,13 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                 onChange={e => setUserRol(e.target.value)}
               >
                 <option value="mozo">Rol: Mozo (Solo Pedidos)</option>
-                {/* Solo el Superadmin puede crear otros Admins */}
-                {rolUsuario === 'superadmin' && <option value="admin">Rol: Administrador (Gestiona Platos)</option>}
+                <option value="admin">Rol: Administrador (Gestiona Platos)</option>
               </select>
             </div>
             
-            <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
+            <button className="btn-login-submit" disabled={cargando}>
+              {cargando ? "Registrando..." : <><UserPlus size={18}/> Dar Acceso</>}
+            </button>
           </form>
 
           <div className="tabla-admin-container">
@@ -306,12 +331,9 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                     <td>{u.email}</td>
                     <td><span className={`status-badge ${u.rol}`} style={{padding: '2px 8px', fontSize: '0.7rem'}}>{u.rol?.toUpperCase()}</span></td>
                     <td>
-                      {/* Evitar que un admin borre a un superadmin */}
-                      {(rolUsuario === 'superadmin' || u.rol !== 'superadmin') && (
-                        <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}>
-                          <Trash2 color="#e74c3c" size={18}/>
-                        </button>
-                      )}
+                      <button className="btn-back-inline" onClick={() => window.confirm('¿Quitar acceso?') && deleteDoc(doc(db, 'usuarios_admin', u.id))}>
+                        <Trash2 color="#e74c3c" size={18}/>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -351,7 +373,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {seccion === 'ventas' && (
+      {seccion === 'ventas' && rolUsuario !== 'mozo' && (
         <div className="pedidos-seccion-wrapper">
           <div className="contabilidad-resumen">
             <div className="card-stat"><p>Vendido Hoy</p><h2>S/ {totalDia.toFixed(2)}</h2></div>
