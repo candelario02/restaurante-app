@@ -170,37 +170,40 @@ function App() {
         )}
       </main>
 
-      {/* 🟢 MODAL DE LOGIN (ESTO ERA LO QUE FALTABA) */}
-      {mostrarLogin && (
-        <div className="modal-overlay">
-          <div className="modal-content login-modal">
-            <button className="btn-close-modal" onClick={() => setMostrarLogin(false)}>
-              <X size={24} />
-            </button>
-            <Login 
-              onClose={() => setMostrarLogin(false)} 
-              onSuccess={(id) => {
-                setMostrarLogin(false);
-                alternarModoAdmin(true, id);
-              }}
-            />
-          </div>
-        </div>
-      )}
+     {/* 🟢 MODAL DE LOGIN (Corregido para usar clases de tu CSS) */}
+{mostrarLogin && (
+  <div className="modal-overlay">
+    <div className="msg-box"> {/* Cambiado de modal-content a msg-box para que use tu CSS */}
+      <button 
+        style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }} 
+        onClick={() => setMostrarLogin(false)}
+      >
+        <X size={24} color="#64748b" />
+      </button>
+      <Login 
+        onClose={() => setMostrarLogin(false)} 
+        onSuccess={(id) => {
+          setMostrarLogin(false);
+          alternarModoAdmin(true, id);
+        }}
+      />
+    </div>
+  </div>
+)}
 
-      {/* 🔴 MODAL DE CONFIRMAR SALIDA */}
-      {confirmarSalida && (
-        <div className="modal-overlay">
-          <div className="modal-content confirm-modal">
-            <h3>¿Cerrar sesión?</h3>
-            <p>Deberás ingresar tus credenciales nuevamente.</p>
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
-              <button className="btn-confirm-exit" onClick={manejarCerrarSesion}>Cerrar Sesión</button>
-            </div>
-          </div>
-        </div>
-      )}
+{/* 🔴 MODAL DE CONFIRMAR SALIDA (Ajustado para no romper estilos) */}
+{confirmarSalida && (
+  <div className="overlay-msg">
+    <div className="msg-box">
+      <h3>¿Cerrar sesión?</h3>
+      <p>Deberás ingresar tus credenciales nuevamente.</p>
+      <div className="modal-buttons">
+        <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
+        <button className="btn-yes" onClick={manejarCerrarSesion}>Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

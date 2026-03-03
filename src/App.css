@@ -56,51 +56,40 @@ body {
   gap: 12px; 
   align-items: center; 
   margin-left: auto;
-  overflow: visible; /* Cambiado a visible para que el clic no se corte */
+  position: relative; /* Asegura que los botones estén arriba */
   z-index: 1001;
 }
 
-.btn-top-login, .btn-top-admin, .btn-top-gestion {
+.btn-top-login {
   display: flex; 
   align-items: center; 
   gap: 8px; 
   padding: 10px 18px;
   border-radius: var(--radius); 
-  border: 1px solid var(--border);
+  border: 2px solid var(--primary); /* Resaltado para que se vea donde clickear */
   background: white; 
-  cursor: pointer !important; /* Forzamos el cursor */
-  font-weight: 600; 
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  pointer-events: auto; /* Asegura que detecte el clic */
+  color: var(--primary);
+  cursor: pointer !important;
+  font-weight: 700;
+  transition: all 0.2s;
 }
 
-.btn-top-gestion.active { 
-  background: var(--primary); 
-  color: white !important; 
-  border-color: var(--primary); 
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); 
+.btn-top-login:hover {
+  background: var(--primary);
+  color: white;
 }
 
 .btn-top-admin { 
-  color: var(--danger) !important; /* Rojo recuperado */
-  border-color: #fee2e2; 
+  color: var(--danger) !important; /* Rojo para el icono de salida */
+  border: 1px solid #fee2e2;
+  background: white;
+  padding: 10px;
+  border-radius: var(--radius);
+  cursor: pointer !important;
+  display: flex;
+  align-items: center;
 }
 
-.btn-top-admin:hover { 
-  background: #fef2f2; 
-}
-
-@media (max-width: 480px) {
-  .top-bar { padding: 0 8px; }
-  .admin-buttons { gap: 4px; } 
-  .btn-top-login, .btn-top-admin, .btn-top-gestion {
-    padding: 6px 8px !important;
-    font-size: 0.7rem !important;
-    gap: 3px;
-    flex-shrink: 1;
-  }
-}
 /* --- SESIÓN 3: CATEGORÍAS (ESTILO BASE) --- */
 .categorias-container {
   display: flex; justify-content: center; flex-wrap: wrap; gap: 40px; padding: 40px 20px;
@@ -113,7 +102,7 @@ body {
 .categoria-item:hover { transform: translateY(-8px); }
 
 /* --- SESIÓN 4: MODALES Y DIÁLOGOS - REFORZADA --- */
-.overlay-msg, .modal-overlay, .login-modal-overlay {
+.modal-overlay, .overlay-msg {
   position: fixed; 
   inset: 0; 
   background: rgba(15, 23, 42, 0.8);
@@ -121,11 +110,11 @@ body {
   display: flex; 
   justify-content: center;
   align-items: center; 
-  z-index: 9999 !important; /* Prioridad máxima sobre todo */
+  z-index: 9999 !important; /* Por encima de todo */
   padding: 20px;
 }
 
-.msg-box, .login-modal-content {
+.msg-box {
   background: white; 
   padding: 32px; 
   border-radius: 24px; 
@@ -137,36 +126,11 @@ body {
   text-align: center;
 }
 
-/* Botones del mensaje de confirmación (Salir/Cancelar) */
 .modal-buttons { 
   display: grid; 
   grid-template-columns: 1fr 1fr; 
   gap: 12px; 
   margin-top: 24px; 
-}
-
-.btn-no { 
-  background: #f1f5f9; 
-  border: none; 
-  padding: 12px; 
-  border-radius: var(--radius); 
-  font-weight: 600; 
-  cursor: pointer; 
-}
-
-.btn-yes { 
-  background: var(--danger); 
-  color: white; 
-  border: none; 
-  padding: 12px; 
-  border-radius: var(--radius); 
-  font-weight: 600; 
-  cursor: pointer; 
-}
-
-@keyframes modalIn { 
-  from { transform: scale(0.9); opacity: 0; } 
-  to { transform: scale(1); opacity: 1; } 
 }
 /* --- SESIÓN 5: PANEL ADMIN Y TABLAS --- */
 .admin-container { padding: 40px 20px; }
