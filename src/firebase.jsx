@@ -7,7 +7,7 @@ import {
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { auth, db } from './firebase.jsx';
+
 /**
  * Configuración Firebase
  * ⚠️ Estas keys son públicas y no representan un riesgo de seguridad
