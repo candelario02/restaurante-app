@@ -3,7 +3,7 @@ import './App.css';
 import MenuCliente from './MenuCliente';
 import Admin from './Admin';
 import Login from './Login';
-import { auth, db } from './firebase'; // Importamos db para consultar el rol
+import { auth, db } from './firebase'; 
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { 
@@ -11,7 +11,7 @@ import {
   X, Users, Package, TrendingUp 
 } from 'lucide-react';
 
-// 🔐 Mapeo estricto de Superadministradores (Dueños del Sistema)
+// 🔐 Mapeo estricto de Superadministradores
 const SUPERADMIN_CONFIG = {
   'huamancarrioncande24@gmail.com': { restauranteId: 'restaurante_cande' },
   'jec02021994@gmail.com': { restauranteId: 'jekito_restobar' }
@@ -25,7 +25,7 @@ function App() {
     user: null,
     isAdmin: localStorage.getItem('esAdmin') === 'true',
     restauranteId: idDesdeURL || localStorage.getItem('restauranteId'),
-    rol: localStorage.getItem('rolUsuario') || 'cliente' // 'superadmin', 'admin', 'mozo'
+    rol: localStorage.getItem('rolUsuario') || 'cliente'
   });
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
@@ -42,7 +42,6 @@ function App() {
         return;
       }
       
-      // 1. Verificar si es Superadmin (desde el código)
       let rolFinal = 'mozo';
       let idRes = idDesdeURL || localStorage.getItem('restauranteId');
 
@@ -50,12 +49,11 @@ function App() {
         rolFinal = 'superadmin';
         idRes = SUPERADMIN_CONFIG[usuario.email].restauranteId;
       } else {
-        // 2. Si no es Superadmin, buscar su rol en Firebase
         const q = query(collection(db, "usuarios_admin"), where("email", "==", usuario.email));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           const datos = querySnapshot.docs[0].data();
-          rolFinal = datos.rol; // 'admin' o 'mozo'
+          rolFinal = datos.rol; 
           idRes = datos.restauranteId;
         }
       }
@@ -93,6 +91,7 @@ function App() {
     setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: idDesdeURL, rol: 'cliente' });
     setConfirmarSalida(false);
     setSeccion('menu');
+    setBienvenidaMostrada(false);
   };
 
   const alternarModoAdmin = (valor, idRestaurante = null) => {
@@ -105,6 +104,13 @@ function App() {
 
   return (
     <div className="App">
+      {/* MENSAJE FLOTANTE DE BIENVENIDA */}
+      {mensajeBienvenida && (
+        <div className="welcome-toast">
+          {mensajeBienvenida}
+        </div>
+      )}
+
       <nav className="top-bar">
         {authState.user ? (
           <>
@@ -125,7 +131,6 @@ function App() {
                     <Settings size={18} /> <span>Menú</span>
                   </button>
                   
-                  {/* 🔐 SOLO SUPERADMIN VE USUARIOS */}
                   {authState.rol === 'superadmin' && (
                     <button className={`btn-top-gestion ${seccion === 'usuarios' ? 'active' : ''}`} onClick={() => setSeccion('usuarios')}>
                       <Users size={18} /> <span>Usuarios</span>
@@ -136,7 +141,6 @@ function App() {
                     <Package size={18} /> <span>Pedidos</span>
                   </button>
                   
-                  {/* 🔐 MOZOS NO VEN CAJA */}
                   {authState.rol !== 'mozo' && (
                     <button className={`btn-top-gestion ${seccion === 'ventas' ? 'active' : ''}`} onClick={() => setSeccion('ventas')}>
                       <TrendingUp size={18} /> <span>Caja</span>
@@ -148,7 +152,9 @@ function App() {
             </div>
           </>
         ) : (
-          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}><LogIn size={18} /> Admin</button>
+          <button className="btn-top-login" onClick={() => setMostrarLogin(true)}>
+            <LogIn size={18} /> Admin
+          </button>
         )}
       </nav>
 
@@ -157,15 +163,46 @@ function App() {
           <Admin 
             seccion={seccion} 
             restauranteId={authState.restauranteId} 
-            rolUsuario={authState.rol} // Pasamos el rol a Admin.jsx
+            rolUsuario={authState.rol} 
           /> 
         ) : (
           <MenuCliente restauranteId={authState.restauranteId} />
         )}
       </main>
 
-      {/* ... (Resto de modales se mantienen igual) */}
+      {/* 🟢 MODAL DE LOGIN (ESTO ERA LO QUE FALTABA) */}
+      {mostrarLogin && (
+        <div className="modal-overlay">
+          <div className="modal-content login-modal">
+            <button className="btn-close-modal" onClick={() => setMostrarLogin(false)}>
+              <X size={24} />
+            </button>
+            <Login 
+              onClose={() => setMostrarLogin(false)} 
+              onSuccess={(id) => {
+                setMostrarLogin(false);
+                alternarModoAdmin(true, id);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 🔴 MODAL DE CONFIRMAR SALIDA */}
+      {confirmarSalida && (
+        <div className="modal-overlay">
+          <div className="modal-content confirm-modal">
+            <h3>¿Cerrar sesión?</h3>
+            <p>Deberás ingresar tus credenciales nuevamente.</p>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
+              <button className="btn-confirm-exit" onClick={manejarCerrarSesion}>Cerrar Sesión</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 export default App;

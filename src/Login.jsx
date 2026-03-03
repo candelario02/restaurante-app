@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { auth, db } from './firebase'; // Importamos db para buscar mozos/admins
+import { auth, db } from './firebase'; 
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
@@ -10,7 +10,7 @@ const SUPERADMIN_CONFIG = {
   'jec02021994@gmail.com': { restauranteId: 'jekito_restobar', rol: 'superadmin' }
 };
 
-function Login({ alCerrar, activarAdmin }) {
+function Login({ onClose, onSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ function Login({ alCerrar, activarAdmin }) {
         restauranteIdFinal = SUPERADMIN_CONFIG[userEmail].restauranteId;
         rolFinal = 'superadmin';
       } else {
-        // 3. Si no, buscar en la colección de usuarios_admin (Mozos/Admins registrados por ti)
+        // 3. Buscar en la colección de usuarios_admin (Mozos/Admins registrados)
         const q = query(collection(db, "usuarios_admin"), where("email", "==", userEmail));
         const querySnapshot = await getDocs(q);
 
@@ -46,7 +46,7 @@ function Login({ alCerrar, activarAdmin }) {
         }
       }
 
-      // 4. Si no encontramos vinculación, cerramos sesión
+      // 4. Si no encontramos vinculación, cerramos sesión inmediatamente
       if (!restauranteIdFinal) {
         await signOut(auth);
         setError('Acceso denegado: Usuario no autorizado para este panel.');
@@ -59,15 +59,18 @@ function Login({ alCerrar, activarAdmin }) {
       localStorage.setItem('restauranteId', restauranteIdFinal);
       localStorage.setItem('rolUsuario', rolFinal);
 
-      // 6. Activar y cerrar
-      if (activarAdmin) {
-        activarAdmin(restauranteIdFinal); 
+      // 6. Ejecutar éxito (Esto activa el panel en App_Sistema)
+      if (onSuccess) {
+        onSuccess(restauranteIdFinal); 
       }
-      alCerrar();
+      
+      if (onClose) {
+        onClose();
+      }
 
     } catch (err) {
       console.error("Error en login:", err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
         setError('Correo o contraseña incorrectos');
       } else {
         setError('Error de acceso. Reintenta.');
@@ -81,20 +84,20 @@ function Login({ alCerrar, activarAdmin }) {
     <div className="login-content">
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         {error ? (
-          <ShieldAlert size={50} color="var(--danger)" />
+          <ShieldAlert size={50} color="#ff4d4d" />
         ) : (
-          <Lock size={50} color="var(--primary)" />
+          <Lock size={50} color="#f6ad55" />
         )}
       </div>
 
-      <div className="header-brand">
-        <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Acceso Panel</h2>
-        <p className="text-muted">Ingresa tus credenciales autorizadas</p>
+      <div className="header-brand" style={{ textAlign: 'center', marginBottom: '25px' }}>
+        <h2 className="titulo-principal" style={{ fontSize: '1.8rem', margin: 0 }}>Acceso Panel</h2>
+        <p className="text-muted" style={{ marginTop: '5px' }}>Ingresa tus credenciales autorizadas</p>
       </div>
 
       <form onSubmit={manejarLogin} className="login-form">
-        <div className="input-group">
-          <Mail size={18} className="input-icon" />
+        <div className="input-group" style={{ marginBottom: '15px', position: 'relative' }}>
+          <Mail size={18} className="input-icon" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#718096' }} />
           <input
             type="email"
             placeholder="Correo electrónico"
@@ -102,11 +105,12 @@ function Login({ alCerrar, activarAdmin }) {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
           />
         </div>
 
-        <div className="input-group">
-          <Lock size={18} className="input-icon" />
+        <div className="input-group" style={{ marginBottom: '20px', position: 'relative' }}>
+          <Lock size={18} className="input-icon" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#718096' }} />
           <input
             type="password"
             placeholder="Contraseña"
@@ -114,11 +118,21 @@ function Login({ alCerrar, activarAdmin }) {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
+            style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
           />
         </div>
 
         {error && (
-          <div className="mensaje-alerta error" style={{ padding: '10px', fontSize: '0.9rem', position: 'relative' }}>
+          <div className="mensaje-alerta error" style={{ 
+            padding: '10px', 
+            fontSize: '0.85rem', 
+            backgroundColor: '#fff5f5', 
+            color: '#c53030', 
+            borderRadius: '6px',
+            marginBottom: '15px',
+            border: '1px solid #feb2b2',
+            textAlign: 'center'
+          }}>
             {error}
           </div>
         )}
@@ -127,6 +141,20 @@ function Login({ alCerrar, activarAdmin }) {
           type="submit" 
           className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} 
           disabled={cargando}
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#f6ad55',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            cursor: cargando ? 'not-allowed' : 'pointer'
+          }}
         >
           {cargando ? (
             <div className="spinner-loader"></div>
