@@ -33,11 +33,11 @@ body {
   line-height: 1.5;
 }
 
-/* --- SESIÓN 2: BARRA SUPERIOR (TOP BAR) - CORREGIDA --- */
+/* --- SESIÓN 2: BARRA SUPERIOR (TOP BAR) --- */
 .top-bar {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
-  padding: 0 15px;
+  padding: 0 15px; /* Reducido un poco para ganar espacio */
   display: flex;
   justify-content: space-between; 
   align-items: center;
@@ -56,39 +56,46 @@ body {
   gap: 12px; 
   align-items: center; 
   margin-left: auto;
-  position: relative; /* Asegura que los botones estén arriba */
-  z-index: 1001;
+  overflow: hidden; /* Evita que los botones empujen la pantalla */
 }
 
-.btn-top-login {
-  display: flex; 
+.btn-back-inline {
+  background: #f1f5f9; 
+  border: none; 
+  width: 40px; 
+  height: 40px;
+  border-radius: 50%; 
+  cursor: pointer; 
+  display: flex !important; 
   align-items: center; 
-  gap: 8px; 
-  padding: 10px 18px;
-  border-radius: var(--radius); 
-  border: 2px solid var(--primary); /* Resaltado para que se vea donde clickear */
-  background: white; 
-  color: var(--primary);
-  cursor: pointer !important;
-  font-weight: 700;
+  justify-content: center; 
   transition: all 0.2s;
+  margin-right: 15px;
+  flex-shrink: 0; /* Evita que la flecha se aplaste */
 }
 
-.btn-top-login:hover {
-  background: var(--primary);
-  color: white;
+@media (max-width: 480px) {
+  .top-bar { padding: 0 8px; }
+  .admin-buttons { gap: 4px; } 
+  .btn-top-login, .btn-top-admin, .btn-top-gestion {
+    padding: 6px 8px !important; /* Forzamos el encuadre */
+    font-size: 0.7rem !important;
+    gap: 3px;
+    flex-shrink: 1; /* Permite que el botón se ajuste al ancho */
+  }
+  .btn-back-inline { width: 35px; height: 35px; margin-right: 5px; }
 }
 
-.btn-top-admin { 
-  color: var(--danger) !important; /* Rojo para el icono de salida */
-  border: 1px solid #fee2e2;
-  background: white;
-  padding: 10px;
-  border-radius: var(--radius);
-  cursor: pointer !important;
-  display: flex;
-  align-items: center;
+/* Tus estilos originales intactos */
+.btn-top-login, .btn-top-admin, .btn-top-gestion {
+  display: flex; align-items: center; gap: 8px; padding: 10px 18px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: white; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
+.btn-top-gestion.active { background: var(--primary); color: white !important; border-color: var(--primary); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+.btn-top-admin { color: var(--danger); border-color: #fee2e2; }
+.btn-top-admin:hover { background: #fef2f2; }
 
 /* --- SESIÓN 3: CATEGORÍAS (ESTILO BASE) --- */
 .categorias-container {
@@ -101,37 +108,23 @@ body {
 }
 .categoria-item:hover { transform: translateY(-8px); }
 
-/* --- SESIÓN 4: MODALES Y DIÁLOGOS - REFORZADA --- */
-.modal-overlay, .overlay-msg {
-  position: fixed; 
-  inset: 0; 
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(6px); 
-  display: flex; 
-  justify-content: center;
-  align-items: center; 
-  z-index: 9999 !important; /* Por encima de todo */
-  padding: 20px;
+/* --- SESIÓN 4: MODALES Y DIÁLOGOS --- */
+.overlay-msg, .modal-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(6px); display: flex; justify-content: center;
+  align-items: center; z-index: 2000; padding: 20px;
 }
-
 .msg-box {
-  background: white; 
-  padding: 32px; 
-  border-radius: 24px; 
-  box-shadow: var(--shadow-lg);
-  width: 100%; 
-  max-width: 420px; 
-  position: relative;
-  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
-  text-align: center;
+  background: white; padding: 32px; border-radius: 24px; box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 420px; position: relative;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center;
 }
+.modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.btn-no { background: #f1f5f9; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
+.btn-yes { background: var(--danger); color: white; border: none; padding: 12px; border-radius: var(--radius); font-weight: 600; cursor: pointer; }
 
-.modal-buttons { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-  margin-top: 24px; 
-}
+@keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
 /* --- SESIÓN 5: PANEL ADMIN Y TABLAS --- */
 .admin-container { padding: 40px 20px; }
 .tabla-admin {
