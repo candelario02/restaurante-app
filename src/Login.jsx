@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { auth } from './firebase';
+import { auth, db } from './firebase'; // Importamos db para buscar mozos/admins
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Lock, Mail, LogIn, ShieldAlert } from 'lucide-react';
 
-// 🔐 Mapeo estricto de correos a sus respectivos Restaurantes
-const ADMIN_CONFIG = {
-  'huamancarrioncande24@gmail.com': { restauranteId: 'restaurante_cande' },
-  'jec02021994@gmail.com': { restauranteId: 'jekito_restobar' }
+// 🔐 Solo los Dueños del Sistema (Superadmins)
+const SUPERADMIN_CONFIG = {
+  'huamancarrioncande24@gmail.com': { restauranteId: 'restaurante_cande', rol: 'superadmin' },
+  'jec02021994@gmail.com': { restauranteId: 'jekito_restobar', rol: 'superadmin' }
 };
 
 function Login({ alCerrar, activarAdmin }) {
@@ -21,44 +22,55 @@ function Login({ alCerrar, activarAdmin }) {
     setCargando(true);
 
     try {
-      // 1. Intentar autenticación con Firebase
+      // 1. Autenticación con Firebase Auth
       const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
       const user = userCredential.user;
-      
-      // Convertimos a minúsculas para evitar errores de coincidencia
       const userEmail = user.email.toLowerCase().trim();
 
-      // 2. Verificar si el correo tiene un restaurante asignado en ADMIN_CONFIG
-      const config = ADMIN_CONFIG[userEmail];
+      let restauranteIdFinal = null;
+      let rolFinal = null;
 
-      if (!config) {
+      // 2. ¿Es Superadmin de código?
+      if (SUPERADMIN_CONFIG[userEmail]) {
+        restauranteIdFinal = SUPERADMIN_CONFIG[userEmail].restauranteId;
+        rolFinal = 'superadmin';
+      } else {
+        // 3. Si no, buscar en la colección de usuarios_admin (Mozos/Admins registrados por ti)
+        const q = query(collection(db, "usuarios_admin"), where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const datos = querySnapshot.docs[0].data();
+          restauranteIdFinal = datos.restauranteId;
+          rolFinal = datos.rol; // 'admin' o 'mozo'
+        }
+      }
+
+      // 4. Si no encontramos vinculación, cerramos sesión
+      if (!restauranteIdFinal) {
         await signOut(auth);
-        setError('Acceso denegado: este correo no está vinculado a ningún restaurante.');
+        setError('Acceso denegado: Usuario no autorizado para este panel.');
         setCargando(false);
         return;
       }
 
-      // 3. Persistencia de datos: Guardamos TODO antes de activar el modo admin
+      // 5. Persistencia: Guardamos los privilegios
       localStorage.setItem('esAdmin', 'true');
-      localStorage.setItem('restauranteId', config.restauranteId);
+      localStorage.setItem('restauranteId', restauranteIdFinal);
+      localStorage.setItem('rolUsuario', rolFinal);
 
-      // 4. Notificar a App.jsx pasándole el ID correcto
+      // 6. Activar y cerrar
       if (activarAdmin) {
-        activarAdmin(config.restauranteId); 
+        activarAdmin(restauranteIdFinal); 
       }
-      
-      // 5. Cerrar el modal de login
       alCerrar();
 
     } catch (err) {
       console.error("Error en login:", err);
-      // Errores comunes de Firebase Auth
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         setError('Correo o contraseña incorrectos');
-      } else if (err.code === 'auth/too-many-requests') {
-        setError('Demasiados intentos. Intenta más tarde.');
       } else {
-        setError('Error de conexión. Reintenta.');
+        setError('Error de acceso. Reintenta.');
       }
     } finally {
       setCargando(false);
@@ -76,7 +88,7 @@ function Login({ alCerrar, activarAdmin }) {
       </div>
 
       <div className="header-brand">
-        <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Acceso Admin</h2>
+        <h2 className="titulo-principal" style={{ fontSize: '1.8rem' }}>Acceso Panel</h2>
         <p className="text-muted">Ingresa tus credenciales autorizadas</p>
       </div>
 

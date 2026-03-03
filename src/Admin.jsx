@@ -7,13 +7,13 @@ import {
 import { 
   Trash2, Power, PowerOff, ImageIcon, Save, 
   UserPlus, Mail, Truck, ChefHat, CheckCircle, Edit, 
-  Eye, EyeOff, Phone, MessageCircle, FileText
+  Eye, EyeOff, Phone, MessageCircle, FileText, ShieldCheck
 } from 'lucide-react';
 // Librerías para el PDF
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const Admin = ({ seccion, restauranteId }) => { 
+const Admin = ({ seccion, restauranteId, rolUsuario }) => { 
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -26,6 +26,7 @@ const Admin = ({ seccion, restauranteId }) => {
   
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userRol, setUserRol] = useState('mozo'); // Nuevo estado para el rol a registrar
   const [notificacion, setNotificacion] = useState({ texto: '', tipo: '' });
 
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
@@ -71,19 +72,16 @@ const Admin = ({ seccion, restauranteId }) => {
     window.open(`https://wa.me/51${numeroLimpio}?text=${encodeURIComponent(mensaje)}`, '_blank');
   };
 
-  // --- SONIDO Y CARGA DE DATOS ---
+  // --- CARGA DE DATOS ---
   useEffect(() => {
     if (!restauranteId) return;
 
-    // Productos
     const qProd = query(collection(db, 'productos'), where('restauranteId', '==', restauranteId));
     const unsubProd = onSnapshot(qProd, (s) => setProductos(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    // Usuarios
     const qUser = query(collection(db, 'usuarios_admin'), where('restauranteId', '==', restauranteId));
     const unsubUser = onSnapshot(qUser, (s) => setUsuarios(s.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    // Pedidos (con sonido para nuevos)
     const qPed = query(collection(db, 'pedidos'), where('restauranteId', '==', restauranteId));
     const unsubPed = onSnapshot(qPed, (s) => {
       s.docChanges().forEach(change => {
@@ -117,20 +115,20 @@ const Admin = ({ seccion, restauranteId }) => {
 
   const guardarProducto = async (e) => {
     e.preventDefault();
+    if (rolUsuario === 'mozo') return mostrarSms("No tienes permisos para editar", "error");
+    
     setCargando(true);
     try {
       let urlImagen = imagen ? await subirACloudinary(imagen) : null;
-      
       const datos = { 
         nombre, 
         precio: Number(precio), 
         categoria, 
         disponible: true, 
-        restauranteId: restauranteId // <--- FORZAMOS TU ID DINÁMICO
+        restauranteId: restauranteId 
       };
 
       if (editandoId) {
-        // Al editar, si no hay imagen nueva, no sobreescribimos la anterior
         if (urlImagen) datos.img = urlImagen;
         await updateDoc(doc(db, 'productos', editandoId), datos);
         mostrarSms("Producto actualizado", "exito");
@@ -149,6 +147,7 @@ const Admin = ({ seccion, restauranteId }) => {
   };
 
   const prepararEdicion = (p) => {
+    if (rolUsuario === 'mozo') return;
     setEditandoId(p.id);
     setNombre(p.nombre);
     setPrecio(p.precio);
@@ -164,10 +163,15 @@ const Admin = ({ seccion, restauranteId }) => {
   const registrarAdmin = async (e) => {
     e.preventDefault();
     try {
-      const docRef = doc(db, 'usuarios_admin', userEmail.toLowerCase());
-      await setDoc(docRef, { email: userEmail.toLowerCase(), rol: 'admin', restauranteId });
+      const emailLimpio = userEmail.toLowerCase().trim();
+      const docRef = doc(db, 'usuarios_admin', emailLimpio);
+      await setDoc(docRef, { 
+        email: emailLimpio, 
+        rol: userRol, 
+        restauranteId 
+      });
       setUserEmail('');
-      mostrarSms("Acceso concedido", "exito");
+      mostrarSms(`Acceso como ${userRol} concedido`, "exito");
     } catch (e) { mostrarSms("Error de permisos", "error"); }
   };
 
@@ -179,7 +183,6 @@ const Admin = ({ seccion, restauranteId }) => {
     } catch (error) { mostrarSms("Error al actualizar", "error"); }
   };
 
-  // Cálculos de Ventas
   const pedidosActivos = pedidos.filter(p => (p.estado || 'pendiente') !== 'entregado');
   const historialFiltrado = pedidos.filter(p => {
     if (!p.fecha || p.estado !== 'entregado') return false;
@@ -204,45 +207,65 @@ const Admin = ({ seccion, restauranteId }) => {
 
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
-          <form onSubmit={guardarProducto} className="login-form">
-            <h2 className="titulo-principal">{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
-            <div className="input-group">
-              <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del plato" required />
-            </div>
-            <div className="input-group">
-              <input type="number" step="0.1" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio (S/)" required />
-            </div>
-            <div className="input-group">
-              <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
-                <option value="Menu">Comidas</option>
-                <option value="Cafeteria">Cafetería</option>
-                <option value="Bebidas">Bebidas</option>
-                <option value="Entradas">Entradas</option>
-              </select>
-            </div>
-            <label className="btn-top-login" style={{cursor: 'pointer'}}>
-              <ImageIcon size={18} /> 
-              <span>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
-              <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
-            </label>
-            <div className="modal-buttons" style={{marginTop:'15px'}}>
-              {editandoId && <button type="button" className="btn-no" onClick={cancelarEdicion}>Cancelar</button>}
-              <button className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} disabled={cargando}>
-                {cargando ? "Cargando..." : <><Save size={18}/> {editandoId ? 'Actualizar' : 'Guardar'}</>}
-              </button>
-            </div>
-          </form>
+          {/* Ocultar formulario de creación a mozos */}
+          {rolUsuario !== 'mozo' && (
+            <form onSubmit={guardarProducto} className="login-form">
+              <h2 className="titulo-principal">{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
+              <div className="input-group">
+                <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del plato" required />
+              </div>
+              <div className="input-group">
+                <input type="number" step="0.1" value={precio} onChange={e => setPrecio(e.target.value)} placeholder="Precio (S/)" required />
+              </div>
+              <div className="input-group">
+                <select className="btn-top-gestion" value={categoria} onChange={e => setCategoria(e.target.value)}>
+                  <option value="Menu">Comidas</option>
+                  <option value="Cafeteria">Cafetería</option>
+                  <option value="Bebidas">Bebidas</option>
+                  <option value="Entradas">Entradas</option>
+                </select>
+              </div>
+              <label className="btn-top-login" style={{cursor: 'pointer'}}>
+                <ImageIcon size={18} /> 
+                <span>{imagen ? imagen.name : (editandoId ? 'Cambiar Imagen' : 'Subir Imagen')}</span>
+                <input type="file" hidden accept="image/*" onChange={e => setImagen(e.target.files[0])}/>
+              </label>
+              <div className="modal-buttons" style={{marginTop:'15px'}}>
+                {editandoId && <button type="button" className="btn-no" onClick={cancelarEdicion}>Cancelar</button>}
+                <button className={`btn-login-submit ${cargando ? 'btn-loading' : ''}`} disabled={cargando}>
+                  {cargando ? "Cargando..." : <><Save size={18}/> {editandoId ? 'Actualizar' : 'Guardar'}</>}
+                </button>
+              </div>
+            </form>
+          )}
 
           <div className="tabla-admin-container">
             <table className="tabla-admin">
-              <thead><tr><th>Plato</th><th>Precio</th><th>Disp.</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>Plato</th><th>Precio</th><th>Disp.</th>{rolUsuario !== 'mozo' && <th>Acciones</th>}</tr></thead>
               <tbody>
                 {productos.map(p => (
                   <tr key={p.id}>
                     <td><div className="categoria-item-mini"><img src={p.img} alt="" className="img-tabla" /><span>{p.nombre}</span></div></td>
                     <td>S/ {Number(p.precio).toFixed(2)}</td>
-                    <td><button className="btn-back-inline" onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}>{p.disponible ? <Power color="#2ecc71" size={18}/> : <PowerOff color="#e74c3c" size={18}/>}</button></td>
-                    <td><div className="admin-buttons-acciones"><button className="btn-back-inline" onClick={() => prepararEdicion(p)}><Edit size={16}/></button><button className="btn-back-inline" onClick={() => window.confirm('¿Eliminar?') && deleteDoc(doc(db, 'productos', p.id))}><Trash2 color="#e74c3c" size={16}/></button></div></td>
+                    <td>
+                      <button 
+                        className="btn-back-inline" 
+                        disabled={rolUsuario === 'mozo'}
+                        onClick={() => updateDoc(doc(db, 'productos', p.id), { disponible: !p.disponible })}
+                      >
+                        {p.disponible ? <Power color="#2ecc71" size={18}/> : <PowerOff color="#e74c3c" size={18}/>}
+                      </button>
+                    </td>
+                    {rolUsuario !== 'mozo' && (
+                      <td>
+                        <div className="admin-buttons-acciones">
+                          <button className="btn-back-inline" onClick={() => prepararEdicion(p)}><Edit size={16}/></button>
+                          <button className="btn-back-inline" onClick={() => window.confirm('¿Eliminar?') && deleteDoc(doc(db, 'productos', p.id))}>
+                            <Trash2 color="#e74c3c" size={16}/>
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -254,16 +277,27 @@ const Admin = ({ seccion, restauranteId }) => {
       {seccion === 'usuarios' && (
         <div className="menu-principal-wrapper">
           <form onSubmit={registrarAdmin} className="login-form">
-            <h2 className="titulo-principal">Accesos Admin</h2>
+            <h2 className="titulo-principal">Registrar Personal</h2>
             <div className="input-group"><Mail className="input-icon"/><input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Correo electrónico" required /></div>
+            <div className="input-group">
+              <ShieldCheck className="input-icon"/>
+              <select className="btn-top-gestion" style={{width: '100%', marginLeft: '10px'}} value={userRol} onChange={e => setUserRol(e.target.value)}>
+                <option value="mozo">Mozo (Solo Pedidos)</option>
+                <option value="admin">Administrador (Gestiona Platos)</option>
+              </select>
+            </div>
             <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
           </form>
           <div className="tabla-admin-container">
             <table className="tabla-admin">
-              <thead><tr><th>Email</th><th>Quitar</th></tr></thead>
+              <thead><tr><th>Email</th><th>Rol</th><th>Quitar</th></tr></thead>
               <tbody>
                 {usuarios.map(u => (
-                  <tr key={u.id}><td>{u.email}</td><td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="#e74c3c" size={18}/></button></td></tr>
+                  <tr key={u.id}>
+                    <td>{u.email}</td>
+                    <td><span className={`status-badge ${u.rol}`} style={{padding: '2px 8px', fontSize: '0.7rem'}}>{u.rol?.toUpperCase()}</span></td>
+                    <td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="#e74c3c" size={18}/></button></td>
+                  </tr>
                 ))}
               </tbody>
             </table>

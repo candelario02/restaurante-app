@@ -41,6 +41,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
   // 0. Cargar Logo y Configuración del Restaurante
   useEffect(() => {
     const cargarConfig = async () => {
+      if (!restauranteId) return;
       const docRef = doc(db, "configuraciones", restauranteId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap.data().logoUrl) {
@@ -50,9 +51,9 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
     cargarConfig();
   }, [restauranteId]);
 
-  // 1. Cargar productos filtrados por Restaurante y Categoría
+  // 1. Cargar productos filtrados
   useEffect(() => {
-    if (!categoriaActual) return;
+    if (!categoriaActual || !restauranteId) return;
     
     const q = query(
       collection(db, "productos"),
@@ -197,7 +198,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
             <div className="view-principal">
               <div className="menu-principal-wrapper">
                 <div className="header-brand">
-                  <img src={logoRestaurante} alt="Logo Restaurante" className="img-tabla" style={{width: '80px', height: '80px', marginBottom: '10px', borderRadius: '50%'}} />
+                  <img src={logoRestaurante} alt="Logo" className="img-tabla" style={{width: '80px', height: '80px', marginBottom: '10px', borderRadius: '50%'}} />
                   <h1 className="titulo-principal">¿Qué te apetece hoy?</h1>
                 </div>
                 <div className="categorias-grid-principal">
@@ -233,7 +234,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
                     <div className="producto-info">
                       <h3 style={{fontSize: '1.1rem', marginBottom: '5px'}}>{p.nombre}</h3>
                       <div className="precio-y-accion">
-                        <span className="precio-tag">S/ {p.precio.toFixed(2)}</span>
+                        <span className="precio-tag">S/ {Number(p.precio).toFixed(2)}</span>
                         <button className="btn-plus-item" onClick={() => agregarAlCarrito(p)}><Plus size={20} /></button>
                       </div>
                     </div>
@@ -254,7 +255,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
               {carrito.map((item, i) => (
                 <div key={i} className="carrito-item-fila">
                   <span>{item.nombre}</span>
-                  <strong>S/ {item.precio.toFixed(2)}</strong>
+                  <strong>S/ {Number(item.precio).toFixed(2)}</strong>
                 </div>
               ))}
             </div>
