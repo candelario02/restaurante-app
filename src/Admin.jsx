@@ -26,7 +26,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [userRol, setUserRol] = useState('mozo'); // Nuevo estado para el rol a registrar
+  const [userRol, setUserRol] = useState('mozo'); 
   const [notificacion, setNotificacion] = useState({ texto: '', tipo: '' });
 
   const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
@@ -207,7 +207,6 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
 
       {seccion === 'menu' && (
         <div className="menu-principal-wrapper">
-          {/* Ocultar formulario de creación a mozos */}
           {rolUsuario !== 'mozo' && (
             <form onSubmit={guardarProducto} className="login-form">
               <h2 className="titulo-principal">{editandoId ? 'Editar Plato' : 'Nuevo Plato'}</h2>
@@ -279,15 +278,25 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           <form onSubmit={registrarAdmin} className="login-form">
             <h2 className="titulo-principal">Registrar Personal</h2>
             <div className="input-group"><Mail className="input-icon"/><input type="email" value={userEmail} onChange={e => setUserEmail(e.target.value)} placeholder="Correo electrónico" required /></div>
+            
+            {/* LÓGICA DE ROLES SEGÚN QUIÉN ESTÉ LOGUEADO */}
             <div className="input-group">
               <ShieldCheck className="input-icon"/>
-              <select className="btn-top-gestion" style={{width: '100%', marginLeft: '10px'}} value={userRol} onChange={e => setUserRol(e.target.value)}>
-                <option value="mozo">Mozo (Solo Pedidos)</option>
-                <option value="admin">Administrador (Gestiona Platos)</option>
+              <select 
+                className="btn-top-gestion" 
+                style={{width: '100%', marginLeft: '10px'}} 
+                value={userRol} 
+                onChange={e => setUserRol(e.target.value)}
+              >
+                <option value="mozo">Rol: Mozo (Solo Pedidos)</option>
+                {/* Solo el Superadmin puede crear otros Admins */}
+                {rolUsuario === 'superadmin' && <option value="admin">Rol: Administrador (Gestiona Platos)</option>}
               </select>
             </div>
+            
             <button className="btn-login-submit"><UserPlus size={18}/> Dar Acceso</button>
           </form>
+
           <div className="tabla-admin-container">
             <table className="tabla-admin">
               <thead><tr><th>Email</th><th>Rol</th><th>Quitar</th></tr></thead>
@@ -296,7 +305,14 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                   <tr key={u.id}>
                     <td>{u.email}</td>
                     <td><span className={`status-badge ${u.rol}`} style={{padding: '2px 8px', fontSize: '0.7rem'}}>{u.rol?.toUpperCase()}</span></td>
-                    <td><button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}><Trash2 color="#e74c3c" size={18}/></button></td>
+                    <td>
+                      {/* Evitar que un admin borre a un superadmin */}
+                      {(rolUsuario === 'superadmin' || u.rol !== 'superadmin') && (
+                        <button className="btn-back-inline" onClick={() => deleteDoc(doc(db, 'usuarios_admin', u.id))}>
+                          <Trash2 color="#e74c3c" size={18}/>
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
