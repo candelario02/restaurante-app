@@ -34,6 +34,13 @@ function App() {
   const [seccion, setSeccion] = useState('menu');
   const [bienvenidaMostrada, setBienvenidaMostrada] = useState(false);
 
+  // --- FUNCIÓN PARA SINCRONIZAR URL (NUEVA) ---
+  const actualizarURL = (id) => {
+    if (id && window.location.pathname !== `/${id}`) {
+      window.history.pushState({}, '', `/${id}`);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (usuario) => {
       if (!usuario) {
@@ -66,8 +73,13 @@ function App() {
         rol: rolFinal
       });
 
+      // 🔄 Sincronizar URL al detectar login
+      if (idRes) {
+        actualizarURL(idRes);
+        localStorage.setItem('restauranteId', idRes);
+      }
+      
       localStorage.setItem('rolUsuario', rolFinal);
-      if (idRes) localStorage.setItem('restauranteId', idRes);
 
       if (!bienvenidaMostrada) {
         const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -92,10 +104,18 @@ function App() {
     setConfirmarSalida(false);
     setSeccion('menu');
     setBienvenidaMostrada(false);
+    // Al cerrar sesión, si quieres limpiar la URL y volver al inicio:
+    window.history.pushState({}, '', '/');
   };
 
   const alternarModoAdmin = (valor, idRestaurante = null) => {
     const idFinal = idRestaurante || authState.restauranteId;
+    
+    // 🔄 Sincronizar URL al cambiar a modo Admin
+    if (idFinal) {
+      actualizarURL(idFinal);
+    }
+
     setAuthState(p => ({ ...p, isAdmin: valor, restauranteId: idFinal }));
     localStorage.setItem('esAdmin', valor.toString());
   };
@@ -170,40 +190,40 @@ function App() {
         )}
       </main>
 
-     {/* 🟢 MODAL DE LOGIN (Corregido para usar clases de tu CSS) */}
-{mostrarLogin && (
-  <div className="modal-overlay">
-    <div className="msg-box"> {/* Cambiado de modal-content a msg-box para que use tu CSS */}
-      <button 
-        style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }} 
-        onClick={() => setMostrarLogin(false)}
-      >
-        <X size={24} color="#64748b" />
-      </button>
-      <Login 
-        onClose={() => setMostrarLogin(false)} 
-        onSuccess={(id) => {
-          setMostrarLogin(false);
-          alternarModoAdmin(true, id);
-        }}
-      />
-    </div>
-  </div>
-)}
+      {/* 🟢 MODAL DE LOGIN */}
+      {mostrarLogin && (
+        <div className="modal-overlay">
+          <div className="msg-box">
+            <button 
+              style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }} 
+              onClick={() => setMostrarLogin(false)}
+            >
+              <X size={24} color="#64748b" />
+            </button>
+            <Login 
+              onClose={() => setMostrarLogin(false)} 
+              onSuccess={(id) => {
+                setMostrarLogin(false);
+                alternarModoAdmin(true, id);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
-{/* 🔴 MODAL DE CONFIRMAR SALIDA (Ajustado para no romper estilos) */}
-{confirmarSalida && (
-  <div className="overlay-msg">
-    <div className="msg-box">
-      <h3>¿Cerrar sesión?</h3>
-      <p>Deberás ingresar tus credenciales nuevamente.</p>
-      <div className="modal-buttons">
-        <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
-        <button className="btn-yes" onClick={manejarCerrarSesion}>Cerrar Sesión</button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* 🔴 MODAL DE CONFIRMAR SALIDA */}
+      {confirmarSalida && (
+        <div className="overlay-msg">
+          <div className="msg-box">
+            <h3>¿Cerrar sesión?</h3>
+            <p>Deberás ingresar tus credenciales nuevamente.</p>
+            <div className="modal-buttons">
+              <button className="btn-no" onClick={() => setConfirmarSalida(false)}>Cancelar</button>
+              <button className="btn-yes" onClick={manejarCerrarSesion}>Cerrar Sesión</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
