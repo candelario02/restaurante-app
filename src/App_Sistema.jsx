@@ -46,6 +46,8 @@ function App() {
       if (!usuario) {
         setAuthState({ loading: false, user: null, isAdmin: false, restauranteId: idDesdeURL, rol: 'cliente' });
         limpiarStorage();
+        // Título por defecto cuando no hay nadie logueado o es cliente nuevo
+        document.title = idDesdeURL ? idDesdeURL.replace(/_/g, ' ').toUpperCase() : "Mi Restaurante";
         return;
       }
       
@@ -73,10 +75,15 @@ function App() {
         rol: rolFinal
       });
 
-      // 🔄 Sincronizar URL al detectar login
+      // 🔄 Sincronizar URL y NOMBRE DE PESTAÑA al detectar login
       if (idRes) {
         actualizarURL(idRes);
         localStorage.setItem('restauranteId', idRes);
+
+        // 💡 CAMBIO DE NOMBRE EN LA PESTAÑA:
+        // Esto quita los guiones bajos y pone todo en mayúsculas
+        const nombreLimpio = idRes.replace(/_/g, ' ').toUpperCase();
+        document.title = `${nombreLimpio} | Panel`;
       }
       
       localStorage.setItem('rolUsuario', rolFinal);
