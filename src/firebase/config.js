@@ -1,4 +1,4 @@
-// firebase.js
+// src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -8,10 +8,7 @@ import {
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-/**
- * Configuración Firebase
- * ⚠️ Estas keys son públicas y no representan un riesgo de seguridad
- */
+// Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDbhwRwkFdu_2hOLo_0e0jSgDXFx8Azw8Q",
   authDomain: "restaurante-app-4a75c.firebaseapp.com",
@@ -22,25 +19,23 @@ const firebaseConfig = {
   measurementId: "G-YJF0B71MFP"
 };
 
-// 🔥 Inicializar Firebase (una sola vez)
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 
-// 🔐 Auth
+// Auth
 export const auth = getAuth(app);
 
-// 🧠 Persistencia local (para Vercel, tablets, Brave, etc.)
+// Persistencia de sesión
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    console.log("Persistencia de sesión establecida en LOCAL");
+    console.log("Persistencia LOCAL activada");
   })
   .catch((error) => {
-    console.error("Error estableciendo persistencia Auth:", error);
+    console.error("Error en persistencia:", error);
   });
 
-// 🗄️ Firestore
+// Firestore
 export const db = getFirestore(app);
 
-// 📦 Storage
+// Storage
 export const storage = getStorage(app);
-
-export default app;

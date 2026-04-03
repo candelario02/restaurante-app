@@ -1,0 +1,61 @@
+.admin-container { padding: 40px; }
+
+.tabla-admin {
+  width: 100%;
+  background: white;
+  border-radius: var(--radius);
+}
+
+.tabla-admin th {
+  background: #f1f5f9;
+}
+
+.tabla-admin td {
+  border-bottom: 1px solid var(--border);
+}
+
+/* PEDIDOS */
+.producto-card-pedido {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.status-badge {
+  padding: 5px 15px;
+  border-radius: 20px;
+}
+
+.status-badge.entregado { background: #dcfce7; }
+.status-badge.preparando { background: #fef9c3; }
+.status-badge.enviado { background: #dbeafe; }
+
+/* CONTABILIDAD */
+.contabilidad-resumen {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.card-stat {
+  background: white;
+  border-radius: 15px;
+  text-align: center;
+}
+
+/* TRACKING */
+.status-tracker {
+  display: flex;
+  justify-content: space-around;
+}
+
+/* BOTONES */
+.btn-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}

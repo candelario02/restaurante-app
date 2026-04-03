@@ -1,0 +1,58 @@
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.producto-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.producto-foto {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.precio-tag {
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.btn-plus-item {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+}
+
+/* CARRITO */
+.btn-carrito-flotante {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+}
+
+.toast-agregado {
+  position: fixed;
+  top: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* LISTA */
+.carrito-lista {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.carrito-total {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
