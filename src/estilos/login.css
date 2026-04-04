@@ -1,24 +1,134 @@
+/* ============================================================
+   1. CONTENEDOR DE LOGIN (MODAL O PÁGINA)
+   ============================================================ */
+.login-content {
+  padding: 10px;
+  animation: fadeIn 0.3s ease-out;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 450px;
+  gap: 20px;
+  max-width: 400px;
   margin: auto;
+  width: 100%;
 }
 
+.login-form .titulo-principal {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+/* ============================================================
+   2. INPUTS CON ICONOS
+   ============================================================ */
 .input-group {
   position: relative;
+  width: 100%;
+}
+
+/* El icono dentro del input */
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
 }
 
 .input-group input {
   width: 100%;
-  padding: 14px;
+  padding: 14px 14px 14px 45px; /* Espacio extra a la izquierda para el icono */
   border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-body);
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
+.input-group input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+/* Cambiar color del icono cuando el input está en foco */
+.input-group input:focus + .input-icon,
+.input-group input:focus ~ .input-icon {
+  color: var(--primary);
+}
+
+/* ============================================================
+   3. BOTÓN DE ENVÍO
+   ============================================================ */
 .btn-login-submit {
   background: var(--primary);
   color: white;
-  padding: 14px;
+  padding: 15px;
   border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  margin-top: 10px;
+}
+
+.btn-login-submit:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-login-submit:active {
+  transform: translateY(0);
+}
+
+.btn-login-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================
+   4. MENSAJES DE ERROR
+   ============================================================ */
+.mensaje-alerta {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mensaje-alerta.error {
+  background: #fff5f5;
+  color: var(--danger);
+  border: 1px solid #fed7d7;
+  animation: shake 0.4s ease;
+}
+
+/* ============================================================
+   5. ANIMACIONES
+   ============================================================ */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

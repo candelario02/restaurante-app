@@ -1,61 +1,186 @@
-.admin-container { padding: 40px; }
-
-.tabla-admin {
-  width: 100%;
-  background: white;
-  border-radius: var(--radius);
+/* ============================================================
+   1. CONTENEDOR Y SECCIONES
+   ============================================================ */
+.admin-container {
+  padding: 30px 20px;
+  animation: fadeIn 0.4s ease;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-.tabla-admin th {
-  background: #f1f5f9;
+.admin-section {
+  background: var(--bg-card);
+  padding: 25px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 30px;
 }
 
-.tabla-admin td {
-  border-bottom: 1px solid var(--border);
+.titulo-principal {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* PEDIDOS */
-.producto-card-pedido {
-  background: white;
-  border-radius: 20px;
+/* ============================================================
+   2. FORMULARIOS (ADMIN)
+   ============================================================ */
+.form-admin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+  background: var(--bg-body);
   padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
-.pedido-header {
-  display: flex;
-  justify-content: space-between;
+.form-admin input, 
+.form-admin select {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
-.status-badge {
-  padding: 5px 15px;
-  border-radius: 20px;
+.form-admin input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-.status-badge.entregado { background: #dcfce7; }
-.status-badge.preparando { background: #fef9c3; }
-.status-badge.enviado { background: #dbeafe; }
-
-/* CONTABILIDAD */
-.contabilidad-resumen {
+/* ============================================================
+   3. GRILLAS Y CARDS DE GESTIÓN
+   ============================================================ */
+.grid-admin {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-.card-stat {
+.card-admin {
   background: white;
-  border-radius: 15px;
-  text-align: center;
-}
-
-/* TRACKING */
-.status-tracker {
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: var(--radius);
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* BOTONES */
+.card-admin:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-admin h3 {
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.card-admin p {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.card-admin span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: var(--bg-body);
+  padding: 4px 10px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+/* Acciones (Botones editar/eliminar) */
+.acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 15px;
+}
+
+.acciones button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-body);
+  color: var(--text-muted);
+}
+
+.acciones button:hover:first-child {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.acciones button:hover:last-child {
+  color: var(--danger);
+  background: #fee2e2;
+}
+
+/* ============================================================
+   4. ESTADOS Y BADGES (PEDIDOS)
+   ============================================================ */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.entregado { background: #dcfce7; color: #166534; }
+.status-badge.pendiente { background: #fef9c3; color: #854d0e; }
+.status-badge.preparando { background: #dbeafe; color: #1e40af; }
+
+.btn-success {
+  background: var(--success);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.btn-success:hover {
+  background: var(--success-dark);
+}
+
+/* ============================================================
+   5. BOTONES Y UTILIDADES
+   ============================================================ */
 .btn-disabled {
-  opacity: 0.3;
+  opacity: 0.4;
   pointer-events: none;
+  filter: grayscale(1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .form-admin {
+    flex-direction: column;
+  }
+  
+  .form-admin input, .form-admin button {
+    width: 100%;
+  }
 }
