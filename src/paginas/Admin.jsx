@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Trash2, Edit } from "lucide-react";
+// 🛠️ IMPORTACIÓN DE ICONOS COMPLETA (Para evitar el error de pantalla blanca)
+import { 
+  Trash2, 
+  Edit, 
+  Utensils, 
+  Users, 
+  Package, 
+  Image, 
+  Save, 
+  Power 
+} from "lucide-react";
 import "../estilos/admin.css";
 
 // 🔥 SERVICIOS
@@ -7,10 +17,9 @@ import {
   crearProducto,
   actualizarProducto,
   eliminarProducto,
+  cambiarDisponibilidad // Asegúrate que esté exportado en productosServicio.js
 } from "../servicios/productosServicio";
-
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
-
 import { registrarUsuario } from "../servicios/usuariosServicio";
 
 // 🔥 HOOKS TIEMPO REAL
@@ -27,7 +36,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
 
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
-  const [categoria, setCategoria] = useState("Menu");
+  const [categoria, setCategoria] = useState("Comidas");
   const [editandoId, setEditandoId] = useState(null);
 
   const [userEmail, setUserEmail] = useState("");
@@ -53,31 +62,17 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   // =============================
   const guardarProducto = async (e) => {
     e.preventDefault();
-
-    if (rolUsuario === "mozo") {
-      return alert("No tienes permisos");
-    }
+    if (rolUsuario === "mozo") return alert("No tienes permisos");
 
     try {
+      const datos = { nombre, precio, categoria, restauranteId };
       if (editandoId) {
-        await actualizarProducto(editandoId, {
-          nombre,
-          precio,
-          categoria,
-          restauranteId,
-        });
+        await actualizarProducto(editandoId, datos);
         alert("Producto actualizado");
       } else {
-        await crearProducto({
-          nombre,
-          precio,
-          categoria,
-          restauranteId,
-          disponible: true,
-        });
+        await crearProducto({ ...datos, disponible: true });
         alert("Producto creado");
       }
-
       cancelarEdicion();
     } catch (error) {
       alert("Error: " + error.message);
@@ -102,7 +97,6 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   // =============================
   const registrarAdmin = async (e) => {
     e.preventDefault();
-
     try {
       await registrarUsuario(userEmail, userPass, "mozo", restauranteId);
       alert("Usuario creado");
@@ -126,17 +120,10 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       {/* ================= MENU ================= */}
       {seccion === "menu" && (
         <div className="admin-section">
-          {/* 📋 NAVEGACIÓN INTERNA */}
           <div className="admin-nav-tabs">
-            <button className="tab-btn active">
-              <Utensils size={20} /> Menú
-            </button>
-            <button className="tab-btn">
-              <Users size={20} /> Usuarios
-            </button>
-            <button className="tab-btn">
-              <Package size={20} /> Pedidos
-            </button>
+            <button className="tab-btn active"><Utensils size={20} /> Menú</button>
+            <button className="tab-btn"><Users size={20} /> Usuarios</button>
+            <button className="tab-btn"><Package size={20} /> Pedidos</button>
           </div>
 
           <h2 className="titulo-principal">Nuevo Plato</h2>
@@ -176,7 +163,6 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
             </button>
           </form>
 
-          {/* 📊 TABLA PROFESIONAL (Recuperada de tu imagen) */}
           <div className="tabla-container-pro">
             <table className="tabla-admin-pro">
               <thead>
@@ -198,29 +184,14 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                     <td>
                       <button
                         className="btn-status-pro"
-                        onClick={() =>
-                          cambiarDisponibilidad(p.id, !p.disponible)
-                        }
+                        onClick={() => cambiarDisponibilidad(p.id, !p.disponible)}
                       >
-                        <Power
-                          size={18}
-                          color={p.disponible ? "#10b981" : "#ef4444"}
-                        />
+                        <Power size={18} color={p.disponible ? "#10b981" : "#ef4444"} />
                       </button>
                     </td>
                     <td className="acciones-pro">
-                      <button
-                        className="btn-edit"
-                        onClick={() => prepararEdicion(p)}
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        className="btn-delete"
-                        onClick={() => eliminarProducto(p.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <button className="btn-edit" onClick={() => prepararEdicion(p)}><Edit size={16} /></button>
+                      <button className="btn-delete" onClick={() => eliminarProducto(p.id)}><Trash2 size={16} /></button>
                     </td>
                   </tr>
                 ))}
@@ -234,20 +205,12 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       {seccion === "pedidos" && (
         <div className="admin-section">
           <h2 className="titulo-principal">📦 Pedidos</h2>
-
           <div className="grid-admin">
-            {" "}
             {pedidos.map((p) => (
               <div key={p.id} className="card-admin">
                 <strong>{p.cliente?.nombre}</strong>
                 <span className={`status-badge ${p.estado}`}>{p.estado}</span>
-
-                <button
-                  className="btn-success"
-                  onClick={() => cambiarEstado(p.id, "entregado")}
-                >
-                  Entregar
-                </button>
+                <button className="btn-success" onClick={() => cambiarEstado(p.id, "entregado")}>Entregar</button>
               </div>
             ))}
           </div>
@@ -258,21 +221,11 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       {seccion === "usuarios" && (
         <div className="admin-section">
           <h2 className="titulo-principal">👤 Usuarios</h2>
-
           <form onSubmit={registrarAdmin} className="form-admin">
-            <input
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              placeholder="Correo"
-            />
-            <input
-              value={userPass}
-              onChange={(e) => setUserPass(e.target.value)}
-              placeholder="Contraseña"
-            />
+            <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Correo" />
+            <input value={userPass} onChange={(e) => setUserPass(e.target.value)} placeholder="Contraseña" />
             <button className="btn-primary">Crear</button>
           </form>
-
           <div className="grid-admin">
             {usuarios.map((u) => (
               <div key={u.id} className="card-admin">
