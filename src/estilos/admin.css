@@ -1,186 +1,149 @@
-/* ============================================================
-   1. CONTENEDOR Y SECCIONES
-   ============================================================ */
+/* 1. CONTENEDOR Y SECCIONES */
 .admin-container {
-  padding: 30px 20px;
+  padding: 20px;
   animation: fadeIn 0.4s ease;
   max-width: 1000px;
   margin: 0 auto;
 }
 
 .admin-section {
-  background: var(--bg-card);
-  padding: 25px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
+  border: 1px solid #f1f5f9;
 }
 
 .titulo-principal {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 25px;
-  color: var(--text-main);
+  margin-bottom: 20px;
+  color: #1e293b;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* ============================================================
-   2. FORMULARIOS (ADMIN)
-   ============================================================ */
+/* 2. FORMULARIOS */
 .form-admin {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
   margin-bottom: 30px;
-  background: var(--bg-body);
-  padding: 20px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
-.form-admin input, 
-.form-admin select {
+.form-admin input {
   flex: 1;
-  min-width: 200px;
-  padding: 12px 16px;
+  min-width: 150px;
+  padding: 12px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  font-size: 0.95rem;
+  border: 1px solid #cbd5e1;
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .form-admin input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
+  border-color: #6366f1;
 }
 
-/* ============================================================
-   3. GRILLAS Y CARDS DE GESTIÓN
-   ============================================================ */
+.btn-primary {
+  background: #6366f1;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+/* 3. GRILLAS Y CARDS */
 .grid-admin {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
 }
 
 .card-admin {
   background: white;
-  border: 1px solid var(--border);
-  padding: 20px;
-  border-radius: var(--radius);
+  border: 1px solid #e2e8f0;
+  padding: 15px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card-admin:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  gap: 8px;
 }
 
 .card-admin h3 {
-  font-size: 1.1rem;
-  color: var(--text-main);
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
 }
 
 .card-admin p {
-  color: var(--primary);
+  color: #6366f1;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  margin: 0;
 }
 
-.card-admin span {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  background: var(--bg-body);
-  padding: 4px 10px;
-  border-radius: 20px;
-  width: fit-content;
-}
-
-/* Acciones (Botones editar/eliminar) */
+/* Acciones (Editar/Eliminar) */
 .acciones {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
-  border-top: 1px solid var(--border);
-  padding-top: 15px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
 }
 
 .acciones button {
   flex: 1;
   padding: 8px;
   border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #f1f5f9;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: var(--bg-body);
-  color: var(--text-muted);
 }
 
-.acciones button:hover:first-child {
-  color: var(--primary);
-  background: var(--primary-light);
-}
+.acciones button:hover:first-child { color: #6366f1; }
+.acciones button:hover:last-child { color: #ef4444; }
 
-.acciones button:hover:last-child {
-  color: var(--danger);
-  background: #fee2e2;
-}
-
-/* ============================================================
-   4. ESTADOS Y BADGES (PEDIDOS)
-   ============================================================ */
+/* 4. ESTADOS (BADGES) */
 .status-badge {
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: capitalize;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: fit-content;
+  text-transform: uppercase;
 }
 
 .status-badge.entregado { background: #dcfce7; color: #166534; }
 .status-badge.pendiente { background: #fef9c3; color: #854d0e; }
-.status-badge.preparando { background: #dbeafe; color: #1e40af; }
 
 .btn-success {
-  background: var(--success);
+  background: #22c55e;
   color: white;
   padding: 10px;
   border-radius: 8px;
+  border: none;
   font-weight: 600;
-  margin-top: 10px;
+  cursor: pointer;
 }
 
-.btn-success:hover {
-  background: var(--success-dark);
-}
-
-/* ============================================================
-   5. BOTONES Y UTILIDADES
-   ============================================================ */
-.btn-disabled {
-  opacity: 0.4;
-  pointer-events: none;
-  filter: grayscale(1);
-}
-
+/* 5. ANIMACIONES */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive */
 @media (max-width: 600px) {
-  .form-admin {
-    flex-direction: column;
-  }
-  
-  .form-admin input, .form-admin button {
-    width: 100%;
-  }
+  .form-admin { flex-direction: column; }
+  .grid-admin { grid-template-columns: 1fr; }
 }

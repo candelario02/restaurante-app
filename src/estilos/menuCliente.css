@@ -1,8 +1,30 @@
-/* ============================================================
-   1. LAYOUT PRINCIPAL
-   ============================================================ */
+
+:root {
+  --primary: #6366f1;
+  --primary-light: #eef2ff;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --border: #e2e8f0;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --radius: 20px;
+}
+
+.icon-comidas { color: #ff9f1c !important; } 
+.icon-cafeteria { color: #6d4c41 !important; } 
+.icon-bebidas { color: #00b4d8 !important; }
+.icon-entradas { color: #ef476f !important; } 
+
+.categorias-grid-principal > div:hover .icon-comidas { background: #fff4e6; border-color: #ff9f1c; }
+.categorias-grid-principal > div:hover .icon-cafeteria { background: #f3ecea; border-color: #6d4c41; }
+.categorias-grid-principal > div:hover .icon-bebidas { background: #e0f7fa; border-color: #00b4d8; }
+.categorias-grid-principal > div:hover .icon-entradas { background: #ffebee; border-color: #ef476f; }
+
 .admin-container {
-  padding-bottom: 100px; /* Espacio para el botón flotante */
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  padding-bottom: 100px;
   animation: fadeIn 0.4s ease;
 }
 
@@ -10,24 +32,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 40px 20px;
+  padding: 60px 20px;
 }
 
 .view-principal h2 {
-  margin: 20px 0 30px;
-  font-size: 1.8rem;
-  font-weight: 700;
+  margin: 25px 0 40px;
+  font-size: 2rem;
+  font-weight: 800;
   color: var(--text-main);
+  letter-spacing: -0.5px;
 }
 
-/* ============================================================
-   2. CATEGORÍAS (CIRCULARES Y GRILLA)
-   ============================================================ */
 .categorias-grid-principal {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 25px;
+  gap: 40px;
   max-width: 500px;
   width: 100%;
 }
@@ -36,186 +57,122 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.categorias-grid-principal > div:hover {
-  transform: translateY(-5px);
-}
-
-/* El círculo del icono */
 .categorias-grid-principal > div svg {
-  background: var(--bg-card);
-  padding: 20px;
+  background: white;
+  padding: 35px; 
   border-radius: 50%;
   box-shadow: var(--shadow-md);
   color: var(--primary);
-  border: 2px solid transparent;
+  width: 140px; 
+  height: 140px;
+  border: 4px solid transparent; 
   transition: all 0.3s ease;
+}
+
+.categorias-grid-principal > div:hover {
+  transform: translateY(-10px);
 }
 
 .categorias-grid-principal > div:hover svg {
   border-color: var(--primary);
   background: var(--primary-light);
+  box-shadow: var(--shadow-lg);
 }
 
 .categorias-grid-principal p {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.2rem;
   color: var(--text-main);
 }
 
-/* ============================================================
-   3. PRODUCTOS (TARJETAS PROFESIONALES)
-   ============================================================ */
 .productos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Adaptable a móvil */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 20px;
-  padding: 10px;
+  padding: 20px;
 }
 
 .producto-card {
-  background: var(--bg-card);
+  background: white;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.3s ease;
   border: 1px solid var(--border);
+  transition: all 0.3s ease;
 }
 
 .producto-card:hover {
+  transform: translateY(-5px);
   box-shadow: var(--shadow-lg);
 }
 
 .producto-card img {
   width: 100%;
-  height: 140px;
+  height: 150px;
   object-fit: cover;
 }
 
 .producto-card h3 {
-  padding: 12px 12px 4px;
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 15px 15px 5px;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .producto-card p {
-  padding: 0 12px 12px;
+  padding: 0 15px 15px;
   color: var(--primary);
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
-.producto-card button {
-  margin: 0 12px 12px;
+.btn-agregar {
+  width: calc(100% - 30px);
+  margin: 0 15px 15px;
   background: var(--primary);
   color: white;
-  border-radius: 8px;
-  padding: 8px;
+  border-radius: 12px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  font-weight: 600;
+  gap: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
 }
 
-/* ============================================================
-   4. CARRITO Y BOTÓN FLOTANTE
-   ============================================================ */
 .btn-carrito-flotante {
   position: fixed;
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--text-main); /* Negro elegante */
+  background: #000; /* Negro elegante */
   color: white;
-  padding: 15px 25px;
+  padding: 18px 30px;
   border-radius: 50px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  gap: 15px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
   z-index: 999;
   width: 90%;
-  max-width: 400px;
+  max-width: 450px;
   justify-content: center;
+  border: none;
 }
 
-.btn-carrito-flotante span {
-  font-weight: 600;
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* Toast flotante de "agregado" */
-.toast-agregado {
-  position: fixed;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--success);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  box-shadow: var(--shadow-lg);
-  z-index: 2000;
-  animation: slideDown 0.3s ease;
-}
-
-/* ============================================================
-   5. CARRITO LISTA Y TOTAL
-   ============================================================ */
-.carrito-lista {
-  max-height: 40vh;
-  overflow-y: auto;
-  margin: 15px 0;
-  padding-right: 5px;
-}
-
-.carrito-lista > div {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.carrito-total {
-  text-align: right;
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin: 20px 0;
-  color: var(--text-main);
-}
-
-/* ============================================================
-   6. ANIMACIONES
-   ============================================================ */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { transform: translate(-50%, -20px); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
-}
-
-/* ============================================================
-   7. RESPONSIVE
-   ============================================================ */
 @media (max-width: 480px) {
-  .productos-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
-    gap: 12px;
-  }
-  
-  .producto-card img {
-    height: 110px;
+  .categorias-grid-principal { gap: 20px; }
+  .categorias-grid-principal > div svg { 
+    width: 110px; 
+    height: 110px; 
+    padding: 25px; 
   }
 }

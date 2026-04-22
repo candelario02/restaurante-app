@@ -1,43 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Trash2, Edit } from 'lucide-react';
-import '../estilos/admin.css';
+import React, { useState, useEffect } from "react";
+import { Trash2, Edit } from "lucide-react";
+import "../estilos/admin.css";
 
 // 🔥 SERVICIOS
 import {
   crearProducto,
   actualizarProducto,
-  eliminarProducto
-} from '../servicios/productosServicio';
+  eliminarProducto,
+} from "../servicios/productosServicio";
 
-import {
-  actualizarEstadoPedido
-} from '../servicios/pedidosServicio';
+import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 
-import {
-  
-  registrarUsuario 
-} from '../servicios/usuariosServicio';
+import { registrarUsuario } from "../servicios/usuariosServicio";
 
 // 🔥 HOOKS TIEMPO REAL
 import {
   escucharProductos,
   escucharUsuarios,
-  escucharPedidos
-} from '../hooks/useProductos';
+  escucharPedidos,
+} from "../hooks/useProductos";
 
 const Admin = ({ seccion, restauranteId, rolUsuario }) => {
-
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
 
-  const [nombre, setNombre] = useState('');
-  const [precio, setPrecio] = useState('');
-  const [categoria, setCategoria] = useState('Menu');
+  const [nombre, setNombre] = useState("");
+  const [precio, setPrecio] = useState("");
+  const [categoria, setCategoria] = useState("Menu");
   const [editandoId, setEditandoId] = useState(null);
 
-  const [userEmail, setUserEmail] = useState('');
-  const [userPass, setUserPass] = useState('');
+  const [userEmail, setUserEmail] = useState("");
+  const [userPass, setUserPass] = useState("");
 
   // 🔥 TIEMPO REAL
   useEffect(() => {
@@ -60,7 +54,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   const guardarProducto = async (e) => {
     e.preventDefault();
 
-    if (rolUsuario === 'mozo') {
+    if (rolUsuario === "mozo") {
       return alert("No tienes permisos");
     }
 
@@ -70,7 +64,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           nombre,
           precio,
           categoria,
-          restauranteId
+          restauranteId,
         });
         alert("Producto actualizado");
       } else {
@@ -79,13 +73,12 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           precio,
           categoria,
           restauranteId,
-          disponible: true
+          disponible: true,
         });
         alert("Producto creado");
       }
 
       cancelarEdicion();
-
     } catch (error) {
       alert("Error: " + error.message);
     }
@@ -93,8 +86,8 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
 
   const cancelarEdicion = () => {
     setEditandoId(null);
-    setNombre('');
-    setPrecio('');
+    setNombre("");
+    setPrecio("");
   };
 
   const prepararEdicion = (p) => {
@@ -111,10 +104,10 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
     e.preventDefault();
 
     try {
-      await registrarUsuario(userEmail, userPass, 'mozo', restauranteId);
+      await registrarUsuario(userEmail, userPass, "mozo", restauranteId);
       alert("Usuario creado");
-      setUserEmail('');
-      setUserPass('');
+      setUserEmail("");
+      setUserPass("");
     } catch {
       alert("Error al registrar");
     }
@@ -130,21 +123,20 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
 
   return (
     <div className="admin-container">
-
       {/* ================= MENU ================= */}
-      {seccion === 'menu' && (
+      {seccion === "menu" && (
         <div className="admin-section">
           <h2 className="titulo-principal">🍽 Gestión de Productos</h2>
 
           <form onSubmit={guardarProducto} className="form-admin">
             <input
               value={nombre}
-              onChange={e => setNombre(e.target.value)}
+              onChange={(e) => setNombre(e.target.value)}
               placeholder="Nombre del producto"
             />
             <input
               value={precio}
-              onChange={e => setPrecio(e.target.value)}
+              onChange={(e) => setPrecio(e.target.value)}
               placeholder="Precio"
             />
             <button className="btn-primary">
@@ -153,7 +145,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           </form>
 
           <div className="grid-admin">
-            {productos.map(p => (
+            {productos.map((p) => (
               <div key={p.id} className="card-admin">
                 <h3>{p.nombre}</h3>
                 <p>S/ {p.precio}</p>
@@ -174,47 +166,50 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       )}
 
       {/* ================= PEDIDOS ================= */}
-      {seccion === 'pedidos' && (
+      {seccion === "pedidos" && (
         <div className="admin-section">
           <h2 className="titulo-principal">📦 Pedidos</h2>
 
-          {pedidos.map(p => (
-            <div key={p.id} className="card-admin">
-              <strong>{p.cliente?.nombre}</strong>
-              <p>Estado: {p.estado}</p>
+          <div className="grid-admin">
+            {" "}
+            {pedidos.map((p) => (
+              <div key={p.id} className="card-admin">
+                <strong>{p.cliente?.nombre}</strong>
+                <span className={`status-badge ${p.estado}`}>{p.estado}</span>
 
-              <button
-                className="btn-success"
-                onClick={() => cambiarEstado(p.id, 'entregado')}
-              >
-                Entregar
-              </button>
-            </div>
-          ))}
+                <button
+                  className="btn-success"
+                  onClick={() => cambiarEstado(p.id, "entregado")}
+                >
+                  Entregar
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {/* ================= USUARIOS ================= */}
-      {seccion === 'usuarios' && (
+      {seccion === "usuarios" && (
         <div className="admin-section">
           <h2 className="titulo-principal">👤 Usuarios</h2>
 
           <form onSubmit={registrarAdmin} className="form-admin">
             <input
               value={userEmail}
-              onChange={e => setUserEmail(e.target.value)}
+              onChange={(e) => setUserEmail(e.target.value)}
               placeholder="Correo"
             />
             <input
               value={userPass}
-              onChange={e => setUserPass(e.target.value)}
+              onChange={(e) => setUserPass(e.target.value)}
               placeholder="Contraseña"
             />
             <button className="btn-primary">Crear</button>
           </form>
 
           <div className="grid-admin">
-            {usuarios.map(u => (
+            {usuarios.map((u) => (
               <div key={u.id} className="card-admin">
                 <p>{u.email}</p>
                 <span>{u.rol}</span>
@@ -223,7 +218,6 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

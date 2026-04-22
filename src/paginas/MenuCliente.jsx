@@ -1,39 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
-import '../estilos/menuCliente.css';
+import React, { useState, useEffect } from "react";
+import { db } from "../firebase/config";
+import { doc, onSnapshot } from "firebase/firestore";
+import "../estilos/menuCliente.css";
 
 import {
   obtenerProductos,
-  obtenerConfigRestaurante
-} from '../servicios/productosServicio'
+  obtenerConfigRestaurante,
+} from "../servicios/productosServicio";
 
-import { crearPedido } from '../servicios/pedidosServicio';
+import { crearPedido } from "../servicios/pedidosServicio";
 
 import {
-  Utensils, Coffee, Pizza, Droplet, ArrowLeft,
-  ShoppingCart, User, Phone, MapPin, Plus,
-  CheckCircle, Clock, ChefHat, Truck
-} from 'lucide-react';
+  Utensils,
+  Coffee,
+  Pizza,
+  Droplet,
+  ArrowLeft,
+  ShoppingCart,
+  User,
+  Phone,
+  MapPin,
+  Plus,
+  CheckCircle,
+  Clock,
+  ChefHat,
+  Truck,
+} from "lucide-react";
 
 const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
-
   const [categoriaActual, setCategoriaActual] = useState(null);
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [avisoAgregado, setAvisoAgregado] = useState(null);
-  const [logoRestaurante, setLogoRestaurante] = useState("/logo_resturante.gif");
+  const [logoRestaurante, setLogoRestaurante] = useState(
+    "/logo_resturante.gif",
+  );
 
-  const [nombre, setNombre] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [direccion, setDireccion] = useState('');
-  const [tipoPedido, setTipoPedido] = useState('mesa');
+  const [nombre, setNombre] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
 
   const [pedidoActivoId, setPedidoActivoId] = useState(
-    localStorage.getItem(`ultimoPedido_${restauranteId}`)
+    localStorage.getItem(`ultimoPedido_${restauranteId}`),
   );
   const [datosPedidoRealtime, setDatosPedidoRealtime] = useState(null);
 
@@ -55,7 +67,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
     const unsub = obtenerProductos(
       restauranteId,
       categoriaActual,
-      setProductos
+      setProductos,
     );
 
     return () => unsub();
@@ -63,40 +75,43 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
 
   // 🔥 Seguimiento pedido
   useEffect(() => {
-  if (!pedidoActivoId) return;
+    if (!pedidoActivoId) return;
 
-  const unsub = onSnapshot(
-    doc(db, "restaurantes", restauranteId, "pedidos", pedidoActivoId),
-    (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setDatosPedidoRealtime(data);
+    const unsub = onSnapshot(
+      doc(db, "restaurantes", restauranteId, "pedidos", pedidoActivoId),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setDatosPedidoRealtime(data);
 
-        if (data.estado === 'entregado') {
-          setTimeout(() => {
-            setPedidoActivoId(null);
-            localStorage.removeItem(`ultimoPedido_${restauranteId}`);
-            setDatosPedidoRealtime(null);
-          }, 15000);
+          if (data.estado === "entregado") {
+            setTimeout(() => {
+              setPedidoActivoId(null);
+              localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+              setDatosPedidoRealtime(null);
+            }, 15000);
+          }
         }
-      }
-    }
-  );
+      },
+    );
 
-  return () => unsub();
-}, [pedidoActivoId, restauranteId]);
+    return () => unsub();
+  }, [pedidoActivoId, restauranteId]);
 
   const agregarAlCarrito = (producto) => {
-    setCarrito(prev => [...prev, producto]);
+    setCarrito((prev) => [...prev, producto]);
     setAvisoAgregado(producto.nombre);
     setTimeout(() => setAvisoAgregado(null), 1500);
   };
 
-  const total = carrito.reduce((acc, item) => acc + Number(item.precio || 0), 0);
+  const total = carrito.reduce(
+    (acc, item) => acc + Number(item.precio || 0),
+    0,
+  );
 
   const enviarPedido = async () => {
-    if (tipoPedido === 'mesa' && !nombre) return alert("Ingresa tu nombre");
-    if (tipoPedido === 'delivery' && (!nombre || !telefono || !direccion)) {
+    if (tipoPedido === "mesa" && !nombre) return alert("Ingresa tu nombre");
+    if (tipoPedido === "delivery" && (!nombre || !telefono || !direccion)) {
       return alert("Completa los datos");
     }
 
@@ -107,20 +122,19 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
         restauranteId,
         cliente: {
           nombre,
-          telefono: tipoPedido === 'mesa' ? 'Local' : telefono,
-          direccion: tipoPedido === 'mesa' ? 'Local' : direccion,
-          tipo: tipoPedido
+          telefono: tipoPedido === "mesa" ? "Local" : telefono,
+          direccion: tipoPedido === "mesa" ? "Local" : direccion,
+          tipo: tipoPedido,
         },
-        productos: carrito.map(p => ({
+        productos: carrito.map((p) => ({
           nombre: p.nombre,
-          precio: p.precio
+          precio: p.precio,
         })),
         total,
         estado: "pendiente",
-        fecha: new Date()
+        fecha: new Date(),
       };
 
-      
       const id = await crearPedido(restauranteId, nuevoPedido);
 
       setPedidoActivoId(id);
@@ -129,7 +143,6 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
       setCarrito([]);
       setMostrarFormulario(false);
       setVerCarrito(false);
-
     } catch (error) {
       alert("Error al enviar pedido");
     } finally {
@@ -139,7 +152,6 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
 
   return (
     <div className="admin-container">
-
       {/* ✅ TOAST */}
       {avisoAgregado && (
         <div className="toast-agregado">
@@ -148,12 +160,18 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
       )}
 
       {/* ✅ BOTÓN CARRITO */}
-      {carrito.length > 0 && !verCarrito && !mostrarFormulario && !pedidoActivoId && (
-        <button className="btn-carrito-flotante" onClick={() => setVerCarrito(true)}>
-          <ShoppingCart size={20} />
-          <span>Ver Mi Orden (S/ {total.toFixed(2)})</span>
-        </button>
-      )}
+      {carrito.length > 0 &&
+        !verCarrito &&
+        !mostrarFormulario &&
+        !pedidoActivoId && (
+          <button
+            className="btn-carrito-flotante"
+            onClick={() => setVerCarrito(true)}
+          >
+            <ShoppingCart size={20} />
+            <span>Ver Mi Orden (S/ {total.toFixed(2)})</span>
+          </button>
+        )}
 
       {/* ✅ SEGUIMIENTO */}
       {pedidoActivoId && datosPedidoRealtime && (
@@ -165,49 +183,55 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
       {/* ✅ CATEGORÍAS */}
       {!pedidoActivoId && !categoriaActual && (
         <div className="view-principal">
-          <img src={logoRestaurante} alt="logo" style={{ width: 80, borderRadius: '50%' }} />
+          <img
+            src={logoRestaurante}
+            alt="logo"
+            style={{ width: 80, borderRadius: "50%" }}
+          />
           <h2>¿Qué deseas?</h2>
 
           <div className="categorias-grid-principal">
-            <div onClick={() => setCategoriaActual('Menu')}>
-              <Pizza size={60} />
+            <div onClick={() => setCategoriaActual("Menu")}>
+              <Pizza size={60} className="icon-comidas" />
               <p>Comidas</p>
             </div>
 
-            <div onClick={() => setCategoriaActual('Cafeteria')}>
-              <Coffee size={60} />
+            <div onClick={() => setCategoriaActual("Cafeteria")}>
+              <Coffee size={60} className="icon-cafeteria" />
               <p>Cafetería</p>
             </div>
 
-            <div onClick={() => setCategoriaActual('Bebidas')}>
-              <Droplet size={60} />
+            <div onClick={() => setCategoriaActual("Bebidas")}>
+              <Droplet size={60} className="icon-bebidas" />
               <p>Bebidas</p>
             </div>
 
-            <div onClick={() => setCategoriaActual('Entradas')}>
-              <Utensils size={60} />
+            <div onClick={() => setCategoriaActual("Entradas")}>
+              <Utensils size={60} className="icon-entradas" />
               <p>Entradas</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ✅ PRODUCTOS */}
       {categoriaActual && (
         <>
           <button onClick={() => setCategoriaActual(null)}>
             <ArrowLeft /> Volver
           </button>
-
           <div className="productos-grid">
-            {productos.map(p => (
+            {productos.map((p) => (
               <div key={p.id} className="producto-card">
                 <img src={p.img} alt={p.nombre} />
                 <h3>{p.nombre}</h3>
                 <p>S/ {Number(p.precio).toFixed(2)}</p>
 
-                <button onClick={() => agregarAlCarrito(p)}>
-                  <Plus /> Agregar
+                <button
+                  className="btn-agregar"
+                  onClick={() => agregarAlCarrito(p)}
+                >
+                  <Plus size={20} />
+                  <span>Agregar</span>
                 </button>
               </div>
             ))}
@@ -230,10 +254,12 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
             <h3>Total: S/ {total.toFixed(2)}</h3>
 
             <button onClick={() => setVerCarrito(false)}>Seguir</button>
-            <button onClick={() => {
-              setVerCarrito(false);
-              setMostrarFormulario(true);
-            }}>
+            <button
+              onClick={() => {
+                setVerCarrito(false);
+                setMostrarFormulario(true);
+              }}
+            >
               Pedir
             </button>
           </div>
@@ -244,26 +270,35 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-
             <h2>Datos</h2>
 
-            <input placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} />
+            <input
+              placeholder="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
 
-            {tipoPedido === 'delivery' && (
+            {tipoPedido === "delivery" && (
               <>
-                <input placeholder="Teléfono" value={telefono} onChange={e => setTelefono(e.target.value)} />
-                <input placeholder="Dirección" value={direccion} onChange={e => setDireccion(e.target.value)} />
+                <input
+                  placeholder="Teléfono"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+                <input
+                  placeholder="Dirección"
+                  value={direccion}
+                  onChange={(e) => setDireccion(e.target.value)}
+                />
               </>
             )}
 
             <button onClick={enviarPedido} disabled={enviando}>
               {enviando ? "Enviando..." : "Confirmar"}
             </button>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -1,45 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* ============================================================
-   1. VARIABLES (DESIGN TOKENS)
-   ============================================================ */
 :root {
-  /* Colores de Marca (Centralizados) */
   --primary: #6366f1;
   --primary-dark: #4f46e5;
   --primary-light: #eef2ff;
-  
-  /* Estados */
   --success: #10b981;
   --danger: #ef4444;
-  --warning: #f59e0b;
-  
-  /* Fondos y Superficies */
   --bg-body: #f8fafc;
   --bg-card: #ffffff;
-  --bg-overlay: rgba(15, 23, 42, 0.5); /* Más oscuro y elegante */
-  
-  /* Colores de Texto */
   --text-main: #1e293b;
   --text-muted: #64748b;
-  --text-white: #ffffff;
-  
-  /* Bordes y Sombras */
   --border: #e2e8f0;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-  
-  /* Dimensiones Globales */
   --radius: 12px;
   --radius-lg: 24px;
   --top-bar-height: 70px;
   --container-width: 1200px;
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-/* ============================================================
-   2. RESET & BASE
-   ============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -51,123 +29,94 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: var(--bg-body);
   color: var(--text-main);
-  line-height: 1.5;
   overflow-x: hidden;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  transition: all 0.2s ease;
+.top-bar {
+  background: white;
+  height: var(--top-bar-height);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-/* ============================================================
-   3. LAYOUT (ESTRUCTURA)
-   ============================================================ */
-.App {
-  min-height: 100vh;
+.top-bar-container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 20px;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand span {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.btn-nav-admin {
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.btn-nav-salir {
+  background: #fff1f2;
+  color: var(--danger);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
 main {
-  flex: 1;
   width: 100%;
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 20px;
 }
 
-/* Barra Superior */
-.top-bar {
-  height: var(--top-bar-height);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 0 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom: 1px solid var(--border);
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-/* ============================================================
-   4. COMPONENTES GLOBALES (BOTONES Y MODALES)
-   ============================================================ */
+@media (max-width: 768px) {
+  .top-bar-container {
+    padding: 0 15px;
+  }
 
-/* Botones Base */
-.btn-primary {
-  background: var(--primary);
-  color: var(--text-white);
-  padding: 10px 20px;
-  border-radius: var(--radius);
-  font-weight: 600;
+  .brand span {
+    font-size: 1rem;
+  }
+
+  .productos-grid {
+    grid-template-columns: 1fr; 
+    gap: 15px;
+  }
+
+  .btn-nav-admin, .btn-nav-salir {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
 }
 
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
-.btn-outline {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  padding: 10px 20px;
-  border-radius: var(--radius);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-outline:hover {
-  background: var(--bg-body);
-  border-color: var(--text-muted);
-}
-
-/* Modales y Overlays */
-.modal-overlay {
+.login-modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-overlay);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
-  padding: 20px;
-}
-
-.msg-box {
-  background: var(--bg-card);
-  padding: 32px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 450px;
-  animation: modalIn 0.3s ease-out;
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ============================================================
-   5. RESPONSIVE (UTILIDADES)
-   ============================================================ */
-@media (max-width: 768px) {
-  .top-bar {
-    padding: 0 16px;
-  }
-  
-  main {
-    padding: 15px;
-  }
+  z-index: 9999;
+  padding: 15px;
 }
