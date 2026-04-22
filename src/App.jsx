@@ -46,12 +46,12 @@ function App() {
 
   return (
     <div className="App">
-      {/* 🔝 NAV - Mejorada con clases */}
+     
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
             {/* Aquí podrías poner un mini logo o nombre */}
-            <span>Jekito's</span>
+            <span>Jekito Restobar</span>
           </div>
 
           <div className="nav-actions">

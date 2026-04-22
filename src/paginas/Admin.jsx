@@ -126,41 +126,106 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       {/* ================= MENU ================= */}
       {seccion === "menu" && (
         <div className="admin-section">
-          <h2 className="titulo-principal">🍽 Gestión de Productos</h2>
+          {/* 📋 NAVEGACIÓN INTERNA */}
+          <div className="admin-nav-tabs">
+            <button className="tab-btn active">
+              <Utensils size={20} /> Menú
+            </button>
+            <button className="tab-btn">
+              <Users size={20} /> Usuarios
+            </button>
+            <button className="tab-btn">
+              <Package size={20} /> Pedidos
+            </button>
+          </div>
 
-          <form onSubmit={guardarProducto} className="form-admin">
+          <h2 className="titulo-principal">Nuevo Plato</h2>
+
+          <form onSubmit={guardarProducto} className="form-admin-pro">
             <input
+              className="input-pro"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Nombre del producto"
+              placeholder="Nombre del plato"
             />
             <input
+              className="input-pro"
               value={precio}
               onChange={(e) => setPrecio(e.target.value)}
-              placeholder="Precio"
+              placeholder="Precio (S/)"
             />
-            <button className="btn-primary">
-              {editandoId ? "Actualizar" : "Guardar"}
+
+            <select
+              className="select-pro"
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+            >
+              <option value="Comidas">Comidas</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Postres">Postres</option>
+            </select>
+
+            <div className="upload-box">
+              <button type="button" className="btn-upload-pro">
+                <Image size={18} /> Subir Imagen
+              </button>
+            </div>
+
+            <button className="btn-guardar-pro">
+              <Save size={18} /> Guardar Producto
             </button>
           </form>
 
-          <div className="grid-admin">
-            {productos.map((p) => (
-              <div key={p.id} className="card-admin">
-                <h3>{p.nombre}</h3>
-                <p>S/ {p.precio}</p>
-
-                <div className="acciones">
-                  <button onClick={() => prepararEdicion(p)}>
-                    <Edit size={16} />
-                  </button>
-
-                  <button onClick={() => eliminarProducto(p.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
+          {/* 📊 TABLA PROFESIONAL (Recuperada de tu imagen) */}
+          <div className="tabla-container-pro">
+            <table className="tabla-admin-pro">
+              <thead>
+                <tr>
+                  <th>PLATO</th>
+                  <th>PRECIO</th>
+                  <th>DISP.</th>
+                  <th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos.map((p) => (
+                  <tr key={p.id}>
+                    <td className="td-plato">
+                      <img src={p.imagenUrl} alt="" className="img-mini-pro" />
+                      <span>{p.nombre}</span>
+                    </td>
+                    <td className="td-precio">S/ {p.precio}</td>
+                    <td>
+                      <button
+                        className="btn-status-pro"
+                        onClick={() =>
+                          cambiarDisponibilidad(p.id, !p.disponible)
+                        }
+                      >
+                        <Power
+                          size={18}
+                          color={p.disponible ? "#10b981" : "#ef4444"}
+                        />
+                      </button>
+                    </td>
+                    <td className="acciones-pro">
+                      <button
+                        className="btn-edit"
+                        onClick={() => prepararEdicion(p)}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => eliminarProducto(p.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

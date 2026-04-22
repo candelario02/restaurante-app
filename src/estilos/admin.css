@@ -147,3 +147,140 @@
   .form-admin { flex-direction: column; }
   .grid-admin { grid-template-columns: 1fr; }
 }
+/* ... (Tus estilos de admin-container y admin-section se mantienen) ... */
+
+/* 1. TABS DE NAVEGACIÓN */
+.admin-nav-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.tab-btn.active {
+  background: #6366f1;
+  color: white;
+}
+
+/* 2. FORMULARIO PROFESIONAL (Input Full Width) */
+.form-admin-pro {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.input-pro, .select-pro {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 1rem;
+}
+
+.btn-upload-pro {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #64748b;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-guardar-pro {
+  background: #6366f1;
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* 3. TABLA DE PRODUCTOS (Estilo imagen original) */
+.tabla-container-pro {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+}
+
+.tabla-admin-pro {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.tabla-admin-pro th {
+  text-align: left;
+  padding: 15px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.tabla-admin-pro td {
+  padding: 15px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.td-plato {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.img-mini-pro {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.td-precio {
+  font-weight: 700;
+  color: #64748b;
+}
+
+.btn-status-pro {
+  background: none;
+  padding: 5px;
+}
+
+.acciones-pro {
+  display: flex;
+  gap: 10px;
+}
+
+.acciones-pro button {
+  padding: 8px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.btn-edit { background: #f1f5f9; color: #64748b; }
+.btn-delete { background: #fff1f2; color: #ef4444; }
+
+.btn-edit:hover { background: #e2e8f0; }
+.btn-delete:hover { background: #fee2e2; }
