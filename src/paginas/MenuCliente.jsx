@@ -99,54 +99,59 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
   }, [pedidoActivoId, restauranteId]);
 
   const agregarAlCarrito = (producto) => {
-    setCarrito((prev) => [...prev, producto]);
-    setAvisoAgregado(producto.nombre);
-    setTimeout(() => setAvisoAgregado(null), 1500);
+    setCarrito((prev) => {
+      const existe = prev.find((item) => item.id === producto.id);
+
+      if (existe) {
+        return prev.map((item) =>
+          item.id === producto.id
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item,
+        );
+      }
+      return [...prev, { ...producto, cantidad: 1 }];
+    });
   };
 
-  const total = carrito.reduce(
-    (acc, item) => acc + Number(item.precio || 0),
-    0,
-  );
+  const restarAlCarrito = (id) => {
+    setCarrito((prev) =>
+      prev.map((item) =>
+        item.id === id && item.cantidad > 1
+          ? { ...item, cantidad: item.cantidad - 1 }
+          : item,
+      ),
+    );
+  };
 
-  const enviarPedido = async () => {
-    if (tipoPedido === "mesa" && !nombre) return alert("Ingresa tu nombre");
-    if (tipoPedido === "delivery" && (!nombre || !telefono || !direccion)) {
-      return alert("Completa los datos");
-    }
+  const eliminarDelCarrito = (id) => {
+    setCarrito((prev) => prev.filter((item) => item.id !== id));
+  };
+  const total = carrito.reduce((acc, item) => {
+    const precio = Number(item.precio) || 0;
+    const cantidad = Number(item.cantidad) || 1;
+    return acc + precio * cantidad;
+  }, 0);
 
-    setEnviando(true);
-
+  const enviarPedidoFinal = async (datosCliente) => {
     try {
-      const nuevoPedido = {
-        restauranteId,
-        cliente: {
-          nombre,
-          telefono: tipoPedido === "mesa" ? "Local" : telefono,
-          direccion: tipoPedido === "mesa" ? "Local" : direccion,
-          tipo: tipoPedido,
-        },
-        productos: carrito.map((p) => ({
-          nombre: p.nombre,
-          precio: p.precio,
-        })),
-        total,
-        estado: "pendiente",
-        fecha: new Date(),
+      if (carrito.length === 0) return alert("El carrito está vacío");
+
+      const pedidoParaFirebase = {
+        cliente: datosCliente,
+        items: carrito,
+        total: total,
+        restauranteId: restauranteId,
       };
 
-      const id = await crearPedido(restauranteId, nuevoPedido);
+      const idPedido = await crearPedido(restauranteId, pedidoParaFirebase);
 
-      setPedidoActivoId(id);
-      localStorage.setItem(`ultimoPedido_${restauranteId}`, id);
+      alert("¡Pedido enviado con éxito! ID: " + idPedido);
 
       setCarrito([]);
       setMostrarFormulario(false);
       setVerCarrito(false);
     } catch (error) {
-      alert("Error al enviar pedido");
-    } finally {
-      setEnviando(false);
+      alert("Error al enviar pedido: " + error.message);
     }
   };
 
@@ -221,18 +226,31 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
           </button>
           <div className="productos-grid">
             {productos.map((p) => (
-              <div key={p.id} className="producto-card">
-                <img src={p.img} alt={p.nombre} />
-                <h3>{p.nombre}</h3>
-                <p>S/ {Number(p.precio).toFixed(2)}</p>
+              <div
+                key={p.id}
+                className={`producto-card ${!p.disponible ? "agotado" : ""}`}
+              >
+                <img src={p.imagenUrl || "placeholder.png"} alt={p.nombre} />
 
-                <button
-                  className="btn-agregar"
-                  onClick={() => agregarAlCarrito(p)}
-                >
-                  <Plus size={20} />
-                  <span>Agregar</span>
-                </button>
+                <div className="producto-info">
+                  <h3>{p.nombre}</h3>
+                  <p className="precio">S/ {Number(p.precio).toFixed(2)}</p>
+
+                  <button
+                    className="btn-agregar"
+                    onClick={() => agregarAlCarrito(p)}
+                    disabled={!p.disponible} 
+                  >
+                    {p.disponible ? (
+                      <>
+                        <Plus size={20} />
+                        <span>Agregar</span>
+                      </>
+                    ) : (
+                      <span>Agotado</span>
+                    )}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -241,61 +259,117 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
 
       {/* ✅ CARRITO */}
       {verCarrito && (
-        <div className="overlay-msg">
-          <div className="msg-box">
-            <h2>Tu Orden</h2>
+        <div className="carrito-overlay">
+          <div className="carrito-modal">
+            <div className="carrito-header">
+              <h2>🛒 Tu Pedido</h2>
+              <button
+                className="btn-cerrar"
+                onClick={() => setVerCarrito(false)}
+              >
+                ✕
+              </button>
+            </div>
 
-            {carrito.map((item, i) => (
-              <div key={i}>
-                {item.nombre} - S/ {item.precio}
+            <div className="carrito-items">
+              {carrito.length === 0 ? (
+                <p className="carrito-vacio">El carrito está vacío</p>
+              ) : (
+                carrito.map((item) => (
+                  <div key={item.id} className="carrito-item">
+                    <div className="item-info">
+                      <h4>{item.nombre}</h4>
+                      <span>S/ {item.precio.toFixed(2)}</span>
+                    </div>
+
+                    <div className="item-controles">
+                      <button onClick={() => restarAlCarrito(item.id)}>
+                        -
+                      </button>
+                      <span className="item-cantidad">{item.cantidad}</span>
+                      <button onClick={() => agregarAlCarrito(item)}>+</button>
+
+                      <button
+                        className="btn-eliminar-item"
+                        onClick={() => eliminarDelCarrito(item.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="carrito-footer">
+              <div className="total-container">
+                <span>Total a pagar:</span>
+                <span className="total-monto">S/ {total.toFixed(2)}</span>
               </div>
-            ))}
 
-            <h3>Total: S/ {total.toFixed(2)}</h3>
-
-            <button onClick={() => setVerCarrito(false)}>Seguir</button>
-            <button
-              onClick={() => {
-                setVerCarrito(false);
-                setMostrarFormulario(true);
-              }}
-            >
-              Pedir
-            </button>
+              <div className="carrito-acciones">
+                <button
+                  className="btn-continuar"
+                  onClick={() => setVerCarrito(false)}
+                >
+                  Seguir Comprando
+                </button>
+                <button
+                  className="btn-pagar"
+                  disabled={carrito.length === 0}
+                  onClick={() => {
+                    setVerCarrito(false);
+                    setMostrarFormulario(true);
+                  }}
+                >
+                  Confirmar Pedido
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ✅ FORMULARIO */}
+      {/* Si el formulario está activo, mostramos la toma de datos */}
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2>Datos</h2>
+            <h2>Datos de Entrega</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                enviarPedidoFinal({
+                  nombre: formData.get("nombre"),
+                  referencia: formData.get("referencia"),
+                });
+              }}
+            >
+              <input
+                name="nombre"
+                placeholder="¿A nombre de quién?"
+                required
+                className="input-pro"
+              />
+              <input
+                name="referencia"
+                placeholder="Mesa o Dirección"
+                required
+                className="input-pro"
+              />
 
-            <input
-              placeholder="Nombre"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-
-            {tipoPedido === "delivery" && (
-              <>
-                <input
-                  placeholder="Teléfono"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                />
-                <input
-                  placeholder="Dirección"
-                  value={direccion}
-                  onChange={(e) => setDireccion(e.target.value)}
-                />
-              </>
-            )}
-
-            <button onClick={enviarPedido} disabled={enviando}>
-              {enviando ? "Enviando..." : "Confirmar"}
-            </button>
+              <div className="acciones-form">
+                <button
+                  type="button"
+                  onClick={() => setMostrarFormulario(false)}
+                >
+                  Atrás
+                </button>
+                <button type="submit" className="btn-confirmar">
+                  Finalizar Pedido
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 // 🛠️ IMPORTACIÓN DE ICONOS COMPLETA (Para evitar el error de pantalla blanca)
-import { 
-  Trash2, 
-  Edit, 
-  Utensils, 
-  Users, 
-  Package, 
-  Image, 
-  Save, 
-  Power 
+import {
+  Trash2,
+  Edit,
+  Utensils,
+  Users,
+  Package,
+  Image,
+  Save,
+  Power,
 } from "lucide-react";
 import "../estilos/admin.css";
 
@@ -17,7 +17,7 @@ import {
   crearProducto,
   actualizarProducto,
   eliminarProducto,
-  cambiarDisponibilidad // Asegúrate que esté exportado en productosServicio.js
+  cambiarDisponibilidad, // Asegúrate que esté exportado en productosServicio.js
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 import { registrarUsuario } from "../servicios/usuariosServicio";
@@ -47,15 +47,19 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
     if (!restauranteId) return;
 
     const unsubProd = escucharProductos(restauranteId, setProductos);
-    const unsubUser = escucharUsuarios(restauranteId, setUsuarios);
     const unsubPed = escucharPedidos(restauranteId, setPedidos);
+
+    let unsubUser = () => {};
+    if (rolUsuario !== "mozo") {
+      unsubUser = escucharUsuarios(restauranteId, setUsuarios);
+    }
 
     return () => {
       unsubProd();
-      unsubUser();
       unsubPed();
+      unsubUser();
     };
-  }, [restauranteId]);
+  }, [restauranteId, rolUsuario]);
 
   // =============================
   // 🧾 PRODUCTOS
@@ -65,12 +69,13 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
     if (rolUsuario === "mozo") return alert("No tienes permisos");
 
     try {
-      const datos = { nombre, precio, categoria, restauranteId };
+      const datos = { nombre, precio: Number(precio), categoria };
+
       if (editandoId) {
-        await actualizarProducto(editandoId, datos);
+        await actualizarProducto(editandoId, { ...datos, restauranteId });
         alert("Producto actualizado");
       } else {
-        await crearProducto({ ...datos, disponible: true });
+        await crearProducto(datos, restauranteId);
         alert("Producto creado");
       }
       cancelarEdicion();
@@ -121,9 +126,24 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       {seccion === "menu" && (
         <div className="admin-section">
           <div className="admin-nav-tabs">
-            <button className="tab-btn active"><Utensils size={20} /> Menú</button>
-            <button className="tab-btn"><Users size={20} /> Usuarios</button>
-            <button className="tab-btn"><Package size={20} /> Pedidos</button>
+            <button
+              className={`tab-btn ${seccion === "menu" ? "active" : ""}`}
+              onClick={() => setSeccion("menu")}
+            >
+              <Utensils size={20} /> Menú
+            </button>
+            <button
+              className={`tab-btn ${seccion === "usuarios" ? "active" : ""}`}
+              onClick={() => setSeccion("usuarios")}
+            >
+              <Users size={20} /> Usuarios
+            </button>
+            <button
+              className={`tab-btn ${seccion === "pedidos" ? "active" : ""}`}
+              onClick={() => setSeccion("pedidos")}
+            >
+              <Package size={20} /> Pedidos
+            </button>
           </div>
 
           <h2 className="titulo-principal">Nuevo Plato</h2>
@@ -150,6 +170,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
               <option value="Comidas">Comidas</option>
               <option value="Bebidas">Bebidas</option>
               <option value="Postres">Postres</option>
+              <option value="Cafeteria">Cafeteria</option>
             </select>
 
             <div className="upload-box">
@@ -184,14 +205,37 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
                     <td>
                       <button
                         className="btn-status-pro"
-                        onClick={() => cambiarDisponibilidad(p.id, !p.disponible)}
+                        onClick={() =>
+                          cambiarDisponibilidad(p.id, !p.disponible)
+                        }
                       >
-                        <Power size={18} color={p.disponible ? "#10b981" : "#ef4444"} />
+                        <Power
+                          size={18}
+                          color={p.disponible ? "#10b981" : "#ef4444"}
+                        />
                       </button>
                     </td>
                     <td className="acciones-pro">
-                      <button className="btn-edit" onClick={() => prepararEdicion(p)}><Edit size={16} /></button>
-                      <button className="btn-delete" onClick={() => eliminarProducto(p.id)}><Trash2 size={16} /></button>
+                      <button
+                        className="btn-edit"
+                        onClick={() => prepararEdicion(p)}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              "¿Seguro que quieres borrar este plato?",
+                            )
+                          ) {
+                            eliminarProducto(p.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -208,9 +252,23 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
           <div className="grid-admin">
             {pedidos.map((p) => (
               <div key={p.id} className="card-admin">
-                <strong>{p.cliente?.nombre}</strong>
-                <span className={`status-badge ${p.estado}`}>{p.estado}</span>
-                <button className="btn-success" onClick={() => cambiarEstado(p.id, "entregado")}>Entregar</button>
+                <div className="card-header">
+                  <strong>{p.cliente?.nombre || "Cliente"}</strong>
+                  <span className={`status-badge ${p.estado}`}>{p.estado}</span>
+                </div>
+                <div className="items-pedido">
+                  {p.items?.map((item, index) => (
+                    <p key={index}>
+                      {item.cantidad}x {item.nombre}
+                    </p>
+                  ))}
+                </div>
+                <button
+                  className="btn-success"
+                  onClick={() => cambiarEstado(p.id, "entregado")}
+                >
+                  Marcar como Entregado
+                </button>
               </div>
             ))}
           </div>
@@ -222,8 +280,16 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
         <div className="admin-section">
           <h2 className="titulo-principal">👤 Usuarios</h2>
           <form onSubmit={registrarAdmin} className="form-admin">
-            <input value={userEmail} onChange={(e) => setUserEmail(e.target.value)} placeholder="Correo" />
-            <input value={userPass} onChange={(e) => setUserPass(e.target.value)} placeholder="Contraseña" />
+            <input
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              placeholder="Correo"
+            />
+            <input
+              value={userPass}
+              onChange={(e) => setUserPass(e.target.value)}
+              placeholder="Contraseña"
+            />
             <button className="btn-primary">Crear</button>
           </form>
           <div className="grid-admin">

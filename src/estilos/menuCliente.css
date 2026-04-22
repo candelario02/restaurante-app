@@ -146,25 +146,107 @@
   cursor: pointer;
 }
 
-.btn-carrito-flotante {
+/* Contenedor principal del modal */
+.carrito-overlay {
   position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #000; /* Negro elegante */
-  color: white;
-  padding: 18px 30px;
-  border-radius: 50px;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 15px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-  z-index: 999;
+  z-index: 1000;
+}
+
+.carrito-modal {
+  background: #fff;
   width: 90%;
   max-width: 450px;
-  justify-content: center;
-  border: none;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
+
+.carrito-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.carrito-items {
+  max-height: 350px;
+  overflow-y: auto;
+  margin: 15px 0;
+}
+
+.carrito-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f9f9f9;
+}
+
+.item-info h4 { margin: 0; font-size: 1rem; color: #333; }
+.item-info span { color: #666; font-size: 0.9rem; }
+
+.item-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-controles button {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+  cursor: pointer;
+}
+
+.item-cantidad { font-weight: bold; min-width: 20px; text-align: center; }
+
+.btn-eliminar-item {
+  color: #ff4d4d;
+  background: none !important;
+  border: none !important;
+}
+
+.carrito-footer {
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.total-container {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.total-monto { color: #10b981; }
+
+.carrito-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-pagar {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-pagar:disabled { background: #ccc; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 

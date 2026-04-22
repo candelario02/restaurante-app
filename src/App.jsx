@@ -24,13 +24,28 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
 
   // 🔄 Detectar sesión Firebase
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (usuario) => {
-      setUser(usuario);
-    });
+ useEffect(() => {
+  const unsub = onAuthStateChanged(auth, async (usuario) => {
+    setUser(usuario);
 
-    return () => unsub();
-  }, []);
+    if (usuario) {
+      if (!restauranteId) {
+        try {
+          const { restauranteId: id, rol: r } = await obtenerDatosUsuario(usuario.email); 
+          setRestauranteId(id);
+          setRol(r);
+          setIsAdmin(true);
+        } catch (error) {
+          console.error("Error recuperando perfil:", error);
+        }
+      }
+    } else {
+      cerrarSesion();
+    }
+  });
+
+  return () => unsub();
+}, []);
 
   // 🚪 Cerrar sesión REAL
   const cerrarSesion = async () => {
@@ -46,7 +61,6 @@ function App() {
 
   return (
     <div className="App">
-     
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
@@ -106,8 +120,9 @@ function App() {
 
             <Login
               onClose={() => setMostrarLogin(false)}
-              onSuccess={(id) => {
-                setRestauranteId(id);
+              onSuccess={({ restauranteId, rol }) => {
+                setRestauranteId(restauranteId);
+                setRol(rol); 
                 setIsAdmin(true);
                 setMostrarLogin(false);
               }}

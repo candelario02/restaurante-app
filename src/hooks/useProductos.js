@@ -1,6 +1,7 @@
 // hooks/useProductos.js
 import { useEffect, useState } from 'react';
 import { db } from '../firebase/config';
+import { orderBy } from 'firebase/firestore';
 import {
   collection,
   query,
@@ -57,7 +58,12 @@ export const escucharProductos = (restauranteId, callback) => {
 // =============================
 // 👤 USUARIOS
 // =============================
-export const escucharUsuarios = (restauranteId, callback) => {
+export const escucharUsuariosDelLocal = (restauranteId, rolSolicitante, callback) => {
+  if (rolSolicitante !== 'superadmin') {
+    console.warn("Acceso denegado: Solo superadmins pueden listar usuarios.");
+    return () => {}; 
+  }
+
   const q = query(
     collection(db, "usuarios_admin"),
     where("restauranteId", "==", restauranteId)
@@ -65,7 +71,7 @@ export const escucharUsuarios = (restauranteId, callback) => {
 
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map(doc => ({
-      id: doc.id,
+      id: doc.id, 
       ...doc.data()
     })));
   });
@@ -77,7 +83,8 @@ export const escucharUsuarios = (restauranteId, callback) => {
 export const escucharPedidos = (restauranteId, callback) => {
   const q = query(
     collection(db, "pedidos"),
-    where("restauranteId", "==", restauranteId)
+    where("restauranteId", "==", restauranteId),
+    orderBy("fecha", "desc")
   );
 
   return onSnapshot(q, (snapshot) => {

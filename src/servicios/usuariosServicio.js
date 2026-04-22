@@ -47,44 +47,32 @@ const SUPERADMIN_CONFIG = {
 // 🔑 LOGIN
 // =============================
 export const loginUsuario = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(
-    auth,
-    email.trim(),
-    password
-  );
-
-  const user = userCredential.user;
-  const userEmail = user.email.toLowerCase().trim();
+  const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+  const userEmail = userCredential.user.email.toLowerCase().trim();
 
   let restauranteId = null;
   let rol = null;
 
-  // 🔥 PRIORIDAD: SUPERADMIN
   if (SUPERADMIN_CONFIG[userEmail]) {
     restauranteId = SUPERADMIN_CONFIG[userEmail].restauranteId;
     rol = 'superadmin';
   } else {
-    const q = query(
-      collection(db, "usuarios_admin"),
-      where("email", "==", userEmail)
-    );
+    const docRef = doc(db, "usuarios_admin", userEmail);
+    const docSnap = await getDoc(docRef);
 
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-      const datos = snapshot.docs[0].data();
+    if (docSnap.exists()) {
+      const datos = docSnap.data();
       restauranteId = datos.restauranteId;
       rol = datos.rol;
     }
   }
 
-  // 🚫 SEGURIDAD
   if (!restauranteId) {
     await signOut(auth);
     throw new Error("NO_AUTORIZADO");
   }
 
-  return { user, restauranteId, rol };
+  return { user: userCredential.user, restauranteId, rol };
 };
 
 // =============================

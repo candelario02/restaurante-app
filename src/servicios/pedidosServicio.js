@@ -4,27 +4,23 @@ import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 // =============================
 // 📦 CREAR PEDIDO (CLIENTE)
 // =============================
-
-export const crearPedido = async (restauranteId, pedido) => {
-  const docRef = await addDoc(
-    collection(db, "restaurantes", restauranteId, "pedidos"),
-    {
-      ...pedido,
-      estado: "pendiente",
-      fecha: new Date()
-    }
-  );
-
+export const crearProducto = async (datos, restauranteId) => {
+  const docRef = await addDoc(collection(db, "productos"), {
+    ...datos,
+    restauranteId, // 🔥 Forzamos el vínculo con el local
+    disponible: true,
+    fechaCreacion: new Date()
+  });
   return docRef.id;
 };
 
 // =============================
 // 🔄 ACTUALIZAR ESTADO (ADMIN)
 // =============================
-
-export const actualizarEstadoPedido = async (restauranteId, id, estado) => {
+export const actualizarEstadoPedido = async (id, estado) => {
+  // Si la colección es plana, solo necesitas el ID del documento
   await updateDoc(
-    doc(db, "restaurantes", restauranteId, "pedidos", id),
+    doc(db, "pedidos", id),
     { estado }
   );
 };
