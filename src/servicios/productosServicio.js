@@ -11,14 +11,18 @@ import {
   getDoc
 } from 'firebase/firestore';
 
-
 // =============================
 // 🔥 CRUD PRODUCTOS (ADMIN)
 // =============================
 
-// ➕ Crear producto
-export const crearProducto = async (datos) => {
-  const docRef = await addDoc(collection(db, "productos"), datos);
+// ➕ Crear producto (CORREGIDO: Ahora recibe restauranteId)
+export const crearProducto = async (datos, restauranteId) => {
+  const docRef = await addDoc(collection(db, "productos"), {
+    ...datos,
+    restauranteId, // 🔥 Esto es vital para que el plato sea de TU local
+    disponible: true,
+    fechaCreacion: new Date()
+  });
   return docRef.id;
 };
 
@@ -39,7 +43,6 @@ export const cambiarDisponibilidad = async (id, estado) => {
   });
 };
 
-
 // =============================
 // 👁️ CLIENTE (LECTURA)
 // =============================
@@ -58,24 +61,16 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
       id: doc.id,
       ...doc.data()
     }));
-
     callback(datos);
   });
 };
-
 
 // =============================
 // ⚙️ CONFIG RESTAURANTE
 // =============================
 
-// 🏪 Obtener configuración (logo, etc)
 export const obtenerConfigRestaurante = async (restauranteId) => {
   const docRef = doc(db, "configuraciones", restauranteId);
   const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    return docSnap.data();
-  }
-
-  return null;
+  return docSnap.exists() ? docSnap.data() : null;
 };
