@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Save,
   Power,
+  Check,
 } from "lucide-react";
 import "../estilos/admin.css";
 
