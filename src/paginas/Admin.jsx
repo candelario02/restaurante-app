@@ -191,6 +191,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   }
                 }}
               />
+
               <button
                 type="button"
                 className={`btn-upload-pro ${imgPreview ? "success" : ""}`}
@@ -199,13 +200,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
                 {imgPreview ? " Imagen Cargada" : " Subir Imagen"}
               </button>
-
               {imgPreview && (
-                <img
-                  src={imgPreview}
-                  className="img-mini-preview"
-                  alt="preview"
-                />
+                <div className="preview-imagen-container">
+                  <img src={imgPreview} alt="preview" />
+                </div>
               )}
             </div>
 
