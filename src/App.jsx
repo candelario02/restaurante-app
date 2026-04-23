@@ -24,28 +24,30 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
 
   // 🔄 Detectar sesión Firebase
- useEffect(() => {
-  const unsub = onAuthStateChanged(auth, async (usuario) => {
-    setUser(usuario);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (usuario) => {
+      setUser(usuario);
 
-    if (usuario) {
-      if (!restauranteId) {
-        try {
-          const { restauranteId: id, rol: r } = await obtenerDatosUsuario(usuario.email); 
-          setRestauranteId(id);
-          setRol(r);
-          setIsAdmin(true);
-        } catch (error) {
-          console.error("Error recuperando perfil:", error);
+      if (usuario) {
+        if (!restauranteId) {
+          try {
+            const { restauranteId: id, rol: r } = await obtenerDatosUsuario(
+              usuario.email,
+            );
+            setRestauranteId(id);
+            setRol(r);
+            setIsAdmin(true);
+          } catch (error) {
+            console.error("Error recuperando perfil:", error);
+          }
         }
+      } else {
+        cerrarSesion();
       }
-    } else {
-      cerrarSesion();
-    }
-  });
+    });
 
-  return () => unsub();
-}, []);
+    return () => unsub();
+  }, []);
 
   // 🚪 Cerrar sesión REAL
   const cerrarSesion = async () => {
@@ -64,8 +66,29 @@ function App() {
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
-            {/* Aquí podrías poner un mini logo o nombre */}
             <span>Jekito Restobar</span>
+            {user && isAdmin && (
+              <div className="nav-admin-tabs-horizontal">
+                <button
+                  className={`btn-nav-salir ${seccion === "menu" ? "active" : ""}`}
+                  onClick={() => setSeccion("menu")}
+                >
+                  Menú
+                </button>
+                <button
+                  className={`btn-nav-salir ${seccion === "usuarios" ? "active" : ""}`}
+                  onClick={() => setSeccion("usuarios")}
+                >
+                  Usuarios
+                </button>
+                <button
+                  className={`btn-nav-salir ${seccion === "pedidos" ? "active" : ""}`}
+                  onClick={() => setSeccion("pedidos")}
+                >
+                  Pedidos
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="nav-actions">
@@ -79,7 +102,7 @@ function App() {
             ) : (
               <>
                 <button
-                  className="btn-nav-panel"
+                  className="btn-nav-salir"
                   onClick={() => setIsAdmin(!isAdmin)}
                 >
                   {isAdmin ? "Vista Cliente" : "Panel Control"}
@@ -99,6 +122,7 @@ function App() {
         {user && isAdmin ? (
           <Admin
             seccion={seccion}
+            setSeccion={setSeccion} 
             restauranteId={restauranteId}
             rolUsuario={rol}
           />
@@ -122,7 +146,7 @@ function App() {
               onClose={() => setMostrarLogin(false)}
               onSuccess={({ restauranteId, rol }) => {
                 setRestauranteId(restauranteId);
-                setRol(rol); 
+                setRol(rol);
                 setIsAdmin(true);
                 setMostrarLogin(false);
               }}

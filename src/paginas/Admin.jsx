@@ -118,30 +118,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   return (
     <div className="admin-container">
-      <div className="admin-header-main">
-        <h2 className="titulo-principal">Panel Administrativo</h2>
-
-        <div className="admin-nav-tabs">
-          <button
-            className={`tab-btn ${seccion === "menu" ? "active" : ""}`}
-            onClick={() => setSeccion("menu")}
-          >
-            <Utensils size={20} /> Menú
-          </button>
-          <button
-            className={`tab-btn ${seccion === "usuarios" ? "active" : ""}`}
-            onClick={() => setSeccion("usuarios")}
-          >
-            <Users size={20} /> Usuarios
-          </button>
-          <button
-            className={`tab-btn ${seccion === "pedidos" ? "active" : ""}`}
-            onClick={() => setSeccion("pedidos")}
-          >
-            <Package size={20} /> Pedidos
-          </button>
-        </div>
-      </div>
       {/* SECCIÓN MENÚ */}
       {seccion === "menu" && (
         <div className="admin-section">
