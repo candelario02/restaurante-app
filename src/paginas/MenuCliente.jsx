@@ -27,7 +27,9 @@ import {
   Truck,
 } from "lucide-react";
 
-const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
+const MenuCliente = ({ restauranteId }) => {
+  if (!restauranteId)
+    return <div className="loading-screen">Cargando menú...</div>;
   const [categoriaActual, setCategoriaActual] = useState(null);
   const [productos, setProductos] = useState([]);
   const [carrito, setCarrito] = useState([]);
@@ -51,6 +53,9 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
 
   // 🔥 Config restaurante
   useEffect(() => {
+    // Si restauranteId es nulo o indefinido, salimos para evitar errores
+    if (!restauranteId) return;
+
     const cargarConfig = async () => {
       const config = await obtenerConfigRestaurante(restauranteId);
       if (config?.logoUrl) {
@@ -59,6 +64,19 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
     };
     cargarConfig();
   }, [restauranteId]);
+
+  // 🔥 Productos
+  useEffect(() => {
+    if (!restauranteId || !categoriaActual) return;
+
+    const unsub = obtenerProductos(
+      restauranteId,
+      categoriaActual,
+      setProductos,
+    );
+
+    return () => unsub();
+  }, [categoriaActual, restauranteId]);
 
   // 🔥 Productos
   useEffect(() => {
@@ -188,6 +206,14 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
       {/* ✅ CATEGORÍAS */}
       {!pedidoActivoId && !categoriaActual && (
         <div className="view-principal">
+          <header className="menu-header-dinamico">
+            <h1>
+              {restauranteId
+                ? restauranteId.replace(/_/g, " ").toUpperCase()
+                : "CARGANDO..."}
+            </h1>
+          </header>
+
           <img
             src={logoRestaurante}
             alt="logo"
@@ -239,7 +265,7 @@ const MenuCliente = ({ restauranteId = "jekito_restobar" }) => {
                   <button
                     className="btn-agregar"
                     onClick={() => agregarAlCarrito(p)}
-                    disabled={!p.disponible} 
+                    disabled={!p.disponible}
                   >
                     {p.disponible ? (
                       <>

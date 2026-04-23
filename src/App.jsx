@@ -65,7 +65,12 @@ function App() {
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
-            <span>Jekito Restobar</span>
+            // En lugar de: <span>Jekito Restobar</span>
+            <span>
+              {restauranteId
+                ? restauranteId.replace("_", " ").toUpperCase()
+                : "Cargando..."}
+            </span>
             {user && isAdmin && (
               <div className="nav-admin-tabs-horizontal">
                 <button
