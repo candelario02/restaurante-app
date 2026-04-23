@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-// 🛠️ IMPORTACIÓN DE ICONOS COMPLETA (Para evitar el error de pantalla blanca)
+import React, { useState, useEffect, useRef } from "react";
 import {
   Trash2,
   Edit,
   Utensils,
   Users,
   Package,
-  Image,
+  Image as ImageIcon,
   Save,
   Power,
 } from "lucide-react";
@@ -29,9 +28,7 @@ import {
   escucharPedidos,
 } from "../hooks/useProductos";
 
-
-
-const Admin = ({ seccion, restauranteId, rolUsuario }) => {
+const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
@@ -43,6 +40,8 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
 
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
+
+  const fileInputRef = useRef(null);
 
   // 🔥 TIEMPO REAL
   useEffect(() => {
@@ -62,10 +61,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       unsubUser();
     };
   }, [restauranteId, rolUsuario]);
-
-  // =============================
   // 🧾 PRODUCTOS
-  // =============================
   const guardarProducto = async (e) => {
     e.preventDefault();
     if (rolUsuario === "mozo") return alert("No tienes permisos");
@@ -99,9 +95,10 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
     setCategoria(p.categoria);
   };
 
-  // =============================
+  const manejarClickImagen = () => {
+    fileInputRef.current.click();
+  };
   // 👤 USUARIOS
-  // =============================
   const registrarAdmin = async (e) => {
     e.preventDefault();
     try {
@@ -113,42 +110,42 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
       alert("Error al registrar");
     }
   };
-
-  // =============================
   // 📦 PEDIDOS
-  // =============================
   const cambiarEstado = async (id, estado) => {
-    await actualizarEstadoPedido(restauranteId, id, estado);
+    await actualizarEstadoPedido(id, estado);
     alert("Estado actualizado");
   };
 
   return (
     <div className="admin-container">
-      {/* ================= MENU ================= */}
+      <div className="admin-header-main">
+        <h2 className="titulo-principal">Panel Administrativo</h2>
+
+        <div className="admin-nav-tabs">
+          <button
+            className={`tab-btn ${seccion === "menu" ? "active" : ""}`}
+            onClick={() => setSeccion("menu")}
+          >
+            <Utensils size={20} /> Menú
+          </button>
+          <button
+            className={`tab-btn ${seccion === "usuarios" ? "active" : ""}`}
+            onClick={() => setSeccion("usuarios")}
+          >
+            <Users size={20} /> Usuarios
+          </button>
+          <button
+            className={`tab-btn ${seccion === "pedidos" ? "active" : ""}`}
+            onClick={() => setSeccion("pedidos")}
+          >
+            <Package size={20} /> Pedidos
+          </button>
+        </div>
+      </div>
+      {/* SECCIÓN MENÚ */}
       {seccion === "menu" && (
         <div className="admin-section">
-          <div className="admin-nav-tabs">
-            <button
-              className={`tab-btn ${seccion === "menu" ? "active" : ""}`}
-              onClick={() => setSeccion("menu")}
-            >
-              <Utensils size={20} /> Menú
-            </button>
-            <button
-              className={`tab-btn ${seccion === "usuarios" ? "active" : ""}`}
-              onClick={() => setSeccion("usuarios")}
-            >
-              <Users size={20} /> Usuarios
-            </button>
-            <button
-              className={`tab-btn ${seccion === "pedidos" ? "active" : ""}`}
-              onClick={() => setSeccion("pedidos")}
-            >
-              <Package size={20} /> Pedidos
-            </button>
-          </div>
-
-          <h2 className="titulo-principal">Nuevo Plato</h2>
+          <h2 className="titulo-seccion">Nuevo Plato</h2>
 
           <form onSubmit={guardarProducto} className="form-admin-pro">
             <input
@@ -176,8 +173,18 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
             </select>
 
             <div className="upload-box">
-              <button type="button" className="btn-upload-pro">
-                <Image size={18} /> Subir Imagen
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept="image/*"
+              />
+              <button
+                type="button"
+                className="btn-upload-pro"
+                onClick={manejarClickImagen}
+              >
+                <ImageIcon size={18} /> Subir Imagen
               </button>
             </div>
 
@@ -247,10 +254,10 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {/* ================= PEDIDOS ================= */}
+      {/* SECCIÓN PEDIDOS */}
       {seccion === "pedidos" && (
         <div className="admin-section">
-          <h2 className="titulo-principal">📦 Pedidos</h2>
+          <h2 className="titulo-seccion">📦 Pedidos</h2>
           <div className="grid-admin">
             {pedidos.map((p) => (
               <div key={p.id} className="card-admin">
@@ -277,10 +284,10 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {/* ================= USUARIOS ================= */}
+      {/* SECCIÓN USUARIOS */}
       {seccion === "usuarios" && (
         <div className="admin-section">
-          <h2 className="titulo-principal">👤 Usuarios</h2>
+          <h2 className="titulo-seccion">👤 Usuarios</h2>
           <form onSubmit={registrarAdmin} className="form-admin">
             <input
               value={userEmail}
@@ -288,6 +295,7 @@ const Admin = ({ seccion, restauranteId, rolUsuario }) => {
               placeholder="Correo"
             />
             <input
+              type="password"
               value={userPass}
               onChange={(e) => setUserPass(e.target.value)}
               placeholder="Contraseña"
