@@ -11,43 +11,37 @@ import {
   getDoc
 } from 'firebase/firestore';
 
-// =============================
-// 🔥 CRUD PRODUCTOS (ADMIN)
-// =============================
-
-// ➕ Crear producto (CORREGIDO: Ahora recibe restauranteId)
+//Crear producto
 export const crearProducto = async (datos, restauranteId) => {
+  if (!restauranteId) throw new Error("ID de restaurante no proporcionado");
+
   const docRef = await addDoc(collection(db, "productos"), {
     ...datos,
-    restauranteId, // 🔥 Esto es vital para que el plato sea de TU local
+    restauranteId: restauranteId, 
     disponible: true,
     fechaCreacion: new Date()
   });
   return docRef.id;
 };
 
-// ✏️ Actualizar producto
+// Actualizar producto
 export const actualizarProducto = async (id, datos) => {
   await updateDoc(doc(db, "productos", id), datos);
 };
 
-// ❌ Eliminar producto
+// Eliminar producto
 export const eliminarProducto = async (id) => {
   await deleteDoc(doc(db, "productos", id));
 };
 
-// 🔁 Cambiar disponibilidad
+//  Cambiar disponibilidad
 export const cambiarDisponibilidad = async (id, estado) => {
   await updateDoc(doc(db, "productos", id), {
     disponible: estado
   });
 };
 
-// =============================
-// 👁️ CLIENTE (LECTURA)
-// =============================
-
-// 📡 Obtener productos en tiempo real
+// Obtener productos en tiempo real
 export const obtenerProductos = (restauranteId, categoria, callback) => {
   const q = query(
     collection(db, "productos"),
@@ -66,7 +60,7 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
 };
 
 // =============================
-// ⚙️ CONFIG RESTAURANTE
+//  CONFIG RESTAURANTE
 // =============================
 
 export const obtenerConfigRestaurante = async (restauranteId) => {

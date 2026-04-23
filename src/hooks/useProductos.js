@@ -40,13 +40,12 @@ export const useProductos = (restauranteId, categoria) => {
   return productos;
 };
 
-// =============================
 // 🧾 PRODUCTOS (ADMIN)
-// =============================
 export const escucharProductos = (restauranteId, callback) => {
   const q = query(
     collection(db, "productos"),
     where("restauranteId", "==", restauranteId),
+    orderBy("fechaCreacion", "desc") 
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -54,7 +53,7 @@ export const escucharProductos = (restauranteId, callback) => {
       snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      })),
+      }))
     );
   });
 };

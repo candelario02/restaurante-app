@@ -27,17 +27,19 @@ import {
   escucharUsuarios,
   escucharPedidos,
 } from "../hooks/useProductos";
+import { subirImagen } from "../servicios/cloudinaryServicio";
 
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [pedidos, setPedidos] = useState([]);
-
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("Comidas");
   const [editandoId, setEditandoId] = useState(null);
-
+  const [archivo, setArchivo] = useState(null);
+  const [imgPreview, setImgPreview] = useState("");
+  const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
 
@@ -61,24 +63,49 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
     };
   }, [restauranteId, rolUsuario]);
-  // 🧾 PRODUCTOS
+  //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
+
     if (rolUsuario === "mozo") return alert("No tienes permisos");
+    if (!nombre.trim() || !precio) return alert("Completa nombre y precio");
+    if (!restauranteId) return alert("Error: ID de restaurante no detectado");
+    if (cargando) return;
 
     try {
-      const datos = { nombre, precio: Number(precio), categoria };
+      setCargando(true);
+
+      let urlFinal = editandoId ? imgPreview : "";
+
+      if (archivo) {
+        urlFinal = await subirImagen(archivo);
+      }
+
+      const datos = {
+        nombre: nombre.trim(),
+        precio: Number(precio),
+        categoria,
+        imagenUrl: urlFinal || "",
+      };
 
       if (editandoId) {
         await actualizarProducto(editandoId, { ...datos, restauranteId });
-        alert("Producto actualizado");
+        alert("✅ Producto actualizado");
       } else {
         await crearProducto(datos, restauranteId);
-        alert("Producto creado");
+        alert("✅ Producto creado");
       }
-      cancelarEdicion();
+
+      setNombre("");
+      setPrecio("");
+      setArchivo(null);
+      setImgPreview("");
+      setEditandoId(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      alert("Error: " + error.message);
+      alert("❌ Error: " + error.message);
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -87,12 +114,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setNombre("");
     setPrecio("");
   };
-
+  //edicion
   const prepararEdicion = (p) => {
     setEditandoId(p.id);
     setNombre(p.nombre);
     setPrecio(p.precio);
     setCategoria(p.categoria);
+    setImgPreview(p.imagenUrl);
   };
 
   const manejarClickImagen = () => {
@@ -154,18 +182,40 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 ref={fileInputRef}
                 style={{ display: "none" }}
                 accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setArchivo(file);
+                    setImgPreview(URL.createObjectURL(file));
+                  }
+                }}
               />
               <button
                 type="button"
-                className="btn-upload-pro"
+                className={`btn-upload-pro ${imgPreview ? "success" : ""}`}
                 onClick={manejarClickImagen}
               >
-                <ImageIcon size={18} /> Subir Imagen
+                {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
+                {imgPreview ? " Imagen Cargada" : " Subir Imagen"}
               </button>
+
+              {imgPreview && (
+                <img
+                  src={imgPreview}
+                  className="img-mini-preview"
+                  alt="preview"
+                />
+              )}
             </div>
 
-            <button className="btn-guardar-pro">
-              <Save size={18} /> Guardar Producto
+            <button className="btn-guardar-pro" disabled={cargando}>
+              {cargando ? (
+                "Guardando..."
+              ) : (
+                <>
+                  <Save size={18} /> Guardar Producto
+                </>
+              )}
             </button>
           </form>
 
@@ -183,7 +233,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 {productos.map((p) => (
                   <tr key={p.id}>
                     <td className="td-plato">
-                      <img src={p.imagenUrl} alt="" className="img-mini-pro" />
+                      <img
+                        src={p.imagenUrl || "https://via.placeholder.com/50"}
+                        alt={p.nombre}
+                        className="img-mini-pro"
+                      />
                       <span>{p.nombre}</span>
                     </td>
                     <td className="td-precio">S/ {p.precio}</td>
