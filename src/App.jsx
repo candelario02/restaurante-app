@@ -8,6 +8,7 @@ import Login from "./paginas/Login";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
+
 function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(

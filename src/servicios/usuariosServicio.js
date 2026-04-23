@@ -1,7 +1,8 @@
-import { db, auth } from '../firebase/config';
+import { db, auth } from "../firebase/config";
 import {
   doc,
   setDoc,
+  getDoc, 
   collection,
   query,
   where,
@@ -11,8 +12,8 @@ import {
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
+  signOut,
+} from "firebase/auth";
 
 // =============================
 // 👤 REGISTRAR USUARIO
@@ -25,7 +26,7 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
   await setDoc(doc(db, "usuarios_admin", emailLimpio), {
     email: emailLimpio,
     rol,
-    restauranteId
+    restauranteId,
   });
 };
 
@@ -33,21 +34,25 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
 // 🔐 SUPERADMIN
 // =============================
 const SUPERADMIN_CONFIG = {
-  'huamancarrioncande24@gmail.com': {
-    restauranteId: 'restaurante_cande',
-    rol: 'superadmin'
+  "huamancarrioncande24@gmail.com": {
+    restauranteId: "restaurante_cande",
+    rol: "superadmin",
   },
-  'jec02021994@gmail.com': {
-    restauranteId: 'jekito_restobar',
-    rol: 'superadmin'
-  }
+  "jec02021994@gmail.com": {
+    restauranteId: "jekito_restobar",
+    rol: "superadmin",
+  },
 };
 
 // =============================
 // 🔑 LOGIN
 // =============================
 export const loginUsuario = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password,
+  );
   const userEmail = userCredential.user.email.toLowerCase().trim();
 
   let restauranteId = null;
@@ -55,7 +60,7 @@ export const loginUsuario = async (email, password) => {
 
   if (SUPERADMIN_CONFIG[userEmail]) {
     restauranteId = SUPERADMIN_CONFIG[userEmail].restauranteId;
-    rol = 'superadmin';
+    rol = "superadmin";
   } else {
     const docRef = doc(db, "usuarios_admin", userEmail);
     const docSnap = await getDoc(docRef);
@@ -75,6 +80,22 @@ export const loginUsuario = async (email, password) => {
   return { user: userCredential.user, restauranteId, rol };
 };
 
+export const obtenerDatosUsuario = async (email) => {
+  const emailLimpio = email.toLowerCase().trim();
+
+  if (SUPERADMIN_CONFIG[emailLimpio]) {
+    return SUPERADMIN_CONFIG[emailLimpio];
+  }
+
+  const docRef = doc(db, "usuarios_admin", emailLimpio);
+  const docSnap = await getDoc(docRef); 
+
+  if (docSnap.exists()) {
+    return docSnap.data();
+  }
+
+  return null;
+};
 // =============================
 // 🚪 LOGOUT
 // =============================
