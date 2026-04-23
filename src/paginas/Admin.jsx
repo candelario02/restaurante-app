@@ -205,10 +205,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               )}
             </div>
             <button
+              className="btn-guardar-pro"
               disabled={!restauranteId || cargando}
-              onClick={handleGuardar}
             >
-              {cargando ? "Guardando..." : "Guardar Producto"}
+              {cargando ? (
+                "Guardando..."
+              ) : (
+                <>
+                  <Save size={18} /> Guardar Producto
+                </>
+              )}
             </button>
           </form>
 
