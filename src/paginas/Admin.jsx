@@ -96,7 +96,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       };
 
       if (editandoId) {
-        await actualizarProducto(editandoId, { ...datos, restauranteId });
+        await actualizarProducto(editandoId, datos, restauranteId);
         alert("✅ Producto actualizado");
       } else {
         await crearProducto(datos, restauranteId);

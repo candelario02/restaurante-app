@@ -25,20 +25,26 @@ export const crearProducto = async (datos, restauranteId) => {
 };
 
 // Actualizar producto
-export const actualizarProducto = async (id, datos) => {
-  await updateDoc(doc(db, "productos", id), datos);
+export const actualizarProducto = async (id, datos, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId para validar permisos");
+  
+  await updateDoc(doc(db, "productos", id), { 
+    ...datos, 
+    restauranteId 
+  });
 };
 
-// Eliminar producto
+export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId para validar permisos");
+
+  await updateDoc(doc(db, "productos", id), { 
+    disponible: estado,
+    restauranteId 
+  });
+};
+
 export const eliminarProducto = async (id) => {
   await deleteDoc(doc(db, "productos", id));
-};
-
-//  Cambiar disponibilidad
-export const cambiarDisponibilidad = async (id, estado) => {
-  await updateDoc(doc(db, "productos", id), {
-    disponible: estado
-  });
 };
 
 // Obtener productos en tiempo real

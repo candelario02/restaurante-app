@@ -2,32 +2,54 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Función para obtener los datos del usuario que intenta entrar
-    function getUsuarioData() {
+    // 🔒 FUNCIONES DE APOYO
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+
+    // Obtiene los datos del usuario logueado desde la colección usuarios_admin
+    function datosUsuario() {
       return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
     }
 
-    // Reglas para Productos
+    // Verifica si el usuario es el dueño del restaurante al que pertenece el documento
+    function esAdminDelRestaurante(resId) {
+      return estaAutenticado() && datosUsuario().restauranteId == resId && datosUsuario().rol == "admin";
+    }
+
+    // Verifica si es personal (Admin o Mozo) del restaurante
+    function esPersonalDelRestaurante(resId) {
+      return estaAutenticado() && datosUsuario().restauranteId == resId && 
+             (datosUsuario().rol == "admin" || datosUsuario().rol == "mozo");
+    }
+
+    // 🍽️ PRODUCTOS
     match /productos/{docId} {
-      allow read: if true; // Cualquiera puede ver el menú
-      // Solo Admin o Superadmin pueden crear/editar/borrar platos
-      allow write: if request.auth != null && 
-        (getUsuarioData().rol == 'admin' || getUsuarioData().rol == 'superadmin');
+      allow read: if true; 
+      // Solo el Admin del restaurante específico puede crear/editar/borrar platos
+      allow create, update, delete: if esAdminDelRestaurante(request.resource.data.restauranteId || resource.data.restauranteId);
     }
 
-    // Reglas para Pedidos
-    match /pedidos/{docId} {
-      allow create: if true; // Los clientes pueden crear pedidos
-      allow read, update: if request.auth != null; // Mozos y Admins pueden ver y gestionar estados
-      allow delete: if request.auth != null && getUsuarioData().rol == 'superadmin';
-    }
-
-    // Reglas para la colección de Usuarios (Seguridad máxima)
+    // 👨‍💼 USUARIOS ADMIN (Perfiles de personal)
     match /usuarios_admin/{email} {
-      // Un usuario puede leer sus propios datos al loguearse
-      allow read: if request.auth != null && request.auth.token.email == email;
-      // Solo el Superadmin puede ver la lista completa y crear nuevos usuarios
-      allow read, write: if request.auth != null && getUsuarioData().rol == 'superadmin';
+      allow read: if true; 
+      // Solo el dueño del correo o un Superadmin puede modificar perfiles
+      allow write: if estaAutenticado() && (request.auth.token.email == email || datosUsuario().rol == "superadmin");
+    }
+    
+    // 📝 PEDIDOS
+    match /pedidos/{docId} {
+      allow create: if true; // Clientes anónimos pueden pedir
+      allow read: if true;   // Clientes pueden ver su estado
+      // Solo Admin o Mozo del mismo restaurante pueden cambiar el estado del pedido
+      allow update: if esPersonalDelRestaurante(resource.data.restauranteId);
+      allow delete: if esAdminDelRestaurante(resource.data.restauranteId);
+    }
+
+    // ⚙️ CONFIGURACIONES
+    match /configuraciones/{docId} {
+      allow read: if true;
+      allow write: if esAdminDelRestaurante(docId); // Asumiendo que el docId es el restauranteId
     }
   }
 }
