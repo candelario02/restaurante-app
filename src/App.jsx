@@ -7,7 +7,7 @@ import Login from "./paginas/Login";
 
 import { auth } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-
+import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(
@@ -23,35 +23,30 @@ function App() {
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
 
-  // 🔄 Detectar sesión Firebase
+  // detectar sesión Firebase
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
-      setUser(usuario);
-
       if (usuario) {
-        if (!restauranteId) {
-          try {
-            const { restauranteId: id, rol: r } = await obtenerDatosUsuario(
-              usuario.email,
-            );
-            setRestauranteId(id);
-            setRol(r);
+        setUser(usuario);
+        try {
+          const datos = await obtenerDatosUsuario(usuario.email);
+          if (datos) {
+            setRestauranteId(datos.restauranteId);
+            setRol(datos.rol);
             setIsAdmin(true);
-          } catch (error) {
-            console.error("Error recuperando perfil:", error);
           }
+        } catch (error) {
+          console.error("Error recuperando perfil:", error);
         }
       } else {
         cerrarSesion();
       }
     });
-
     return () => unsub();
   }, []);
-
-  // 🚪 Cerrar sesión REAL
+  // Cerrar sesión REAL
   const cerrarSesion = async () => {
-    await signOut(auth); // 🔥 importante
+    await signOut(auth); 
     localStorage.clear();
 
     setUser(null);
@@ -122,7 +117,7 @@ function App() {
         {user && isAdmin ? (
           <Admin
             seccion={seccion}
-            setSeccion={setSeccion} 
+            setSeccion={setSeccion}
             restauranteId={restauranteId}
             rolUsuario={rol}
           />
@@ -144,9 +139,13 @@ function App() {
 
             <Login
               onClose={() => setMostrarLogin(false)}
-              onSuccess={({ restauranteId, rol }) => {
-                setRestauranteId(restauranteId);
-                setRol(rol);
+              onSuccess={({ restauranteId: id, rol: r }) => {
+                localStorage.setItem("restauranteId", id);
+                localStorage.setItem("rolUsuario", r);
+                localStorage.setItem("esAdmin", "true");
+
+                setRestauranteId(id);
+                setRol(r);
                 setIsAdmin(true);
                 setMostrarLogin(false);
               }}
