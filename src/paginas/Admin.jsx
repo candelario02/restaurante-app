@@ -17,7 +17,7 @@ import {
   crearProducto,
   actualizarProducto,
   eliminarProducto,
-  cambiarDisponibilidad, // Asegúrate que esté exportado en productosServicio.js
+  cambiarDisponibilidad,
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 import { registrarUsuario } from "../servicios/usuariosServicio";
@@ -28,6 +28,8 @@ import {
   escucharUsuarios,
   escucharPedidos,
 } from "../hooks/useProductos";
+
+
 
 const Admin = ({ seccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
