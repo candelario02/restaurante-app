@@ -11,7 +11,7 @@ import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
 function App() {
   const [user, setUser] = useState(null);
-
+  const [cargando, setCargando] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [restauranteId, setRestauranteId] = useState(null);
   const [rol, setRol] = useState(null);
@@ -27,7 +27,7 @@ function App() {
           const datos = await obtenerDatosUsuario(usuario.email);
           if (datos) {
             setRestauranteId(datos.restauranteId);
-            setRol(datos.rol); 
+            setRol(datos.rol);
             setIsAdmin(true);
             localStorage.setItem("rolUsuario", datos.rol);
             localStorage.setItem("restauranteId", datos.restauranteId);
@@ -44,6 +44,7 @@ function App() {
         setRol(null);
         setIsAdmin(false);
       }
+      setCargando(false);
     });
     return () => unsub();
   }, []);
@@ -117,7 +118,9 @@ function App() {
 
       {/* 🧠 CONTENIDO */}
       <main className="main-content">
-        {user && isAdmin ? (
+        {cargando ? (
+          <div className="loading-screen">Cargando restaurante...</div>
+        ) : user && isAdmin ? (
           <Admin
             seccion={seccion}
             setSeccion={setSeccion}
