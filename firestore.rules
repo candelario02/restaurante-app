@@ -7,41 +7,43 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Obtiene los datos del usuario logueado desde la colección usuarios_admin
+    // Usamos el ID del documento directamente si coincide con el email
     function datosUsuario() {
       return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
     }
 
-    // Verifica si el usuario es el dueño del restaurante al que pertenece el documento
+    // REVISIÓN PROFESIONAL: Permite tanto admin como superadmin
     function esAdminDelRestaurante(resId) {
-      return estaAutenticado() && datosUsuario().restauranteId == resId && datosUsuario().rol == "admin";
+      let user = datosUsuario();
+      return estaAutenticado() && 
+             user.restauranteId == resId && 
+             (user.rol == "admin" || user.rol == "superadmin");
     }
 
-    // Verifica si es personal (Admin o Mozo) del restaurante
     function esPersonalDelRestaurante(resId) {
-      return estaAutenticado() && datosUsuario().restauranteId == resId && 
-             (datosUsuario().rol == "admin" || datosUsuario().rol == "mozo");
+      let user = datosUsuario();
+      return estaAutenticado() && 
+             user.restauranteId == resId && 
+             (user.rol == "admin" || user.rol == "mozo" || user.rol == "superadmin");
     }
 
     // 🍽️ PRODUCTOS
     match /productos/{docId} {
       allow read: if true; 
-      // Solo el Admin del restaurante específico puede crear/editar/borrar platos
-      allow create, update, delete: if esAdminDelRestaurante(request.resource.data.restauranteId || resource.data.restauranteId);
+      // Usamos get() para validar el ID del restaurante si es una actualización
+      allow create: if esAdminDelRestaurante(request.resource.data.restauranteId);
+      allow update, delete: if esAdminDelRestaurante(resource.data.restauranteId);
     }
 
-    // 👨‍💼 USUARIOS ADMIN (Perfiles de personal)
+    // 👨‍💼 USUARIOS ADMIN
     match /usuarios_admin/{email} {
-      allow read: if true; 
-      // Solo el dueño del correo o un Superadmin puede modificar perfiles
+      allow read: if estaAutenticado(); 
       allow write: if estaAutenticado() && (request.auth.token.email == email || datosUsuario().rol == "superadmin");
     }
     
     // 📝 PEDIDOS
     match /pedidos/{docId} {
-      allow create: if true; // Clientes anónimos pueden pedir
-      allow read: if true;   // Clientes pueden ver su estado
-      // Solo Admin o Mozo del mismo restaurante pueden cambiar el estado del pedido
+      allow create, read: if true; 
       allow update: if esPersonalDelRestaurante(resource.data.restauranteId);
       allow delete: if esAdminDelRestaurante(resource.data.restauranteId);
     }
@@ -49,7 +51,7 @@ service cloud.firestore {
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {
       allow read: if true;
-      allow write: if esAdminDelRestaurante(docId); // Asumiendo que el docId es el restauranteId
+      allow write: if esAdminDelRestaurante(docId);
     }
   }
 }
