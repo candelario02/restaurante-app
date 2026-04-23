@@ -65,7 +65,7 @@ function App() {
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
-            // En lugar de: <span>Jekito Restobar</span>
+            <span>Jekito Restobar</span>
             <span>
               {restauranteId
                 ? restauranteId.replace("_", " ").toUpperCase()
