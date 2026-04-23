@@ -11,20 +11,14 @@ import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(
-    localStorage.getItem("esAdmin") === "true",
-  );
-  const [restauranteId, setRestauranteId] = useState(
-    localStorage.getItem("restauranteId"),
-  );
-  const [rol, setRol] = useState(
-    localStorage.getItem("rolUsuario") || "cliente",
-  );
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [restauranteId, setRestauranteId] = useState(null);
+  const [rol, setRol] = useState(null);
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
 
- // detectar sesión Firebase
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (usuario) {
@@ -33,21 +27,21 @@ function App() {
           const datos = await obtenerDatosUsuario(usuario.email);
           if (datos) {
             setRestauranteId(datos.restauranteId);
-            setRol(datos.rol);
+            setRol(datos.rol); 
             setIsAdmin(true);
-            console.log("Perfil cargado: ", datos.restauranteId); 
+            localStorage.setItem("rolUsuario", datos.rol);
+            localStorage.setItem("restauranteId", datos.restauranteId);
           } else {
-            console.warn("Usuario autenticado pero no encontrado en Firestore");
             setIsAdmin(false);
           }
         } catch (error) {
-          console.error("Error recuperando perfil:", error);
+          console.error("Error al cargar perfil:", error);
           setIsAdmin(false);
         }
       } else {
         setUser(null);
-        setRestauranteId("");
-        setRol("");
+        setRestauranteId(null);
+        setRol(null);
         setIsAdmin(false);
       }
     });
@@ -55,7 +49,7 @@ function App() {
   }, []);
   // Cerrar sesión REAL
   const cerrarSesion = async () => {
-    await signOut(auth); 
+    await signOut(auth);
     localStorage.clear();
 
     setUser(null);
