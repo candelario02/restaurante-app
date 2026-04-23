@@ -46,16 +46,27 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   const fileInputRef = useRef(null);
 
-  // 🔥 TIEMPO REAL - Versión Profesional
   useEffect(() => {
-    if (!restauranteId || !rolUsuario) return;
+    if (!restauranteId || !rolUsuario) {
+      console.log("Esperando datos de perfil para iniciar el listado");
+      return;
+    }
 
-    const unsubProd = escucharProductos(restauranteId, setProductos);
-    const unsubPed = escucharPedidos(restauranteId, setPedidos);
+    console.log("Iniciando listado para:", restauranteId);
+
+    const unsubProd = escucharProductos(restauranteId, (data) => {
+      setProductos(data);
+    });
+
+    const unsubPed = escucharPedidos(restauranteId, (data) => {
+      setPedidos(data);
+    });
 
     let unsubUser = () => {};
     if (rolUsuario === "admin") {
-      unsubUser = escucharUsuarios(restauranteId, setUsuarios);
+      unsubUser = escucharUsuarios(restauranteId, (data) => {
+        setUsuarios(data);
+      });
     }
 
     return () => {
