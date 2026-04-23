@@ -165,7 +165,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               onChange={(e) => setPrecio(e.target.value)}
               placeholder="Precio (S/)"
             />
-
             <select
               className="select-pro"
               value={categoria}
@@ -173,10 +172,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             >
               <option value="Comidas">Comidas</option>
               <option value="Bebidas">Bebidas</option>
-              <option value="Postres">Postres</option>
+              <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafeteria</option>
             </select>
-
             <div className="upload-box">
               <input
                 type="file"
@@ -206,15 +204,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 </div>
               )}
             </div>
-
-            <button className="btn-guardar-pro" disabled={cargando}>
-              {cargando ? (
-                "Guardando..."
-              ) : (
-                <>
-                  <Save size={18} /> Guardar Producto
-                </>
-              )}
+            <button
+              disabled={!restauranteId || cargando}
+              onClick={handleGuardar}
+            >
+              {cargando ? "Guardando..." : "Guardar Producto"}
             </button>
           </form>
 

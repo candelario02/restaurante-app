@@ -24,7 +24,7 @@ function App() {
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
 
-  // detectar sesión Firebase
+ // detectar sesión Firebase
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (usuario) {
@@ -35,12 +35,20 @@ function App() {
             setRestauranteId(datos.restauranteId);
             setRol(datos.rol);
             setIsAdmin(true);
+            console.log("Perfil cargado: ", datos.restauranteId); 
+          } else {
+            console.warn("Usuario autenticado pero no encontrado en Firestore");
+            setIsAdmin(false);
           }
         } catch (error) {
           console.error("Error recuperando perfil:", error);
+          setIsAdmin(false);
         }
       } else {
-        cerrarSesion();
+        setUser(null);
+        setRestauranteId("");
+        setRol("");
+        setIsAdmin(false);
       }
     });
     return () => unsub();
