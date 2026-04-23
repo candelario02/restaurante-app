@@ -68,6 +68,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const guardarProducto = async (e) => {
     e.preventDefault();
 
+    console.log("--- DATOS DE AUDITORÍA ---");
+    console.log("Restaurante ID:", restauranteId);
+    console.log("Rol del Usuario:", rolUsuario);
+    console.log("ID en edición:", editandoId);
+    console.log("--------------------------");
+
     if (rolUsuario === "mozo") return alert("No tienes permisos");
     if (!nombre.trim() || !precio) return alert("Completa nombre y precio");
     if (!restauranteId) return alert("Error: ID de restaurante no detectado");
