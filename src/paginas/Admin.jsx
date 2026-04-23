@@ -46,15 +46,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   const fileInputRef = useRef(null);
 
-  // 🔥 TIEMPO REAL
+  // 🔥 TIEMPO REAL - Versión Profesional
   useEffect(() => {
-    if (!restauranteId) return;
+    if (!restauranteId || !rolUsuario) return;
 
     const unsubProd = escucharProductos(restauranteId, setProductos);
     const unsubPed = escucharPedidos(restauranteId, setPedidos);
 
     let unsubUser = () => {};
-    if (rolUsuario !== "mozo") {
+    if (rolUsuario === "admin") {
       unsubUser = escucharUsuarios(restauranteId, setUsuarios);
     }
 
