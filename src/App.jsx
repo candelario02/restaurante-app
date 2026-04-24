@@ -18,31 +18,37 @@ function App() {
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
-  //carga de datos de bd
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
 
       if (usuario) {
-        setUser(usuario);
         try {
           const datos = await obtenerDatosUsuario(usuario.email);
+
           if (datos && datos.restauranteId) {
             setRestauranteId(datos.restauranteId);
             setRol(datos.rol);
-            setIsAdmin(true);
+            setIsAdmin(datos.rol === "admin" || datos.rol === "superadmin");
+
+            setUser(usuario);
 
             localStorage.setItem("rolUsuario", datos.rol);
             localStorage.setItem("restauranteId", datos.restauranteId);
+          } else {
+            await signOut(auth);
+            setUser(null);
           }
         } catch (error) {
           console.error("Error al sincronizar perfil:", error);
+          setUser(null);
         }
       } else {
         setUser(null);
         setRestauranteId(null);
         setRol(null);
         setIsAdmin(false);
+        localStorage.clear();
       }
 
       setCargando(false);
@@ -125,7 +131,7 @@ function App() {
         </div>
       </nav>
 
-     {/* contenido principal */}
+      {/* contenido principal */}
       <main className="main-content">
         {isAdmin && restauranteId ? (
           <Admin
