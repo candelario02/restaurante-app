@@ -48,11 +48,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   useEffect(() => {
     if (!restauranteId || !rolUsuario) {
-      console.log("Esperando datos de perfil para iniciar el listado");
+      console.warn(
+        "Acceso denegado temporalmente: Esperando restauranteId o Rol.",
+      );
       return;
     }
 
-    console.log("Iniciando listado para:", restauranteId);
+    console.log(
+      `[Firebase] Conectando a: ${restauranteId} con rol: ${rolUsuario}`,
+    );
 
     const unsubProd = escucharProductos(restauranteId, (data) => {
       setProductos(data);
@@ -73,6 +77,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubProd();
       unsubPed();
       unsubUser();
+      console.log("[Firebase] Suscripciones cerradas.");
     };
   }, [restauranteId, rolUsuario]);
   //PRODUCTOS
@@ -162,6 +167,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     alert("Estado actualizado");
   };
 
+  if (!restauranteId || !rolUsuario) {
+    return (
+      <div className="admin-loading">
+        <div className="spinner"></div>
+        <p>Sincronizando credenciales...</p>
+      </div>
+    );
+  }
   return (
     <div className="admin-container">
       {/* SECCIÓN MENÚ */}
