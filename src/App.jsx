@@ -21,11 +21,13 @@ function App() {
   //carga de datos de bd
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
+      setCargando(true);
+
       if (usuario) {
         setUser(usuario);
         try {
           const datos = await obtenerDatosUsuario(usuario.email);
-          if (datos) {
+          if (datos && datos.restauranteId) {
             setRestauranteId(datos.restauranteId);
             setRol(datos.rol);
             setIsAdmin(true);
@@ -34,18 +36,18 @@ function App() {
             localStorage.setItem("restauranteId", datos.restauranteId);
           }
         } catch (error) {
-          console.error("Error al cargar perfil:", error);
-        } finally {
-          setCargando(false);
+          console.error("Error al sincronizar perfil:", error);
         }
       } else {
         setUser(null);
         setRestauranteId(null);
         setRol(null);
         setIsAdmin(false);
-        setCargando(false);
       }
+
+      setCargando(false);
     });
+
     return () => unsub();
   }, []);
   // Cerrar sesión REAL
@@ -59,7 +61,9 @@ function App() {
     setRol("cliente");
     setSeccion("menu");
   };
-
+  if (cargando) {
+    return <div className="loading-screen">Sincronizando sesión segura...</div>;
+  }
   return (
     <div className="App">
       <nav className="top-bar">
@@ -121,11 +125,9 @@ function App() {
         </div>
       </nav>
 
-      {/* contenido principal */}
+     {/* contenido principal */}
       <main className="main-content">
-        {cargando ? (
-          <div className="loading-screen">Sincronizando...</div>
-        ) : user && restauranteId ? ( 
+        {isAdmin && restauranteId ? (
           <Admin
             seccion={seccion}
             setSeccion={setSeccion}
