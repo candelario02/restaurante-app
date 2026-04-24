@@ -2,58 +2,49 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔒 FUNCIONES DE APOYO
+    // 🔒 FUNCIONES DE APOYO LIGERAS
     function estaAutenticado() {
       return request.auth != null;
     }
 
-    // Usamos el ID del documento directamente si coincide con el email
-    function datosUsuario() {
-      return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
+    // Comprobamos el rol directamente desde el documento del usuario logueado
+    function tieneRol(rolRequerido) {
+      let u = get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
+      return u.rol == rolRequerido || u.rol == "superadmin";
     }
 
-    // REVISIÓN PROFESIONAL: Permite tanto admin como superadmin
-    function esAdminDelRestaurante(resId) {
-      let user = datosUsuario();
-      return estaAutenticado() && 
-             user.restauranteId == resId && 
-             (user.rol == "admin" || user.rol == "superadmin");
-    }
-
-    function esPersonalDelRestaurante(resId) {
-      let user = datosUsuario();
-      return estaAutenticado() && 
-             user.restauranteId == resId && 
-             (user.rol == "admin" || user.rol == "mozo" || user.rol == "superadmin");
+    // 👨‍💼 USUARIOS ADMIN (Punto crítico de acceso)
+    match /usuarios_admin/{email} {
+      // Permitimos lectura si el usuario está autenticado. 
+      // Esto es vital para que 'obtenerDatosUsuario' no falle.
+      allow read: if estaAutenticado();
+      allow write: if estaAutenticado() && 
+                   (request.auth.token.email == email || request.auth.token.rol == "superadmin");
     }
 
     // 🍽️ PRODUCTOS
     match /productos/{docId} {
       allow read: if true; 
-      // Usamos get() para validar el ID del restaurante si es una actualización
-    allow create: if request.auth != null && request.resource.data.restauranteId != null;
-     allow update, delete: if request.auth != null && resource.data.restauranteId != null;
+      // Solo admins pueden modificar. Validamos que el restauranteId coincida.
+      allow write: if estaAutenticado() && 
+                   get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
     }
 
-  // 👨‍💼 USUARIOS ADMIN
-match /usuarios_admin/{email} {
-  allow read: if request.auth != null; 
-    allow write: if request.auth != null && 
-  (request.auth.token.email == email || request.auth.token.rol == "superadmin");
-}
-    
-    
     // 📝 PEDIDOS
     match /pedidos/{docId} {
       allow create, read: if true; 
-      allow update: if esPersonalDelRestaurante(resource.data.restauranteId);
-      allow delete: if esAdminDelRestaurante(resource.data.restauranteId);
+      // Personal del restaurante puede actualizar (mozo, admin, superadmin)
+      allow update: if estaAutenticado() && 
+                    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
+      allow delete: if estaAutenticado() && 
+                    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol in ["admin", "superadmin"];
     }
 
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {
       allow read: if true;
-      allow write: if esAdminDelRestaurante(docId);
+      allow write: if estaAutenticado() && 
+                   get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == docId;
     }
   }
 }
