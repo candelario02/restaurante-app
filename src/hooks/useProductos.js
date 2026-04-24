@@ -42,6 +42,9 @@ export const useProductos = (restauranteId, categoria) => {
 
 // 🧾 PRODUCTOS (ADMIN)
 export const escucharProductos = (restauranteId, callback) => {
+  // 🛡️ SEGURO: Si no hay ID, no disparamos la conexión a Firebase
+  if (!restauranteId) return () => {}; 
+
   const q = query(
     collection(db, "productos"),
     where("restauranteId", "==", restauranteId),
@@ -49,38 +52,28 @@ export const escucharProductos = (restauranteId, callback) => {
   );
 
   return onSnapshot(q, (snapshot) => {
-    callback(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-    );
-  });
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  }, (error) => console.log("Frenando conexión de productos:", error.message));
 };
 
-// =============================
-// 👤 USUARIOS 
-
+// 👤 USUARIOS
 export const escucharUsuarios = (restauranteId, callback) => {
+  if (!restauranteId) return () => {}; 
+
   const q = query(
     collection(db, "usuarios"),
     where("restauranteId", "==", restauranteId),
   );
 
   return onSnapshot(q, (snapshot) => {
-    callback(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })),
-    );
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
 
-// =============================
 // 📦 PEDIDOS
-// =============================
 export const escucharPedidos = (restauranteId, callback) => {
+  if (!restauranteId) return () => {}; 
+
   const q = query(
     collection(db, "pedidos"),
     where("restauranteId", "==", restauranteId),
@@ -88,11 +81,6 @@ export const escucharPedidos = (restauranteId, callback) => {
   );
 
   return onSnapshot(q, (snapshot) => {
-    callback(
-      snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })),
-    );
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };

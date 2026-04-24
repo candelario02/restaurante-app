@@ -31,12 +31,9 @@ function App() {
             setIsAdmin(true);
             localStorage.setItem("rolUsuario", datos.rol);
             localStorage.setItem("restauranteId", datos.restauranteId);
-          } else {
-            setIsAdmin(false);
           }
         } catch (error) {
           console.error("Error al cargar perfil:", error);
-          setIsAdmin(false);
         }
       } else {
         setUser(null);
@@ -44,6 +41,7 @@ function App() {
         setRol(null);
         setIsAdmin(false);
       }
+
       setCargando(false);
     });
     return () => unsub();
