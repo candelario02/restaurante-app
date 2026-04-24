@@ -42,8 +42,9 @@ export const useProductos = (restauranteId, categoria) => {
 
 // 🧾 PRODUCTOS (ADMIN)
 export const escucharProductos = (restauranteId, callback) => {
-  // 🛡️ SEGURO: Si no hay ID, no disparamos la conexión a Firebase
   if (!restauranteId) return () => {}; 
+  console.warn("Conexión abortada: Falta restauranteId");
+    return () => {}
 
   const q = query(
     collection(db, "productos"),
@@ -53,7 +54,7 @@ export const escucharProductos = (restauranteId, callback) => {
 
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  }, (error) => console.log("Frenando conexión de productos:", error.message));
+  }, (error) => console.log("Error al listar productos:", error.message));
 };
 
 // 👤 USUARIOS
