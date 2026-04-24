@@ -18,7 +18,7 @@ function App() {
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
-
+  //carga de datos de bd
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (usuario) {
