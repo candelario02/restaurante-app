@@ -34,15 +34,16 @@ function App() {
           }
         } catch (error) {
           console.error("Error al cargar perfil:", error);
+        } finally {
+          setCargando(false);
         }
       } else {
         setUser(null);
         setRestauranteId(null);
         setRol(null);
         setIsAdmin(false);
+        setCargando(false);
       }
-
-      setCargando(false);
     });
     return () => unsub();
   }, []);
@@ -68,7 +69,8 @@ function App() {
                 ? restauranteId.replace("_", " ").toUpperCase()
                 : "Cargando..."}
             </span>
-            {user && isAdmin && (
+
+            {user && isAdmin && restauranteId && (
               <div className="nav-admin-tabs-horizontal">
                 <button
                   className={`btn-nav-salir ${seccion === "menu" ? "active" : ""}`}
@@ -118,11 +120,11 @@ function App() {
         </div>
       </nav>
 
-      {/* 🧠 CONTENIDO */}
+      {/* contenido principal */}
       <main className="main-content">
         {cargando ? (
-          <div className="loading-screen">Cargando restaurante...</div>
-        ) : user && isAdmin ? (
+          <div className="loading-screen">Sincronizando con el servidor...</div>
+        ) : user && isAdmin && restauranteId ? (
           <Admin
             seccion={seccion}
             setSeccion={setSeccion}
@@ -134,7 +136,7 @@ function App() {
         )}
       </main>
 
-      {/* 🔐 MODAL LOGIN */}
+      {/* login*/}
       {mostrarLogin && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
