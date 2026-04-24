@@ -29,6 +29,7 @@ function App() {
             setRestauranteId(datos.restauranteId);
             setRol(datos.rol);
             setIsAdmin(true);
+
             localStorage.setItem("rolUsuario", datos.rol);
             localStorage.setItem("restauranteId", datos.restauranteId);
           }

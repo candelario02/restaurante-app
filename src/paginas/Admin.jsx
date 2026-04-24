@@ -48,9 +48,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   useEffect(() => {
     if (!restauranteId || !rolUsuario) {
-      console.warn(
-        "Acceso denegado temporalmente: Esperando restauranteId o Rol.",
-      );
       return;
     }
 
@@ -58,19 +55,26 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       `[Firebase] Conectando a: ${restauranteId} con rol: ${rolUsuario}`,
     );
 
-    const unsubProd = escucharProductos(restauranteId, (data) => {
-      setProductos(data);
-    });
-
-    const unsubPed = escucharPedidos(restauranteId, (data) => {
-      setPedidos(data);
-    });
-
+    let unsubProd = () => {};
+    let unsubPed = () => {};
     let unsubUser = () => {};
-    if (rolUsuario === "admin") {
-      unsubUser = escucharUsuarios(restauranteId, (data) => {
-        setUsuarios(data);
+
+    try {
+      unsubProd = escucharProductos(restauranteId, (data) => {
+        setProductos(data);
       });
+
+      unsubPed = escucharPedidos(restauranteId, (data) => {
+        setPedidos(data);
+      });
+
+      if (rolUsuario === "admin") {
+        unsubUser = escucharUsuarios(restauranteId, (data) => {
+          setUsuarios(data);
+        });
+      }
+    } catch (error) {
+      console.error("Error al establecer suscripciones:", error);
     }
 
     return () => {
@@ -79,7 +83,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
       console.log("[Firebase] Suscripciones cerradas.");
     };
-  }, [restauranteId, rolUsuario]);
+  }, [restauranteId, rolUsuario]); 
   //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
@@ -175,6 +179,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       </div>
     );
   }
+  
   return (
     <div className="admin-container">
       {/* SECCIÓN MENÚ */}
