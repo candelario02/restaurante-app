@@ -31,8 +31,8 @@ service cloud.firestore {
     match /productos/{docId} {
       allow read: if true; 
       // Usamos get() para validar el ID del restaurante si es una actualización
-      allow create: if esAdminDelRestaurante(request.resource.data.restauranteId);
-      allow update, delete: if esAdminDelRestaurante(resource.data.restauranteId);
+     allow create: if estaAutenticado() && request.resource.data.restauranteId != null;
+      allow update, delete: if estaAutenticado() && resource.data.restauranteId != null;
     }
 
     // 👨‍💼 USUARIOS ADMIN

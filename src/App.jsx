@@ -124,8 +124,8 @@ function App() {
       {/* contenido principal */}
       <main className="main-content">
         {cargando ? (
-          <div className="loading-screen">Sincronizando con el servidor...</div>
-        ) : user && isAdmin && restauranteId ? (
+          <div className="loading-screen">Sincronizando...</div>
+        ) : user && restauranteId ? ( 
           <Admin
             seccion={seccion}
             setSeccion={setSeccion}

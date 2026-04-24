@@ -10,32 +10,47 @@ function Login({ onClose, onSuccess }) {
   const [cargando, setCargando] = useState(false);
 
   const manejarLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setCargando(true);
+  e.preventDefault();
+  setError("");
+  setCargando(true);
 
-    try {
-      const { restauranteId, rol } = await loginUsuario(email, password);
+  try {
+    const datosUsuario = await loginUsuario(email, password);
+    
+    const { restauranteId, rol } = datosUsuario;
 
-      // 💾 Guardar sesión
-      localStorage.setItem("esAdmin", "true");
-      localStorage.setItem("restauranteId", restauranteId);
-      localStorage.setItem("rolUsuario", rol);
-
-      if (onSuccess) onSuccess({ restauranteId, rol, esAdmin: true });
-
-      if (onSuccess) onSuccess(restauranteId);
-      if (onClose) onClose();
-    } catch (err) {
-      if (err.message === "NO_AUTORIZADO") {
-        setError("Acceso denegado");
-      } else {
-        setError("Correo o contraseña incorrectos");
-      }
-    } finally {
-      setCargando(false);
+    if (!restauranteId || !rol) {
+      throw new Error("DATOS_INCOMPLETOS");
     }
-  };
+
+    localStorage.setItem("esAdmin", "true");
+    localStorage.setItem("restauranteId", restauranteId);
+    localStorage.setItem("rolUsuario", rol);
+    if (onSuccess) {
+      onSuccess({ 
+        restauranteId, 
+        rol, 
+        esAdmin: true 
+      });
+    }
+    if (onClose) onClose();
+
+  } catch (err) {
+    console.error("Error en el flujo de Login:", err);
+    
+    const mensajesError = {
+      "NO_AUTORIZADO": "No tienes permisos para acceder a este panel.",
+      "auth/user-not-found": "El usuario no existe.",
+      "auth/wrong-password": "Contraseña incorrecta.",
+      "DATOS_INCOMPLETOS": "Error en el perfil: Faltan datos de restaurante."
+    };
+
+    setError(mensajesError[err.message] || "Error de conexión. Intenta de nuevo.");
+    
+  } finally {
+    setCargando(false);
+  }
+};
 
   return (
     <div className="login-content">
