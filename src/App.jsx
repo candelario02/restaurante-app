@@ -18,6 +18,7 @@ function App() {
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
+  // cargar datos bd
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
@@ -50,7 +51,6 @@ function App() {
         setIsAdmin(false);
         localStorage.clear();
       }
-
       setCargando(false);
     });
 

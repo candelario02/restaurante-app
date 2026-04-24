@@ -46,8 +46,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   const fileInputRef = useRef(null);
 
+  // cargar datos de bd
   useEffect(() => {
-    if (!restauranteId || !rolUsuario) {
+    if (!restauranteId || !rolUsuario || !auth.currentUser) {
       return;
     }
 
@@ -68,13 +69,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         setPedidos(data);
       });
 
-      if (rolUsuario === "admin") {
+      if (rolUsuario === "admin" || rolUsuario === "superadmin") {
         unsubUser = escucharUsuarios(restauranteId, (data) => {
           setUsuarios(data);
         });
       }
     } catch (error) {
-      console.error("Error al establecer suscripciones:", error);
+      console.error("Error en suscripciones de Firebase:", error);
     }
 
     return () => {
@@ -179,7 +180,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       </div>
     );
   }
-  
+
   return (
     <div className="admin-container">
       {/* SECCIÓN MENÚ */}
