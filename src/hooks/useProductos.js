@@ -42,19 +42,23 @@ export const useProductos = (restauranteId, categoria) => {
 
 // 🧾 PRODUCTOS (ADMIN)
 export const escucharProductos = (restauranteId, callback) => {
-  if (!restauranteId) return () => {}; 
-  console.warn("Conexión abortada: Falta restauranteId");
-    return () => {}
+  if (!restauranteId) {
+    console.warn("Sincronizando: Esperando restauranteId...");
+    return () => {};
+  }
 
+  
   const q = query(
     collection(db, "productos"),
-    where("restauranteId", "==", restauranteId),
-    orderBy("fechaCreacion", "desc") 
+    where("restauranteId", "==", restauranteId)
+   
   );
 
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  }, (error) => console.log("Error al listar productos:", error.message));
+  }, (error) => {
+    console.error("Error en Snapshot Productos:", error.code, error.message);
+  });
 };
 
 // 👤 USUARIOS
