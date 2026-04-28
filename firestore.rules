@@ -23,12 +23,18 @@ service cloud.firestore {
     }
 
     // 🍽️ PRODUCTOS
-    match /productos/{docId} {
-      allow read: if true; 
-      // Solo admins pueden modificar. Validamos que el restauranteId coincida.
-      allow write: if estaAutenticado() && 
-                   get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
-    }
+  match /productos/{docId} {
+  allow read: if true; 
+  
+  // Para crear: validamos el dato que entra
+  allow create: if estaAutenticado() && 
+                get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
+
+  // Para borrar o editar: validamos contra el dato que YA EXISTE en Firestore
+  allow update, delete: if estaAutenticado() && 
+                        get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
+}
+
 
     // 📝 PEDIDOS
     match /pedidos/{docId} {
