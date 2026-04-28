@@ -19,13 +19,18 @@ const firebaseConfig = {
   measurementId: "G-YJF0B71MFP"
 };
 
-// Inicializar Firebase
+// 1. Inicializar App 
 const app = initializeApp(firebaseConfig);
 
-// Auth
+// 2. Inicializar App Secundaria 
+const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+// Auth Principal (Tu sesión)
 export const auth = getAuth(app);
 
-// Persistencia de sesión
+// Auth Administrativo (El "túnel" para crear empleados)
+export const authAdmin = getAuth(secondaryApp);
+
+// Persistencia de sesión (Solo para tu cuenta principal)
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
     console.log("Persistencia LOCAL activada");
@@ -34,8 +39,8 @@ setPersistence(auth, browserLocalPersistence)
     console.error("Error en persistencia:", error);
   });
 
-// Firestore
+// Firestore (Base de datos compartida)
 export const db = getFirestore(app);
 
-// Storage
+// Storage (Archivos compartidos)
 export const storage = getStorage(app);

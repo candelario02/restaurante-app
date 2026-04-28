@@ -1,20 +1,14 @@
-import { db, auth } from "../firebase/config";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
+import { auth, authAdmin, db } from "../firebase/config";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 
 export const registrarUsuario = async (email, password, rol, restauranteId) => {
   const emailLimpio = email.toLowerCase().trim();
 
-  const userCredential = await createUserWithEmailAndPassword(
-    auth,
-    emailLimpio,
-    password,
-  );
-
+  // 1. Usamos authAdmin para que NO te cierre la sesión de Admin actual
+  const userCredential = await createUserWithEmailAndPassword(authAdmin, emailLimpio, password);
+  
+  // 2. Guardamos en Firestore
   await setDoc(doc(db, "usuarios_admin", emailLimpio), {
     email: emailLimpio,
     rol: rol,
@@ -22,46 +16,19 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
     fechaRegistro: new Date(),
   });
 
+  await signOut(authAdmin); 
+
   return userCredential.user;
 };
 
-export const loginUsuario = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(
-    auth,
-    email.trim(),
-    password,
+export const escucharUsuarios = (restauranteId, callback) => {
+  const q = query(
+    collection(db, "usuarios_admin"),
+    where("restauranteId", "==", restauranteId)
   );
 
-  const userEmail = userCredential.user.email.toLowerCase().trim();
-
-  const datos = await obtenerDatosUsuario(userEmail);
-
-  if (!datos || !datos.restauranteId) {
-    await signOut(auth);
-    throw new Error("USUARIO_SIN_PERFIL_CONFIGURADO");
-  }
-
-  return {
-    user: userCredential.user,
-    restauranteId: datos.restauranteId,
-    rol: datos.rol,
-  };
-};
-
-export const obtenerDatosUsuario = async (email) => {
-  if (!email) return null;
-  const emailLimpio = email.toLowerCase().trim();
-
-  const docRef = doc(db, "usuarios_admin", emailLimpio);
-  const docSnap = await getDoc(docRef);
-
-  if (docSnap.exists()) {
-    return docSnap.data();
-  }
-
-  return null;
-};
-
-export const logoutUsuario = async () => {
-  await signOut(auth);
+  return onSnapshot(q, (snapshot) => {
+    const usuarios = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(usuarios);
+  });
 };

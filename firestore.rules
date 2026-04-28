@@ -15,10 +15,12 @@ service cloud.firestore {
 
    // 👨‍💼 USUARIOS ADMIN
 match /usuarios_admin/{email} {
-  // Cualquiera de tu restaurante puede leer para validar su propio acceso
-  allow read: if estaAutenticado();
+  // Un usuario puede leer su propio perfil, o un ADMIN puede leer todo SU restaurante
+  allow read: if estaAutenticado() && (
+    request.auth.token.email == email || 
+    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin"
+  );
 
-  // SOLO UN ADMIN puede crear o editar personal de SU MISMO restaurante
   allow write: if estaAutenticado() && 
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
