@@ -13,14 +13,21 @@ service cloud.firestore {
       return u.rol == rolRequerido || u.rol == "superadmin";
     }
 
-   // 👨‍💼 USUARIOS ADMIN
+// 👨‍💼 USUARIOS ADMIN
 match /usuarios_admin/{email} {
-  // Un usuario puede leer su propio perfil, o un ADMIN puede leer todo SU restaurante
+  // REGLA DE LECTURA PROFESIONAL
   allow read: if estaAutenticado() && (
+    // 1. Un usuario siempre puede leer su propio perfil
     request.auth.token.email == email || 
-    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin"
+    
+    // 2. Un ADMIN puede leer a otros siempre que sean de SU MISMO restaurante
+    (
+      get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
+      get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId
+    )
   );
 
+  // REGLA DE ESCRITURA (La mantenemos como estaba, que ya funciona)
   allow write: if estaAutenticado() && 
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
