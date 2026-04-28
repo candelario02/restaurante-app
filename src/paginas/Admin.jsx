@@ -29,7 +29,7 @@ import {
   escucharPedidos,
 } from "../hooks/useProductos";
 import { subirImagen } from "../servicios/cloudinaryServicio";
-
+import { auth } from "../firebase/config";
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
