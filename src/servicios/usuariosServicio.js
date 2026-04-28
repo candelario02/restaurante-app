@@ -17,9 +17,9 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
 
   await setDoc(doc(db, "usuarios_admin", emailLimpio), {
     email: emailLimpio,
-    rol: rol, 
+    rol: rol,
     restauranteId: restauranteId,
-    fechaCreacion: new Date(),
+    fechaRegistro: new Date(),
   });
 
   return userCredential.user;

@@ -43,6 +43,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
+  const [userRol, setUserRol] = useState("mozo");
 
   const fileInputRef = useRef(null);
 
@@ -233,32 +234,25 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const registrarAdmin = async (e) => {
     e.preventDefault();
 
-    // Validación básica antes de intentar registrar
     if (!userEmail.trim() || !userPass.trim()) {
-      return Swal.fire({
-        icon: "warning",
-        title: "Campos vacíos",
-        text: "Ingresa un correo y una contraseña.",
-        confirmButtonColor: "#6366f1",
-      });
+      return Swal.fire({ icon: "warning", title: "Campos vacíos" });
     }
 
     try {
-      await registrarUsuario(userEmail, userPass, "mozo", restauranteId);
+      await registrarUsuario(userEmail, userPass, userRol, restauranteId);
+
       Swal.fire({
         icon: "success",
-        title: "¡Usuario Creado!",
-        text: `El mozo ${userEmail} ha sido registrado.`,
+        title: "¡Registro Exitoso!",
+        text: `Se ha creado el perfil de ${userRol} para ${userEmail}.`,
         confirmButtonColor: "#6366f1",
       });
+
       setUserEmail("");
       setUserPass("");
+      setUserRol("mozo");
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error al registrar",
-        text: error.message,
-      });
+      Swal.fire({ icon: "error", title: "Error", text: error.message });
     }
   };
   // 📦 PEDIDOS
@@ -491,7 +485,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN USUARIOS */}
       {seccion === "usuarios" && (
         <div className="admin-section">
-          <h2 className="titulo-seccion">👤 Usuarios</h2>
+          <h2 className="titulo-seccion">👤 Gestión de Personal</h2>
           <form onSubmit={registrarAdmin} className="form-admin">
             <input
               className="input-pro"
@@ -506,20 +500,32 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               onChange={(e) => setUserPass(e.target.value)}
               placeholder="Contraseña"
             />
+            <select
+              className="input-pro"
+              value={userRol}
+              onChange={(e) => setUserRol(e.target.value)}
+            >
+              <option value="mozo">Mozo (Solo Pedidos)</option>
+              <option value="cajero">Cajero (Pedidos y Pagos)</option>
+              <option value="admin">Administrador (Control Total)</option>
+            </select>
+
             <button
               className="btn-primary"
               style={{ width: "100%", marginTop: "10px" }}
             >
-              Crear Nuevo Mozo
+              Registrar Nuevo{" "}
+              {userRol.charAt(0).toUpperCase() + userRol.slice(1)}
             </button>
           </form>
+
           <div className="grid-admin">
             {usuarios.map((u) => (
               <div key={u.id} className="card-admin">
                 <p>
                   <strong>Email:</strong> {u.email}
                 </p>
-                <span className="badge-rol">{u.rol}</span>
+                <span className={`badge-rol ${u.rol}`}>{u.rol}</span>
               </div>
             ))}
           </div>
