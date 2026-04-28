@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import "../estilos/admin.css";
 import Swal from "sweetalert2";
-// 🔥 SERVICIOS
+// 🔥 SERVICIOS 
 import {
   crearProducto,
   actualizarProducto,
@@ -20,12 +20,14 @@ import {
   cambiarDisponibilidad,
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
-import { registrarUsuario } from "../servicios/usuariosServicio";
-import {
-  registrarUsuario,
-  eliminarUsuario,
-  escucharUsuarios,
+
+// Une todo lo de usuarios en una sola línea
+import { 
+  registrarUsuario, 
+  eliminarUsuario, 
+  escucharUsuarios 
 } from "../servicios/usuariosServicio";
+
 // 🔥 HOOKS TIEMPO REAL
 import { escucharProductos, escucharPedidos } from "../hooks/useProductos";
 import { subirImagen } from "../servicios/cloudinaryServicio";
