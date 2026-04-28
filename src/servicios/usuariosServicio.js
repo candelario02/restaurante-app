@@ -1,12 +1,12 @@
 import { auth, authAdmin, db } from "../firebase/config";
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  collection, 
-  query, 
-  where, 
-  onSnapshot 
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  onSnapshot,
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
@@ -17,8 +17,12 @@ import {
 // 1. REGISTRO (Usa instancia secundaria para no cerrar tu sesión)
 export const registrarUsuario = async (email, password, rol, restauranteId) => {
   const emailLimpio = email.toLowerCase().trim();
-  const userCredential = await createUserWithEmailAndPassword(authAdmin, emailLimpio, password);
-  
+  const userCredential = await createUserWithEmailAndPassword(
+    authAdmin,
+    emailLimpio,
+    password,
+  );
+
   await setDoc(doc(db, "usuarios_admin", emailLimpio), {
     email: emailLimpio,
     rol: rol,
@@ -26,13 +30,17 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
     fechaRegistro: new Date(),
   });
 
-  await signOut(authAdmin); 
+  await signOut(authAdmin);
   return userCredential.user;
 };
 
 // 2. LOGIN (Lo que Vercel no encontraba)
 export const loginUsuario = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    email.trim(),
+    password,
+  );
   const userEmail = userCredential.user.email.toLowerCase().trim();
   const datos = await obtenerDatosUsuario(userEmail);
 
@@ -62,7 +70,7 @@ export const obtenerDatosUsuario = async (email) => {
 export const escucharUsuarios = (restauranteId, callback) => {
   const q = query(
     collection(db, "usuarios_admin"),
-    where("restauranteId", "==", restauranteId)
+    where("restauranteId", "==", restauranteId),
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -72,6 +80,12 @@ export const escucharUsuarios = (restauranteId, callback) => {
     }));
     callback(data);
   });
+};
+//eliminicion
+export const eliminarUsuario = async (email) => {
+  // El ID del documento es el email en minúsculas
+  const docRef = doc(db, "usuarios_admin", email.toLowerCase().trim());
+  await deleteDoc(docRef);
 };
 
 // 5. LOGOUT

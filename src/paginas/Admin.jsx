@@ -291,6 +291,35 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Error", "No se pudo cambiar el estado", "error");
     }
   };
+  //eliminacion de usuarios
+  const confirmarEliminarUser = (email) => {
+    if (email === auth.currentUser.email) {
+      return Swal.fire(
+        "Acción no permitida",
+        "No puedes eliminar tu propia cuenta de administrador.",
+        "warning",
+      );
+    }
+
+    Swal.fire({
+      title: "¿Eliminar personal?",
+      text: `El usuario ${email} perderá acceso al sistema.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarUsuario(email);
+          Swal.fire("Eliminado", "El usuario ha sido removido.", "success");
+        } catch (error) {
+          Swal.fire("Error", "No se pudo eliminar: " + error.message, "error");
+        }
+      }
+    });
+  };
 
   if (!restauranteId || !rolUsuario) {
     return (
@@ -518,16 +547,37 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               {userRol.charAt(0).toUpperCase() + userRol.slice(1)}
             </button>
           </form>
+          <div className="grid-admin" style={{ marginTop: "30px" }}>
+            {usuarios.length === 0 ? (
+              <p className="text-center">Cargando personal o lista vacía...</p>
+            ) : (
+              usuarios.map((u) => (
+                <div
+                  key={u.id}
+                  className="card-admin"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <p style={{ margin: 0 }}>
+                      <strong>Email:</strong> {u.email}
+                    </p>
+                    <span className={`badge-rol ${u.rol}`}>{u.rol}</span>
+                  </div>
 
-          <div className="grid-admin">
-            {usuarios.map((u) => (
-              <div key={u.id} className="card-admin">
-                <p>
-                  <strong>Email:</strong> {u.email}
-                </p>
-                <span className={`badge-rol ${u.rol}`}>{u.rol}</span>
-              </div>
-            ))}
+                  <button
+                    onClick={() => confirmarEliminarUser(u.email)}
+                    className="btn-delete-icon"
+                    title="Eliminar usuario"
+                  >
+                    <Trash2 size={20} color="#ef4444" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
