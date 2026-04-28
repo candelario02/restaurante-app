@@ -11,7 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import "../estilos/admin.css";
-
+import Swal from "sweetalert2";
 // 🔥 SERVICIOS
 import {
   crearProducto,
@@ -84,7 +84,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
       console.log("[Firebase] Suscripciones cerradas.");
     };
-  }, [restauranteId, rolUsuario]); 
+  }, [restauranteId, rolUsuario]);
   //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
@@ -95,9 +95,34 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     console.log("ID en edición:", editandoId);
     console.log("--------------------------");
 
-    if (rolUsuario === "mozo") return alert("No tienes permisos");
-    if (!nombre.trim() || !precio) return alert("Completa nombre y precio");
-    if (!restauranteId) return alert("Error: ID de restaurante no detectado");
+    // Validaciones con alertas centradas
+    if (rolUsuario === "mozo") {
+      return Swal.fire({
+        icon: "error",
+        title: "Acceso denegado",
+        text: "No tienes permisos para realizar esta acción.",
+        confirmButtonColor: "#6366f1",
+      });
+    }
+
+    if (!nombre.trim() || !precio) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor, completa el nombre y el precio del plato.",
+        confirmButtonColor: "#6366f1",
+      });
+    }
+
+    if (!restauranteId) {
+      return Swal.fire({
+        icon: "error",
+        title: "Error de sistema",
+        text: "ID de restaurante no detectado. Reintenta el login.",
+        confirmButtonColor: "#6366f1",
+      });
+    }
+
     if (cargando) return;
 
     try {
@@ -118,12 +143,29 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
       if (editandoId) {
         await actualizarProducto(editandoId, datos, restauranteId);
-        alert("✅ Producto actualizado");
+        // Alerta de éxito para actualización
+        Swal.fire({
+          icon: "success",
+          title: "¡Actualizado!",
+          text: "El producto se actualizó correctamente.",
+          showConfirmButton: false,
+          timer: 2000,
+          position: "center",
+        });
       } else {
         await crearProducto(datos, restauranteId);
-        alert("✅ Producto creado");
+        // Alerta de éxito para creación
+        Swal.fire({
+          icon: "success",
+          title: "¡Creado!",
+          text: "El producto ha sido registrado con éxito.",
+          showConfirmButton: false,
+          timer: 2000,
+          position: "center",
+        });
       }
 
+      // Limpieza de estados tras éxito
       setNombre("");
       setPrecio("");
       setArchivo(null);
@@ -131,7 +173,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       setEditandoId(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      alert("❌ Error: " + error.message);
+      // Alerta de error en el proceso
+      Swal.fire({
+        icon: "error",
+        title: "Hubo un problema",
+        text: "Error: " + error.message,
+        confirmButtonColor: "#ef4444",
+      });
     } finally {
       setCargando(false);
     }
@@ -151,27 +199,103 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setImgPreview(p.imagenUrl);
   };
 
+  const manejarEliminar = (id) => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Este plato se eliminará permanentemente del menú.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarProducto(id);
+          Swal.fire({
+            title: "Eliminado",
+            text: "El producto ha sido borrado.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        } catch (error) {
+          Swal.fire("Error", "No se pudo eliminar: " + error.message, "error");
+        }
+      }
+    });
+  };
   const manejarClickImagen = () => {
     fileInputRef.current.click();
   };
   // 👤 USUARIOS
   const registrarAdmin = async (e) => {
     e.preventDefault();
+
+    // Validación básica antes de intentar registrar
+    if (!userEmail.trim() || !userPass.trim()) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Campos vacíos",
+        text: "Ingresa un correo y una contraseña.",
+        confirmButtonColor: "#6366f1",
+      });
+    }
+
     try {
       await registrarUsuario(userEmail, userPass, "mozo", restauranteId);
-      alert("Usuario creado");
+      Swal.fire({
+        icon: "success",
+        title: "¡Usuario Creado!",
+        text: `El mozo ${userEmail} ha sido registrado.`,
+        confirmButtonColor: "#6366f1",
+      });
       setUserEmail("");
       setUserPass("");
-    } catch {
-      alert("Error al registrar");
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar",
+        text: error.message,
+      });
     }
   };
   // 📦 PEDIDOS
   const cambiarEstado = async (id, estado) => {
-    await actualizarEstadoPedido(id, estado);
-    alert("Estado actualizado");
+    try {
+      await actualizarEstadoPedido(id, estado);
+      Swal.fire({
+        icon: "success",
+        title: "Pedido Actualizado",
+        text: `El pedido ahora está como: ${estado}`,
+        timer: 1500,
+        showConfirmButton: false,
+        position: "center",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo actualizar el estado: " + error.message,
+      });
+    }
   };
+  const manejarDisponibilidad = async (id, estadoActual) => {
+    try {
+      await cambiarDisponibilidad(id, estadoActual);
 
+      Swal.fire({
+        title: estadoActual ? "Plato Activado" : "Plato Agotado",
+        icon: "success",
+        timer: 800,
+        showConfirmButton: false,
+        position: "center",
+      });
+    } catch (error) {
+      Swal.fire("Error", "No se pudo cambiar el estado", "error");
+    }
+  };
   if (!restauranteId || !rolUsuario) {
     return (
       <div className="admin-loading">
@@ -211,6 +335,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafeteria</option>
             </select>
+
             <div className="upload-box">
               <input
                 type="file"
@@ -234,24 +359,40 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
                 {imgPreview ? " Imagen Cargada" : " Subir Imagen"}
               </button>
+
               {imgPreview && (
                 <div className="preview-imagen-container">
                   <img src={imgPreview} alt="preview" />
                 </div>
               )}
             </div>
-            <button
-              className="btn-guardar-pro"
-              disabled={!restauranteId || cargando}
-            >
-              {cargando ? (
-                "Guardando..."
-              ) : (
-                <>
-                  <Save size={18} /> Guardar Producto
-                </>
+
+            <div className="admin-botones-container">
+              <button
+                type="submit"
+                className="btn-guardar-pro"
+                disabled={!restauranteId || cargando}
+              >
+                {cargando ? (
+                  "Procesando..."
+                ) : (
+                  <>
+                    <Save size={18} />
+                    {editandoId ? " Actualizar Producto" : " Guardar Producto"}
+                  </>
+                )}
+              </button>
+
+              {editandoId && (
+                <button
+                  type="button"
+                  className="btn-cancelar-pro"
+                  onClick={cancelarEdicion}
+                >
+                  Cancelar
+                </button>
               )}
-            </button>
+            </div>
           </form>
 
           <div className="tabla-container-pro">
@@ -280,7 +421,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       <button
                         className="btn-status-pro"
                         onClick={() =>
-                          cambiarDisponibilidad(p.id, !p.disponible)
+                          manejarDisponibilidad(p.id, !p.disponible)
                         }
                       >
                         <Power
@@ -298,15 +439,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </button>
                       <button
                         className="btn-delete"
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "¿Seguro que quieres borrar este plato?",
-                            )
-                          ) {
-                            eliminarProducto(p.id);
-                          }
-                        }}
+                        onClick={() => manejarEliminar(p.id)}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -355,23 +488,32 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <h2 className="titulo-seccion">👤 Usuarios</h2>
           <form onSubmit={registrarAdmin} className="form-admin">
             <input
+              className="input-pro"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
-              placeholder="Correo"
+              placeholder="Correo electrónico"
             />
             <input
+              className="input-pro"
               type="password"
               value={userPass}
               onChange={(e) => setUserPass(e.target.value)}
               placeholder="Contraseña"
             />
-            <button className="btn-primary">Crear</button>
+            <button
+              className="btn-primary"
+              style={{ width: "100%", marginTop: "10px" }}
+            >
+              Crear Nuevo Mozo
+            </button>
           </form>
           <div className="grid-admin">
             {usuarios.map((u) => (
               <div key={u.id} className="card-admin">
-                <p>{u.email}</p>
-                <span>{u.rol}</span>
+                <p>
+                  <strong>Email:</strong> {u.email}
+                </p>
+                <span className="badge-rol">{u.rol}</span>
               </div>
             ))}
           </div>

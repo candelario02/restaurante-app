@@ -1,4 +1,4 @@
-import { db } from '../firebase/config';
+import { db } from "../firebase/config";
 import {
   collection,
   addDoc,
@@ -8,8 +8,8 @@ import {
   query,
   where,
   onSnapshot,
-  getDoc
-} from 'firebase/firestore';
+  getDoc,
+} from "firebase/firestore";
 
 //Crear producto
 export const crearProducto = async (datos, restauranteId) => {
@@ -17,34 +17,37 @@ export const crearProducto = async (datos, restauranteId) => {
 
   const docRef = await addDoc(collection(db, "productos"), {
     ...datos,
-    restauranteId: restauranteId, 
+    restauranteId: restauranteId,
     disponible: true,
-    fechaCreacion: new Date()
+    fechaCreacion: new Date(),
   });
   return docRef.id;
 };
 
 // Actualizar producto
 export const actualizarProducto = async (id, datos, restauranteId) => {
-  if (!restauranteId) throw new Error("Falta restauranteId para validar permisos");
-  
-  await updateDoc(doc(db, "productos", id), { 
-    ...datos, 
-    restauranteId 
+  if (!restauranteId)
+    throw new Error("Falta restauranteId para validar permisos");
+
+  await updateDoc(doc(db, "productos", id), {
+    ...datos,
+    restauranteId,
   });
 };
 
 export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
-  if (!restauranteId) throw new Error("Falta restauranteId para validar permisos");
+  if (!restauranteId)
+    throw new Error("Falta restauranteId para validar permisos");
 
-  await updateDoc(doc(db, "productos", id), { 
+  await updateDoc(doc(db, "productos", id), {
     disponible: estado,
-    restauranteId 
+    restauranteId,
   });
 };
 
 export const eliminarProducto = async (id) => {
-  await deleteDoc(doc(db, "productos", id));
+  const docRef = doc(db, "productos", id);
+  await deleteDoc(docRef);
 };
 
 // Obtener productos en tiempo real
@@ -53,13 +56,13 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
     collection(db, "productos"),
     where("restauranteId", "==", restauranteId),
     where("categoria", "==", categoria),
-    where("disponible", "==", true)
+    where("disponible", "==", true),
   );
 
   return onSnapshot(q, (snapshot) => {
-    const datos = snapshot.docs.map(doc => ({
+    const datos = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
     callback(datos);
   });

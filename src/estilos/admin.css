@@ -304,3 +304,30 @@
     height: 100%;
     object-fit: cover; 
 }
+.admin-botones-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-guardar-pro {
+  flex: 2; 
+}
+
+.btn-cancelar-pro {
+  flex: 1;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-cancelar-pro:hover {
+  background-color: #dc2626;
+}
