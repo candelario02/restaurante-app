@@ -281,9 +281,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     }
   };
-  const manejarDisponibilidad = async (id, estadoActual) => {
+  //DISPONIBILIDAD
+  const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
-      await cambiarDisponibilidad(id, estadoActual);
+      await cambiarDisponibilidad(id, estadoActual, restauranteId);
 
       Swal.fire({
         title: estadoActual ? "Plato Activado" : "Plato Agotado",
@@ -296,6 +297,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Error", "No se pudo cambiar el estado", "error");
     }
   };
+
   if (!restauranteId || !rolUsuario) {
     return (
       <div className="admin-loading">
@@ -421,7 +423,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       <button
                         className="btn-status-pro"
                         onClick={() =>
-                          manejarDisponibilidad(p.id, !p.disponible)
+                          manejarDisponibilidad(
+                            p.id,
+                            !p.disponible,
+                            restauranteId,
+                          )
                         }
                       >
                         <Power
