@@ -21,13 +21,13 @@ import {
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 import { registrarUsuario } from "../servicios/usuariosServicio";
-
-// 🔥 HOOKS TIEMPO REAL
 import {
-  escucharProductos,
+  registrarUsuario,
+  eliminarUsuario,
   escucharUsuarios,
-  escucharPedidos,
-} from "../hooks/useProductos";
+} from "../servicios/usuariosServicio";
+// 🔥 HOOKS TIEMPO REAL
+import { escucharProductos, escucharPedidos } from "../hooks/useProductos";
 import { subirImagen } from "../servicios/cloudinaryServicio";
 import { auth } from "../firebase/config";
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
@@ -85,7 +85,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
       console.log("[Firebase] Suscripciones cerradas.");
     };
-  }, [restauranteId, rolUsuario]);
+  }, [restauranteId, rolUsuario, seccion]);
   //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
