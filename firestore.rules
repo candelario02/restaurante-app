@@ -15,22 +15,25 @@ service cloud.firestore {
 
 // 👨‍💼 USUARIOS ADMIN
 match /usuarios_admin/{email} {
-  // REGLA DE LECTURA PROFESIONAL
+  // LECTURA: Ya la tienes bien
   allow read: if estaAutenticado() && (
-    // 1. Un usuario siempre puede leer su propio perfil
     request.auth.token.email == email || 
-    
-    // 2. Un ADMIN puede leer a otros siempre que sean de SU MISMO restaurante
     (
       get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
       get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId
     )
   );
 
-  // REGLA DE ESCRITURA (La mantenemos como estaba, que ya funciona)
-  allow write: if estaAutenticado() && 
+  // ESCRITURA: Separada para manejar borrados
+  // 1. Para CREAR o ACTUALIZAR: Validamos los datos entrantes (request.resource)
+  allow create, update: if estaAutenticado() && 
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
+
+  // 2. Para BORRAR: Validamos los datos existentes (resource)
+  allow delete: if estaAutenticado() && 
+    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
+    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
 }
 
     // 🍽️ PRODUCTOS
