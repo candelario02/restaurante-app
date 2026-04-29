@@ -131,11 +131,6 @@ const MenuCliente = ({ restauranteId }) => {
     return () => unsubscribe();
   }, [pedidoActivoId, restauranteId]);
 
-  const getEtapa = (estado) => {
-    const etapas = { pendiente: 1, cocinando: 2, entregado: 3 };
-    return etapas[estado] || 1;
-  };
-
   //Efecto para calcular el total automáticamente
   useEffect(() => {
     const nuevoTotal = carrito.reduce((acc, item) => {
