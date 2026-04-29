@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import "../estilos/admin.css";
 import Swal from "sweetalert2";
-// 🔥 SERVICIOS 
+// 🔥 SERVICIOS
 import {
   crearProducto,
   actualizarProducto,
@@ -22,10 +22,10 @@ import {
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 
 // Une todo lo de usuarios en una sola línea
-import { 
-  registrarUsuario, 
-  eliminarUsuario, 
-  escucharUsuarios 
+import {
+  registrarUsuario,
+  eliminarUsuario,
+  escucharUsuarios,
 } from "../servicios/usuariosServicio";
 
 // 🔥 HOOKS TIEMPO REAL
@@ -258,23 +258,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   // 📦 PEDIDOS
-  const cambiarEstado = async (id, estado) => {
+  const cambiarEstado = async (id, nuevoEstado) => {
     try {
-      await actualizarEstadoPedido(id, estado);
+      await actualizarEstadoPedido(restauranteId, id, nuevoEstado);
+
       Swal.fire({
         icon: "success",
-        title: "Pedido Actualizado",
-        text: `El pedido ahora está como: ${estado}`,
-        timer: 1500,
+        title: "Estado Actualizado",
+        text: `Orden en etapa: ${nuevoEstado.toUpperCase()}`,
+        timer: 1000,
         showConfirmButton: false,
-        position: "center",
       });
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo actualizar el estado: " + error.message,
-      });
+      console.error(error);
+      Swal.fire("Error", "No se pudo cambiar el estado", "error");
     }
   };
   //DISPONIBILIDAD
@@ -486,27 +483,68 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN PEDIDOS */}
       {seccion === "pedidos" && (
         <div className="admin-section">
-          <h2 className="titulo-seccion">📦 Pedidos</h2>
+          <h2 className="titulo-seccion">📦 Pedidos en Curso</h2>
           <div className="grid-admin">
             {pedidos.map((p) => (
               <div key={p.id} className="card-admin">
                 <div className="card-header">
                   <strong>{p.cliente?.nombre || "Cliente"}</strong>
-                  <span className={`status-badge ${p.estado}`}>{p.estado}</span>
+                  <span className={`status-badge ${p.estado}`}>
+                    {p.estado.toUpperCase()}
+                  </span>
                 </div>
+
                 <div className="items-pedido">
                   {p.items?.map((item, index) => (
                     <p key={index}>
                       {item.cantidad}x {item.nombre}
                     </p>
                   ))}
+                  <hr />
+                  <p>
+                    <strong>Total: S/ {p.total}</strong>
+                  </p>
                 </div>
-                <button
-                  className="btn-success"
-                  onClick={() => cambiarEstado(p.id, "entregado")}
+
+                <div
+                  className="acciones-pedido"
+                  style={{ display: "flex", gap: "10px", marginTop: "10px" }}
                 >
-                  Marcar como Entregado
-                </button>
+                  {p.estado === "pendiente" && (
+                    <button
+                      className="btn-primary"
+                      onClick={() => cambiarEstado(p.id, "cocinando")}
+                    >
+                      👨‍🍳 Iniciar Cocina
+                    </button>
+                  )}
+
+                  {p.estado === "cocinando" && (
+                    <button
+                      className="btn-success"
+                      onClick={() => cambiarEstado(p.id, "entregado")}
+                    >
+                      ✅ Entregar Pedido
+                    </button>
+                  )}
+
+                  {p.estado !== "entregado" && (
+                    <button
+                      className="btn-cancel"
+                      onClick={() => cambiarEstado(p.id, "pendiente")}
+                      style={{
+                        background: "#eee",
+                        color: "#666",
+                        border: "none",
+                        padding: "5px 10px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Revertir
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

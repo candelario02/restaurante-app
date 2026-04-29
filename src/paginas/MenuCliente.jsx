@@ -163,36 +163,71 @@ const MenuCliente = ({ restauranteId }) => {
   //funcion enviar pedido
   const enviarPedidoFinal = async (datosCliente) => {
     if (carrito.length === 0 || enviando) return;
+    const idExistente =
+      pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
+
     try {
       setEnviando(true);
-      const pedidoParaFirebase = {
-        cliente: {
-          nombre: datosCliente.nombre,
-          tipo: datosCliente.tipo,
-          referencia: datosCliente.referencia,
-          telefono: datosCliente.telefono || "No provisto",
-        },
-        items: carrito.map((item) => ({
-          id: item.id,
-          nombre: item.nombre,
-          precio: Number(item.precio),
-          cantidad: item.cantidad,
-          subtotal: Number(item.precio) * item.cantidad,
-        })),
-        total: total,
-        estado: "pendiente",
-        restauranteId: restauranteId,
-        fecha: new Date().toISOString(),
-      };
 
-      const idPedido = await crearPedido(restauranteId, pedidoParaFirebase);
-      localStorage.setItem(`ultimoPedido_${restauranteId}`, idPedido);
-      setPedidoActivoId(idPedido);
+      if (idExistente && datosPedidoRealtime) {
+        const itemsActualizados = [
+          ...datosPedidoRealtime.items,
+          ...carrito.map((item) => ({
+            id: item.id,
+            nombre: item.nombre,
+            precio: Number(item.precio),
+            cantidad: item.cantidad,
+            subtotal: Number(item.precio) * item.cantidad,
+          })),
+        ];
+
+        const nuevoTotal = datosPedidoRealtime.total + total;
+
+        await agregarItemsAlPedido(
+          restauranteId,
+          idExistente,
+          itemsActualizados,
+          nuevoTotal,
+        );
+
+        setPedidoActivoId(idExistente);
+
+        Swal.fire(
+          "¡Agregado!",
+          "Tu orden extra se sumó al pedido actual.",
+          "success",
+        );
+      } else {
+        const pedidoParaFirebase = {
+          cliente: {
+            nombre: datosCliente.nombre,
+            tipo: datosCliente.tipo,
+            referencia: datosCliente.referencia || datosCliente.mesa || "",
+            telefono: datosCliente.telefono || "No provisto",
+          },
+          items: carrito.map((item) => ({
+            id: item.id,
+            nombre: item.nombre,
+            precio: Number(item.precio),
+            cantidad: item.cantidad,
+            subtotal: Number(item.precio) * item.cantidad,
+          })),
+          total: total,
+          estado: "pendiente",
+          restauranteId: restauranteId,
+        };
+
+        const idPedido = await crearPedido(restauranteId, pedidoParaFirebase);
+        localStorage.setItem(`ultimoPedido_${restauranteId}`, idPedido);
+        setPedidoActivoId(idPedido);
+
+        Swal.fire("¡Pedido Enviado!", "Tu orden está en cocina.", "success");
+      }
+
       setCarrito([]);
       setMostrarFormulario(false);
       setVerCarrito(false);
-
-      Swal.fire("¡Pedido Enviado!", "Tu orden está en cocina.", "success");
+      setCategoriaActual(null); 
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No pudimos procesar tu pedido.", "error");
@@ -216,7 +251,7 @@ const MenuCliente = ({ restauranteId }) => {
     setCarrito((prev) => prev.filter((item) => item.id !== id));
     setAvisoAgregado(`${itemEliminado.nombre} eliminado`);
   };
-//funcion para seguimiento dinamico
+  //funcion para seguimiento dinamico
   const getEtapa = (estado) => {
     switch (estado) {
       case "pendiente":

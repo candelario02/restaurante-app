@@ -14,7 +14,7 @@ export const crearPedido = async (restauranteId, datosPedido) => {
     const docRef = await addDoc(pedidosRef, {
       ...datosPedido,
       restauranteId,
-      fecha: serverTimestamp(), 
+      fecha: serverTimestamp(),
       estado: "pendiente",
     });
 
@@ -32,4 +32,30 @@ export const actualizarEstadoPedido = async (
 ) => {
   const pedidoRef = doc(db, "restaurantes", restauranteId, "pedidos", pedidoId);
   await updateDoc(pedidoRef, { estado: nuevoEstado });
+};
+
+export const agregarItemsAlPedido = async (
+  restauranteId,
+  pedidoId,
+  nuevosItems,
+  nuevoTotal,
+) => {
+  try {
+    const pedidoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "pedidos",
+      pedidoId,
+    );
+
+    await updateDoc(pedidoRef, {
+      items: nuevosItems,
+      total: nuevoTotal,
+      fechaActualizacion: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error al añadir items:", error);
+    throw error;
+  }
 };
