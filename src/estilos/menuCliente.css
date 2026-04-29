@@ -1,4 +1,6 @@
-
+/* =========================================
+   1. VARIABLES Y BASE (Root)
+   ========================================= */
 :root {
   --primary: #6366f1;
   --primary-light: #eef2ff;
@@ -11,16 +13,6 @@
   --radius: 20px;
 }
 
-.icon-comidas { color: #ff9f1c !important; } 
-.icon-cafeteria { color: #6d4c41 !important; } 
-.icon-bebidas { color: #00b4d8 !important; }
-.icon-entradas { color: #ef476f !important; } 
-
-.categorias-grid-principal > div:hover .icon-comidas { background: #fff4e6; border-color: #ff9f1c; }
-.categorias-grid-principal > div:hover .icon-cafeteria { background: #f3ecea; border-color: #6d4c41; }
-.categorias-grid-principal > div:hover .icon-bebidas { background: #e0f7fa; border-color: #00b4d8; }
-.categorias-grid-principal > div:hover .icon-entradas { background: #ffebee; border-color: #ef476f; }
-
 .admin-container {
   min-height: 100vh;
   background-color: var(--bg-main);
@@ -28,21 +20,15 @@
   animation: fadeIn 0.4s ease;
 }
 
+/* =========================================
+   2. VISTA PRINCIPAL (Categorías)
+   ========================================= */
 .view-principal {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
   padding: 60px 20px;
-}
-
-.view-principal h2 {
-  margin: 25px 0 40px;
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
+  text-align: center;
 }
 
 .categorias-grid-principal {
@@ -59,40 +45,35 @@
   align-items: center;
   gap: 15px;
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.3s ease;
 }
 
-.categorias-grid-principal > div svg {
+.categorias-grid-principal svg {
   background: white;
-  padding: 35px; 
+  padding: 30px;
   border-radius: 50%;
   box-shadow: var(--shadow-md);
-  color: var(--primary);
-  width: 140px; 
-  height: 140px;
-  border: 4px solid transparent; 
+  width: 120px;
+  height: 120px;
+  border: 4px solid transparent;
   transition: all 0.3s ease;
 }
 
-.categorias-grid-principal > div:hover {
-  transform: translateY(-10px);
-}
+/* Colores específicos por categoría */
+.icon-comidas { color: #ff9f1c !important; }
+.icon-cafeteria { color: #6d4c41 !important; }
+.icon-bebidas { color: #00b4d8 !important; }
+.icon-entradas { color: #ef476f !important; }
 
-.categorias-grid-principal > div:hover svg {
-  border-color: var(--primary);
-  background: var(--primary-light);
-  box-shadow: var(--shadow-lg);
-}
+.categorias-grid-principal > div:hover { transform: translateY(-10px); }
+.categorias-grid-principal > div:hover svg { border-color: currentColor; box-shadow: var(--shadow-lg); }
 
-.categorias-grid-principal p {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: var(--text-main);
-}
-
+/* =========================================
+   3. GRID DE PRODUCTOS Y TARJETAS
+   ========================================= */
 .productos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 20px;
   padding: 20px;
 }
@@ -103,164 +84,103 @@
   box-shadow: var(--shadow-md);
   overflow: hidden;
   border: 1px solid var(--border);
-  transition: all 0.3s ease;
 }
 
-.producto-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-}
+.producto-card img { width: 100%; height: 140px; object-fit: cover; }
 
-.producto-card img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-}
+.producto-info { padding: 12px; }
 
-.producto-card h3 {
-  padding: 15px 15px 5px;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.producto-card p {
-  padding: 0 15px 15px;
-  color: var(--primary);
-  font-weight: 800;
-  font-size: 1.2rem;
+.producto-card.agotado {
+  filter: grayscale(1);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .btn-agregar {
-  width: calc(100% - 30px);
-  margin: 0 15px 15px;
+  width: 100%;
   background: var(--primary);
   color: white;
   border-radius: 12px;
   padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 700;
   border: none;
+  font-weight: 700;
   cursor: pointer;
 }
 
-/* Contenedor principal del modal */
-.carrito-overlay {
+/* =========================================
+   4. MODAL DEL CARRITO Y FORMULARIO
+   ========================================= */
+.carrito-overlay, .overlay-msg {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.carrito-modal {
-  background: #fff;
+.carrito-modal, .msg-box {
+  background: white;
   width: 90%;
   max-width: 450px;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  border-radius: var(--radius);
+  padding: 25px;
+  animation: slideUp 0.3s ease;
 }
 
-.carrito-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.carrito-items {
-  max-height: 350px;
-  overflow-y: auto;
-  margin: 15px 0;
-}
+.carrito-items { max-height: 300px; overflow-y: auto; margin: 15px 0; }
 
 .carrito-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f9f9f9;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.item-info h4 { margin: 0; font-size: 1rem; color: #333; }
-.item-info span { color: #666; font-size: 0.9rem; }
-
-.item-controles {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Inputs del Formulario */
+.input-pro {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
-.item-controles button {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 1px solid #ddd;
-  background: #f8f9fa;
-  cursor: pointer;
+/* =========================================
+   5. COMPONENTES FLOTANTES Y UI
+   ========================================= */
+.btn-carrito-flotante {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 15px 30px;
+  border-radius: 50px;
+  box-shadow: var(--shadow-lg);
+  border: none;
+  font-weight: bold;
+  z-index: 900;
 }
 
-.item-cantidad { font-weight: bold; min-width: 20px; text-align: center; }
-
-.btn-eliminar-item {
-  color: #ff4d4d;
-  background: none !important;
-  border: none !important;
-}
-
-.carrito-footer {
-  border-top: 1px solid #eee;
-  padding-top: 15px;
-}
-
-.total-container {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.2rem;
-  font-weight: 800;
-  margin-bottom: 20px;
-}
-
-.total-monto { color: #10b981; }
-
-.carrito-acciones {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn-pagar {
+.toast-agregado {
+  position: fixed;
+  top: 20px;
   background: #10b981;
   color: white;
-  border: none;
-  padding: 15px;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-}
-.menu-header-dinamico h1 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #333; 
-  font-weight: bold;
+  padding: 12px 25px;
+  border-radius: 10px;
+  z-index: 2000;
 }
 
-.btn-pagar:disabled { background: #ccc; }
-
+/* Animaciones y Media Queries */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); } to { transform: translateY(0); } }
 
 @media (max-width: 480px) {
   .categorias-grid-principal { gap: 20px; }
-  .categorias-grid-principal > div svg { 
-    width: 110px; 
-    height: 110px; 
-    padding: 25px; 
-  }
+  .categorias-grid-principal svg { width: 100px; height: 100px; padding: 25px; }
 }

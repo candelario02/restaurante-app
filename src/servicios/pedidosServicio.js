@@ -9,18 +9,27 @@ import {
 
 export const crearPedido = async (restauranteId, datosPedido) => {
   try {
-    const docRef = await addDoc(collection(db, "pedidos"), {
+    const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
+
+    const docRef = await addDoc(pedidosRef, {
       ...datosPedido,
       restauranteId,
-      fecha: serverTimestamp(),
+      fecha: serverTimestamp(), 
       estado: "pendiente",
     });
+
     return docRef.id;
   } catch (error) {
+    console.error("Error en crearPedido:", error);
     throw error;
   }
 };
 
-export const actualizarEstadoPedido = async (id, estado) => {
-  await updateDoc(doc(db, "pedidos", id), { estado });
+export const actualizarEstadoPedido = async (
+  restauranteId,
+  pedidoId,
+  nuevoEstado,
+) => {
+  const pedidoRef = doc(db, "restaurantes", restauranteId, "pedidos", pedidoId);
+  await updateDoc(pedidoRef, { estado: nuevoEstado });
 };
