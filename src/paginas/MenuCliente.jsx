@@ -85,33 +85,12 @@ const MenuCliente = ({ restauranteId }) => {
     return () => unsub();
   }, [categoriaActual, restauranteId]);
 
-  // Efecto Seguimiento pedido
+  // Efecto de seguimeinto
   useEffect(() => {
-    if (!pedidoActivoId) return;
-
-    const unsub = onSnapshot(
-      doc(db, "restaurantes", restauranteId, "pedidos", pedidoActivoId),
-      (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setDatosPedidoRealtime(data);
-
-          if (data.estado === "entregado") {
-            setTimeout(() => {
-              setPedidoActivoId(null);
-              localStorage.removeItem(`ultimoPedido_${restauranteId}`);
-              setDatosPedidoRealtime(null);
-            }, 15000);
-          }
-        }
-      },
-    );
-
-    return () => unsub();
-  }, [pedidoActivoId, restauranteId]);
-  // Efecto escuchar cambios en el pedido en tiempo real
-  useEffect(() => {
-    if (!pedidoActivoId || !restauranteId) return;
+    if (!pedidoActivoId || !restauranteId) {
+      setDatosPedidoRealtime(null);
+      return;
+    }
 
     const pedidoRef = doc(
       db,
@@ -123,10 +102,18 @@ const MenuCliente = ({ restauranteId }) => {
 
     const unsubscribe = onSnapshot(pedidoRef, (docSnap) => {
       if (docSnap.exists()) {
-        setPedidoActivo(docSnap.data());
+        const data = docSnap.data();
+        setDatosPedidoRealtime({ id: docSnap.id, ...data });
+
+        if (data.estado === "entregado") {
+          setTimeout(() => {
+            localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+            setPedidoActivoId(null);
+            setDatosPedidoRealtime(null);
+          }, 30000);
+        }
       } else {
         setPedidoActivoId(null);
-        setPedidoActivo(null);
         localStorage.removeItem(`ultimoPedido_${restauranteId}`);
       }
     });
@@ -164,15 +151,13 @@ const MenuCliente = ({ restauranteId }) => {
     });
   };
   //funcion enviar pedido
-  const enviarPedidoFinal = async (datosCliente) => {
+  const enviarPedidoFinal = async (datosCliente = null) => {
     if (carrito.length === 0 || enviando) return;
-    const idExistente =
-      pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
     try {
       setEnviando(true);
 
-      if (idExistente && datosPedidoRealtime) {
+      if (pedidoActivoId && datosPedidoRealtime) {
         const itemsActualizados = [
           ...datosPedidoRealtime.items,
           ...carrito.map((item) => ({
@@ -188,18 +173,12 @@ const MenuCliente = ({ restauranteId }) => {
 
         await agregarItemsAlPedido(
           restauranteId,
-          idExistente,
+          pedidoActivoId,
           itemsActualizados,
           nuevoTotal,
         );
 
-        setPedidoActivoId(idExistente);
-
-        Swal.fire(
-          "¡Agregado!",
-          "Tu orden extra se sumó al pedido actual.",
-          "success",
-        );
+        Swal.fire("¡Añadido!", "Se sumó a tu cuenta actual.", "success");
       } else {
         const pedidoParaFirebase = {
           cliente: {
@@ -217,23 +196,21 @@ const MenuCliente = ({ restauranteId }) => {
           })),
           total: total,
           estado: "pendiente",
-          restauranteId: restauranteId,
         };
 
-        const idPedido = await crearPedido(restauranteId, pedidoParaFirebase);
-        localStorage.setItem(`ultimoPedido_${restauranteId}`, idPedido);
-        setPedidoActivoId(idPedido);
+        const idNuevo = await crearPedido(restauranteId, pedidoParaFirebase);
+        localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
+        setPedidoActivoId(idNuevo);
 
         Swal.fire("¡Pedido Enviado!", "Tu orden está en cocina.", "success");
       }
 
       setCarrito([]);
-      setMostrarFormulario(false);
       setVerCarrito(false);
-      setCategoriaActual(null);
+      setMostrarFormulario(false);
     } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "No pudimos procesar tu pedido.", "error");
+      console.error("Error crítico:", error);
+      Swal.fire("Error", "No se pudo procesar.", "error");
     } finally {
       setEnviando(false);
     }
