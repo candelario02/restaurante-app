@@ -48,6 +48,7 @@ const MenuCliente = ({ restauranteId }) => {
   const [direccion, setDireccion] = useState("");
   const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
+  const [pedidoActivo, setPedidoActivo] = useState(null);
 
   const [total, setTotal] = useState(0);
 
@@ -105,6 +106,36 @@ const MenuCliente = ({ restauranteId }) => {
 
     return () => unsub();
   }, [pedidoActivoId, restauranteId]);
+  // Efecto escuchar cambios en el pedido en tiempo real
+  useEffect(() => {
+    if (!pedidoActivoId || !restauranteId) return;
+
+    const pedidoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "pedidos",
+      pedidoActivoId,
+    );
+
+    const unsubscribe = onSnapshot(pedidoRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setPedidoActivo(docSnap.data());
+      } else {
+        setPedidoActivoId(null);
+        setPedidoActivo(null);
+        localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pedidoActivoId, restauranteId]);
+
+  const getEtapa = (estado) => {
+    const etapas = { pendiente: 1, cocinando: 2, entregado: 3 };
+    return etapas[estado] || 1;
+  };
+
   //Efecto para calcular el total automáticamente
   useEffect(() => {
     const nuevoTotal = carrito.reduce((acc, item) => {
@@ -190,7 +221,19 @@ const MenuCliente = ({ restauranteId }) => {
     setCarrito((prev) => prev.filter((item) => item.id !== id));
     setAvisoAgregado(`${itemEliminado.nombre} eliminado`);
   };
-
+//funcion para seguimiento dinamico
+  const getEtapa = (estado) => {
+    switch (estado) {
+      case "pendiente":
+        return 1;
+      case "cocinando":
+        return 2;
+      case "entregado":
+        return 3;
+      default:
+        return 1;
+    }
+  };
   return (
     <div className="admin-container">
       {/* Mensaje de aviso al centro) */}
@@ -218,14 +261,58 @@ const MenuCliente = ({ restauranteId }) => {
       {/* ✅ SEGUIMIENTO DE PEDIDO  */}
       {pedidoActivoId && datosPedidoRealtime && (
         <div className="view-principal">
-          <div className="msg-box">
-            <h2 className="titulo-categoria">
-              Estado:{" "}
-              <span className="total-monto">{datosPedidoRealtime.estado}</span>
-            </h2>
-            <div className="item-info">
-              <p>Tu pedido está en cocina o en camino.</p>
+          <div className="seguimiento-box">
+            <div className="seguimiento-header">
+              <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
+              <span className="pedido-id-tag">
+                ID: #{pedidoActivoId.slice(-5)}
+              </span>
             </div>
+
+            <div className="stepper-container">
+              <div className="stepper-line"></div>
+
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 1 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 1 ? "completed" : ""}`}
+              >
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) > 1 ? "✓" : "1"}
+                </div>
+                <span className="step-label">Recibido</span>
+              </div>
+
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
+              >
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) > 2 ? "✓" : "2"}
+                </div>
+                <span className="step-label">Cocina</span>
+              </div>
+
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 3 ? "active" : ""}`}
+              >
+                <div className="step-circle">3</div>
+                <span className="step-label">Entregado</span>
+              </div>
+            </div>
+
+            <p className="seguimiento-footer-msg">
+              {datosPedidoRealtime.estado === "pendiente" &&
+                "Estamos validando tu pedido..."}
+              {datosPedidoRealtime.estado === "cocinando" &&
+                "¡Tu orden está en el fuego! 🔥"}
+              {datosPedidoRealtime.estado === "entregado" &&
+                "¡Listo! Que lo disfrutes."}
+            </p>
+
+            <button
+              className="btn-pedir-mas"
+              onClick={() => setPedidoActivoId(null)}
+            >
+              + Pedir algo adicional
+            </button>
           </div>
         </div>
       )}

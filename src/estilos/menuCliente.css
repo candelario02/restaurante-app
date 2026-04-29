@@ -313,7 +313,139 @@
   gap: 10px;
   cursor: pointer;
 }
+/* =========================================
+   8. SEGUIMIENTO DE PEDIDO (SISTEMA STEPPER)
+   ========================================= */
+.seguimiento-box {
+  width: 100%;
+  border: 2px solid var(--primary-light);
+  border-radius: var(--radius);
+  padding: 20px;
+  background: white;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.3s ease;
+}
 
+.seguimiento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pedido-id-tag {
+  font-size: 0.8rem;
+  background: var(--bg-main);
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: monospace;
+}
+
+.stepper-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 25px 0;
+  position: relative;
+  padding: 0 10px;
+}
+
+.stepper-line {
+  position: absolute;
+  top: 16px; 
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.step {
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step.active .step-circle {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+  transform: scale(1.1);
+}
+
+.step.completed .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  transition: color 0.3s ease;
+}
+
+.step.active .step-label {
+  color: var(--primary);
+}
+
+.seguimiento-footer-msg {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: 600;
+  min-height: 1.2rem;
+}
+
+.btn-pedir-mas {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 2px dashed var(--primary);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-pedir-mas:hover {
+  background: var(--primary);
+  color: white;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-pedir-mas:active {
+  transform: translateY(0);
+}
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translate(-50%, -40%); }
   20% { opacity: 1; transform: translate(-50%, -50%); }
