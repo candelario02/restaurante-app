@@ -319,7 +319,7 @@ const MenuCliente = ({ restauranteId }) => {
 
             <button
               className="btn-pedir-mas"
-              onClick={() => setPedidoActivoId(null)}
+              onClick={() => setVerCarrito(false)}
             >
               + Pedir algo adicional
             </button>
@@ -577,8 +577,12 @@ const MenuCliente = ({ restauranteId }) => {
                 <button
                   className="btn-finalizar"
                   onClick={() => {
-                    if (pedidoActivoId) {
-                      enviarPedidoFinal();
+                    const idGuardado =
+                      pedidoActivoId ||
+                      localStorage.getItem(`ultimoPedido_${restauranteId}`);
+
+                    if (idGuardado) {
+                      enviarPedidoFinal(); 
                     } else {
                       setMostrarFormulario(true);
                     }

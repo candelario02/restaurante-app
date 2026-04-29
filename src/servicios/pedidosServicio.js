@@ -25,6 +25,20 @@ export const crearPedido = async (restauranteId, datosPedido) => {
   }
 };
 
+export const agregarItemsAlPedido = async (
+  restauranteId,
+  pedidoId,
+  nuevosItems,
+  nuevoTotal,
+) => {
+  const pedidoRef = doc(db, "restaurantes", restauranteId, "pedidos", pedidoId);
+  await updateDoc(pedidoRef, {
+    items: nuevosItems,
+    total: nuevoTotal,
+    fechaActualizacion: serverTimestamp(),
+  });
+};
+
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
