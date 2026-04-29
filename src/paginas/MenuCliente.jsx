@@ -9,7 +9,10 @@ import {
   obtenerConfigRestaurante,
 } from "../servicios/productosServicio";
 
-import { crearPedido } from "../servicios/pedidosServicio";
+import {
+  crearPedido,
+  agregarItemsAlPedido,
+} from "../servicios/pedidosServicio";
 
 import {
   Utensils,
@@ -227,7 +230,7 @@ const MenuCliente = ({ restauranteId }) => {
       setCarrito([]);
       setMostrarFormulario(false);
       setVerCarrito(false);
-      setCategoriaActual(null); 
+      setCategoriaActual(null);
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No pudimos procesar tu pedido.", "error");
@@ -499,13 +502,22 @@ const MenuCliente = ({ restauranteId }) => {
                 </button>
                 <button
                   className="btn-pagar"
-                  disabled={carrito.length === 0}
+                  disabled={carrito.length === 0 || enviando}
                   onClick={() => {
                     setVerCarrito(false);
-                    setMostrarFormulario(true);
+
+                    if (pedidoActivoId) {
+                      enviarPedidoFinal();
+                    } else {
+                      setMostrarFormulario(true);
+                    }
                   }}
                 >
-                  Confirmar Pedido
+                  {enviando
+                    ? "Enviando..."
+                    : pedidoActivoId
+                      ? "🚀 Sumar al pedido actual"
+                      : "Confirmar Pedido"}
                 </button>
               </div>
             </div>
@@ -586,11 +598,18 @@ const MenuCliente = ({ restauranteId }) => {
                   Atrás
                 </button>
                 <button
-                  type="submit"
-                  className="btn-finalizar-pedido"
-                  disabled={enviando}
+                  className="btn-finalizar"
+                  onClick={() => {
+                    if (pedidoActivoId) {
+                      enviarPedidoFinal();
+                    } else {
+                      setMostrarFormulario(true);
+                    }
+                  }}
                 >
-                  {enviando ? "Enviando..." : "Finalizar Pedido"}
+                  {pedidoActivoId
+                    ? "Añadir al Pedido Actual"
+                    : "Finalizar Pedido"}
                 </button>
               </div>
             </form>
