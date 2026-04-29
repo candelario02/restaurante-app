@@ -190,14 +190,15 @@ const MenuCliente = ({ restauranteId }) => {
 
   return (
     <div className="admin-container">
-      {/* ✅ TOAST (Aviso de éxito) */}
+      {/* Mensaje de aviso al centro) */}
       {avisoAgregado && (
         <div className="toast-agregado">
-          <CheckCircle size={18} /> <span>{avisoAgregado} agregado</span>
+          <CheckCircle size={20} />
+          <span>{avisoAgregado} agregado</span>
         </div>
       )}
 
-      {/* ✅ BOTÓN CARRITO FLOTANTE (Mejorado) */}
+      {/* ✅ BOTÓN CARRITO FLOTANTE */}
       {carrito.length > 0 &&
         !verCarrito &&
         !mostrarFormulario &&
@@ -211,36 +212,39 @@ const MenuCliente = ({ restauranteId }) => {
           </button>
         )}
 
-      {/* ✅ SEGUIMIENTO DE PEDIDO */}
+      {/* ✅ SEGUIMIENTO DE PEDIDO  */}
       {pedidoActivoId && datosPedidoRealtime && (
         <div className="view-principal">
           <div className="msg-box">
-            <h2>
+            <h2 className="titulo-categoria">
               Estado:{" "}
               <span className="total-monto">{datosPedidoRealtime.estado}</span>
             </h2>
-            <p>Tu pedido está en camino.</p>
+            <div className="item-info">
+              <p>Tu pedido está en cocina o en camino.</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* ✅ VISTA DE CATEGORÍAS */}
+      {/* ✅ VISTA DE CATEGORÍAS principal*/}
       {!pedidoActivoId && !categoriaActual && (
         <div className="view-principal">
           <header className="menu-header-dinamico">
             <h1>
               {restauranteId
                 ? restauranteId.replace(/_/g, " ").toUpperCase()
-                : "CARGANDO..."}
+                : "BIENVENIDO"}
             </h1>
           </header>
 
           <img
             src={logoRestaurante}
             alt="logo"
+            className="logo-circular"
             style={{ width: 80, borderRadius: "50%", marginBottom: "15px" }}
           />
-          <h2>¿Qué deseas?</h2>
+          <h2 className="titulo-categoria">¿Qué deseas pedir hoy?</h2>
 
           <div className="categorias-grid-principal">
             <div onClick={() => setCategoriaActual("Comidas")}>
@@ -266,16 +270,19 @@ const MenuCliente = ({ restauranteId }) => {
         </div>
       )}
 
-      {/* ✅ VISTA DE PRODUCTOS */}
+      {/* ✅ VISTA DE PRODUCTOS alineación Volver + Título */}
       {categoriaActual && (
         <div className="admin-container">
-          <button
-            className="btn-agregar"
-            style={{ width: "auto", margin: "20px" }}
-            onClick={() => setCategoriaActual(null)}
-          >
-            <ArrowLeft size={18} /> Volver
-          </button>
+          <div className="header-categoria">
+            <button
+              className="btn-volver-minimal"
+              onClick={() => setCategoriaActual(null)}
+            >
+              <ArrowLeft size={18} /> Volver
+            </button>
+            <h2 className="titulo-categoria">{categoriaActual}</h2>
+            <div style={{ width: "80px" }}></div>{" "}
+          </div>
 
           <div className="productos-grid">
             {productos.map((p) => (
@@ -287,12 +294,7 @@ const MenuCliente = ({ restauranteId }) => {
 
                 <div className="producto-info">
                   <h3>{p.nombre}</h3>
-                  <p
-                    className="precio"
-                    style={{ color: "var(--primary)", fontWeight: "800" }}
-                  >
-                    S/ {Number(p.precio).toFixed(2)}
-                  </p>
+                  <p className="precio">S/ {Number(p.precio).toFixed(2)}</p>
 
                   <button
                     className="btn-agregar"
@@ -301,7 +303,7 @@ const MenuCliente = ({ restauranteId }) => {
                   >
                     {p.disponible ? (
                       <>
-                        <Plus size={20} />
+                        <Plus size={18} />
                         <span>Agregar</span>
                       </>
                     ) : (
@@ -323,6 +325,7 @@ const MenuCliente = ({ restauranteId }) => {
               <h2>🛒 Tu Pedido</h2>
               <button
                 className="btn-eliminar-item"
+                style={{ background: "transparent" }}
                 onClick={() => setVerCarrito(false)}
               >
                 ✕
@@ -332,7 +335,7 @@ const MenuCliente = ({ restauranteId }) => {
             <div className="carrito-items">
               {carrito.length === 0 ? (
                 <p style={{ textAlign: "center", padding: "20px" }}>
-                  El carrito está vacío
+                  Tu carrito está vacío
                 </p>
               ) : (
                 carrito.map((item) => (
@@ -369,9 +372,10 @@ const MenuCliente = ({ restauranteId }) => {
               <div className="carrito-acciones">
                 <button
                   className="btn-agregar"
+                  style={{ background: "#666" }}
                   onClick={() => setVerCarrito(false)}
                 >
-                  Seguir Comprando
+                  Cerrar
                 </button>
                 <button
                   className="btn-pagar"
@@ -393,7 +397,9 @@ const MenuCliente = ({ restauranteId }) => {
       {mostrarFormulario && (
         <div className="overlay-msg">
           <div className="msg-box">
-            <h2 style={{ marginBottom: "15px" }}>Datos de Entrega</h2>
+            <h2 className="titulo-categoria" style={{ marginBottom: "20px" }}>
+              Datos de Entrega
+            </h2>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -412,7 +418,7 @@ const MenuCliente = ({ restauranteId }) => {
               />
               <input
                 name="referencia"
-                placeholder="Mesa o Dirección"
+                placeholder="Nro. Mesa o Dirección"
                 required
                 className="input-pro"
               />
@@ -420,8 +426,7 @@ const MenuCliente = ({ restauranteId }) => {
               <div className="acciones-form">
                 <button
                   type="button"
-                  className="btn-agregar"
-                  style={{ background: "#666" }}
+                  className="btn-volver-minimal"
                   onClick={() => setMostrarFormulario(false)}
                 >
                   Atrás

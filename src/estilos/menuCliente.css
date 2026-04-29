@@ -1,5 +1,5 @@
 /* =========================================
-   1. VARIABLES Y BASE (Root)
+   1. VARIABLES Y BASE
    ========================================= */
 :root {
   --primary: #6366f1;
@@ -21,60 +21,96 @@
 }
 
 /* =========================================
-   2. VISTA PRINCIPAL (Categorías)
+   2. HEADER Y TÍTULOS (Alineación Volver + Título)
+   ========================================= */
+.header-categoria {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.titulo-categoria {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.btn-volver-minimal {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =========================================
+   3. VISTA DE CATEGORÍAS (Principal)
    ========================================= */
 .view-principal {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   text-align: center;
 }
 
 .categorias-grid-principal {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  gap: 30px;
   max-width: 500px;
   width: 100%;
+  margin-top: 20px;
 }
 
 .categorias-grid-principal > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
 
 .categorias-grid-principal svg {
   background: white;
-  padding: 30px;
+  padding: 25px;
   border-radius: 50%;
   box-shadow: var(--shadow-md);
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border: 4px solid transparent;
   transition: all 0.3s ease;
 }
 
-/* Colores específicos por categoría */
 .icon-comidas { color: #ff9f1c !important; }
 .icon-cafeteria { color: #6d4c41 !important; }
 .icon-bebidas { color: #00b4d8 !important; }
 .icon-entradas { color: #ef476f !important; }
 
-.categorias-grid-principal > div:hover { transform: translateY(-10px); }
+.categorias-grid-principal > div:hover { transform: translateY(-8px); }
 .categorias-grid-principal > div:hover svg { border-color: currentColor; box-shadow: var(--shadow-lg); }
 
 /* =========================================
-   3. GRID DE PRODUCTOS Y TARJETAS
+   4. GRID DE PRODUCTOS
    ========================================= */
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 20px;
+  gap: 15px;
   padding: 20px;
 }
 
@@ -84,11 +120,13 @@
   box-shadow: var(--shadow-md);
   overflow: hidden;
   border: 1px solid var(--border);
+  transition: 0.3s;
 }
 
-.producto-card img { width: 100%; height: 140px; object-fit: cover; }
-
+.producto-card img { width: 100%; height: 130px; object-fit: cover; }
 .producto-info { padding: 12px; }
+.producto-info h3 { font-size: 1rem; margin-bottom: 5px; color: var(--text-main); }
+.precio { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
 
 .producto-card.agotado {
   filter: grayscale(1);
@@ -105,10 +143,14 @@
   border: none;
   font-weight: 700;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 /* =========================================
-   4. MODAL DEL CARRITO Y FORMULARIO
+   5. CARRITO ELEGANTE (Modal e Items)
    ========================================= */
 .carrito-overlay, .overlay-msg {
   position: fixed;
@@ -123,34 +165,105 @@
 
 .carrito-modal, .msg-box {
   background: white;
-  width: 90%;
+  width: 95%;
   max-width: 450px;
   border-radius: var(--radius);
-  padding: 25px;
+  padding: 20px;
   animation: slideUp 0.3s ease;
 }
-
-.carrito-items { max-height: 300px; overflow-y: auto; margin: 15px 0; }
 
 .carrito-item {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  background: #f1f5f9;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 15px;
 }
 
-/* Inputs del Formulario */
+.item-info h4 { margin: 0; font-size: 0.95rem; }
+
+.item-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 5px 8px;
+  border-radius: 10px;
+}
+
+.item-controles button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.item-cantidad { font-weight: 800; min-width: 15px; text-align: center; }
+
+.btn-eliminar-item {
+  color: #ef4444;
+  background: #fee2e2;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-pagar {
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 15px;
+  border: none;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-top: 10px;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+}
+
+/* =========================================
+   6. TOAST Y MENSAJES (Centro de pantalla)
+   ========================================= */
+.toast-agregado {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(16, 185, 129, 0.95);
+  color: white;
+  padding: 20px 35px;
+  border-radius: var(--radius);
+  z-index: 3000;
+  box-shadow: var(--shadow-lg);
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+  animation: fadeInOut 2s ease forwards;
+}
+
+/* =========================================
+   7. OTROS (Inputs, Flotantes, Animaciones)
+   ========================================= */
 .input-pro {
   width: 100%;
   padding: 12px;
   margin-bottom: 15px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
+  font-size: 1rem;
 }
 
-/* =========================================
-   5. COMPONENTES FLOTANTES Y UI
-   ========================================= */
 .btn-carrito-flotante {
   position: fixed;
   bottom: 25px;
@@ -164,23 +277,23 @@
   border: none;
   font-weight: bold;
   z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
 }
 
-.toast-agregado {
-  position: fixed;
-  top: 20px;
-  background: #10b981;
-  color: white;
-  padding: 12px 25px;
-  border-radius: 10px;
-  z-index: 2000;
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -40%); }
+  20% { opacity: 1; transform: translate(-50%, -50%); }
+  80% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -60%); }
 }
 
-/* Animaciones y Media Queries */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(20px); } to { transform: translateY(0); } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 @media (max-width: 480px) {
-  .categorias-grid-principal { gap: 20px; }
-  .categorias-grid-principal svg { width: 100px; height: 100px; padding: 25px; }
+  .categorias-grid-principal { gap: 15px; }
+  .categorias-grid-principal svg { width: 90px; height: 90px; padding: 20px; }
 }
