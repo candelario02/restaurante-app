@@ -50,15 +50,16 @@ match /usuarios_admin/{email} {
 }
 
 
-    // 📝 PEDIDOS
-    match /pedidos/{docId} {
-      allow create, read: if true; 
-      // Personal del restaurante puede actualizar (mozo, admin, superadmin)
-      allow update: if estaAutenticado() && 
-                    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
-      allow delete: if estaAutenticado() && 
-                    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol in ["admin", "superadmin"];
-    }
+ // 📝 PEDIDOS
+match /pedidos/{document=**} {
+  allow read, create: if true; 
+  allow update, delete: if estaAutenticado();
+}
+
+match /restaurantes/{restId}/pedidos/{document=**} {
+  allow read, create: if true;
+  allow update, delete: if estaAutenticado();
+}
 
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {

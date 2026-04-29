@@ -142,9 +142,9 @@ const MenuCliente = ({ restauranteId }) => {
       const pedidoParaFirebase = {
         cliente: {
           nombre: datosCliente.nombre,
-          referencia: datosCliente.referencia || "",
-          telefono: telefono || "",
-          direccion: direccion || "",
+          tipo: datosCliente.tipo,
+          referencia: datosCliente.referencia,
+          telefono: datosCliente.telefono || "No provisto",
         },
         items: carrito.map((item) => ({
           id: item.id,
@@ -156,6 +156,7 @@ const MenuCliente = ({ restauranteId }) => {
         total: total,
         estado: "pendiente",
         restauranteId: restauranteId,
+        fecha: new Date().toISOString(),
       };
 
       const idPedido = await crearPedido(restauranteId, pedidoParaFirebase);
@@ -185,7 +186,9 @@ const MenuCliente = ({ restauranteId }) => {
   };
   //funcion borra dell carrito
   const eliminarDelCarrito = (id) => {
+    const itemEliminado = carrito.find((item) => item.id === id);
     setCarrito((prev) => prev.filter((item) => item.id !== id));
+    setAvisoAgregado(`${itemEliminado.nombre} eliminado`);
   };
 
   return (
@@ -334,9 +337,9 @@ const MenuCliente = ({ restauranteId }) => {
 
             <div className="carrito-items">
               {carrito.length === 0 ? (
-                <p style={{ textAlign: "center", padding: "20px" }}>
-                  Tu carrito está vacío
-                </p>
+                <div className="carrito-vacio-msg">
+                  <p>Tu carrito está vacío</p>
+                </div>
               ) : (
                 carrito.map((item) => (
                   <div key={item.id} className="carrito-item">
@@ -406,22 +409,56 @@ const MenuCliente = ({ restauranteId }) => {
                 const formData = new FormData(e.target);
                 enviarPedidoFinal({
                   nombre: formData.get("nombre"),
-                  referencia: formData.get("referencia"),
+                  tipo: tipoPedido,
+                  referencia:
+                    tipoPedido === "mesa"
+                      ? formData.get("mesa")
+                      : formData.get("direccion"),
+                  telefono: formData.get("telefono"),
                 });
               }}
             >
               <input
                 name="nombre"
-                placeholder="¿A nombre de quién?"
+                placeholder="¿Tu nombre?"
                 required
                 className="input-pro"
               />
-              <input
-                name="referencia"
-                placeholder="Nro. Mesa o Dirección"
-                required
+
+              <select
                 className="input-pro"
-              />
+                value={tipoPedido}
+                onChange={(e) => setTipoPedido(e.target.value)}
+              >
+                <option value="mesa">Comer en el local (Mesa)</option>
+                <option value="delivery">Para llevar / Delivery</option>
+              </select>
+
+              {tipoPedido === "mesa" ? (
+                <input
+                  name="mesa"
+                  placeholder="Nro. de Mesa"
+                  required
+                  className="input-pro"
+                  type="number"
+                />
+              ) : (
+                <>
+                  <input
+                    name="direccion"
+                    placeholder="Dirección de entrega"
+                    required
+                    className="input-pro"
+                  />
+                  <input
+                    name="telefono"
+                    placeholder="WhatsApp / Teléfono"
+                    required
+                    className="input-pro"
+                    type="tel"
+                  />
+                </>
+              )}
 
               <div className="acciones-form">
                 <button
@@ -431,8 +468,12 @@ const MenuCliente = ({ restauranteId }) => {
                 >
                   Atrás
                 </button>
-                <button type="submit" className="btn-confirmar">
-                  Finalizar Pedido
+                <button
+                  type="submit"
+                  className="btn-finalizar-pedido"
+                  disabled={enviando}
+                >
+                  {enviando ? "Enviando..." : "Finalizar Pedido"}
                 </button>
               </div>
             </form>
