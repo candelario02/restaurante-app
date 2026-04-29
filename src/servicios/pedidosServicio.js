@@ -7,6 +7,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
+// ✅ 1. Crear pedido en la subcolección del restaurante
 export const crearPedido = async (restauranteId, datosPedido) => {
   try {
     const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
@@ -25,29 +26,28 @@ export const crearPedido = async (restauranteId, datosPedido) => {
   }
 };
 
-export const agregarItemsAlPedido = async (
-  restauranteId,
-  pedidoId,
-  nuevosItems,
-  nuevoTotal,
-) => {
-  const pedidoRef = doc(db, "restaurantes", restauranteId, "pedidos", pedidoId);
-  await updateDoc(pedidoRef, {
-    items: nuevosItems,
-    total: nuevoTotal,
-    fechaActualizacion: serverTimestamp(),
-  });
-};
-
+// ✅ 2. Actualizar estado (Cocinando, Entregado, etc.)
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
   nuevoEstado,
 ) => {
-  const pedidoRef = doc(db, "restaurantes", restauranteId, "pedidos", pedidoId);
-  await updateDoc(pedidoRef, { estado: nuevoEstado });
+  try {
+    const pedidoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "pedidos",
+      pedidoId,
+    );
+    await updateDoc(pedidoRef, { estado: nuevoEstado });
+  } catch (error) {
+    console.error("Error al actualizar estado:", error);
+    throw error;
+  }
 };
 
+// ✅ 3. Agregar nuevos productos a un pedido existente
 export const agregarItemsAlPedido = async (
   restauranteId,
   pedidoId,
@@ -64,7 +64,7 @@ export const agregarItemsAlPedido = async (
     );
 
     await updateDoc(pedidoRef, {
-      items: nuevosItems,
+      items: nuevosItems, 
       total: nuevoTotal,
       fechaActualizacion: serverTimestamp(),
     });
