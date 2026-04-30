@@ -101,6 +101,12 @@ function App() {
                 >
                   Pedidos
                 </button>
+                <button
+                  className={`btn-nav-salir ${seccion === "caja" ? "active" : ""}`}
+                  onClick={() => setSeccion("caja")}
+                >
+                  caja
+                </button>
               </div>
             )}
           </div>
