@@ -1,4 +1,4 @@
-// hooks/useProductos.js
+// src/hooks/useProductos.js
 import { useEffect, useState } from "react";
 import { db } from "../firebase/config";
 import {
@@ -7,13 +7,13 @@ import {
   where,
   onSnapshot,
   orderBy,
-  limit, // Asegúrate de importar limit
+  limit,
   doc,
 } from "firebase/firestore";
 
-// =============================
-// 🧾 PRODUCTOS (CLIENTE)
-// =============================
+// ==========================================
+// 🧾 PRODUCTOS (VISTA CLIENTE - CON FILTRO)
+// ==========================================
 export const useProductos = (restauranteId, categoria) => {
   const [productos, setProductos] = useState([]);
 
@@ -42,37 +42,46 @@ export const useProductos = (restauranteId, categoria) => {
   return productos;
 };
 
-// =============================
-// 📦 PEDIDOS (ADMIN) - TIEMPO REAL
-// =============================
+// ==========================================
+// 🛠️ PRODUCTOS (VISTA ADMIN - TODA LA LISTA)
+// ==========================================
+export const escucharProductos = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+
+  const q = query(
+    collection(db, "productos"),
+    where("restauranteId", "==", restauranteId),
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  });
+};
+
+// ==========================================
+// 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
+// ==========================================
 export const escucharPedidos = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
-  // Usamos la subcolección para mayor orden y velocidad
   const q = query(
     collection(db, "restaurantes", restauranteId, "pedidos"),
     orderBy("fecha", "desc"),
     limit(25),
   );
 
-  return onSnapshot(
-    q,
-    (snapshot) => {
-      const pedidos = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      callback(pedidos);
-    },
-    (error) => {
-      console.error("Error en Snapshot Pedidos:", error);
-    },
-  );
+  return onSnapshot(q, (snapshot) => {
+    const pedidos = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    callback(pedidos);
+  });
 };
 
-// =============================
+// ==========================================
 // 👤 USUARIOS (ADMIN)
-// =============================
+// ==========================================
 export const escucharUsuarios = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
