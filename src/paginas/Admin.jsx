@@ -274,6 +274,36 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Error", "No se pudo cambiar el estado", "error");
     }
   };
+  //funcion de caja
+  const calcularVentas = (listaPedidos, periodo) => {
+    const ahora = new Date();
+    const ventasFiltradas = listaPedidos.filter((p) => {
+      if (p.estado !== "entregado") return false;
+      if (!p.fecha?.toDate) return false;
+
+      const fechaPedido = p.fecha.toDate();
+
+      if (periodo === "dia") {
+        return fechaPedido.toDateString() === ahora.toDateString();
+      }
+      if (periodo === "semana") {
+        const sieteDiasAtras = new Date();
+        sieteDiasAtras.setDate(ahora.getDate() - 7);
+        return fechaPedido >= sieteDiasAtras;
+      }
+      if (periodo === "mes") {
+        return (
+          fechaPedido.getMonth() === ahora.getMonth() &&
+          fechaPedido.getFullYear() === ahora.getFullYear()
+        );
+      }
+      return true;
+    });
+
+    return ventasFiltradas
+      .reduce((acc, p) => acc + Number(p.total), 0)
+      .toFixed(2);
+  };
   //DISPONIBILIDAD
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
@@ -483,13 +513,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN PEDIDOS*/}
       {seccion === "pedidos" && (
         <div className="admin-section">
-          <h2 className="titulo-seccion">📦 Pedidos en Curso</h2>
+          <h2 className="titulo-seccion">📦 Operaciones en Tiempo Real</h2>
 
-          {pedidos.length === 0 ? (
-            <div className="no-data">No hay pedidos pendientes por ahora.</div>
+          {pedidos.filter((p) => p.estado !== "entregado").length === 0 ? (
+            <div className="no-data">
+              Todo en orden. No hay pedidos pendientes.
+            </div>
           ) : (
             <div className="grid-admin">
               {pedidos
+                .filter((p) => p.estado !== "entregado")
                 .sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
                 .map((p) => (
                   <div key={p.id} className="card-admin">
@@ -531,19 +564,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </p>
                     </div>
 
-                    {p.rating && (
-                      <div className="admin-review-note">
-                        <div className="admin-review-stars">
-                          {"★".repeat(p.rating)}
-                          {"☆".repeat(5 - p.rating)}
-                        </div>
-
-                        {p.resena && (
-                          <p className="admin-review-text">"{p.resena}"</p>
-                        )}
-                      </div>
-                    )}
-
                     <div className="acciones-pedido">
                       {p.estado === "pendiente" && (
                         <button
@@ -559,23 +579,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           className="btn-success"
                           onClick={() => cambiarEstado(p.id, "entregado")}
                         >
-                          ✅ Finalizar
+                          ✅ Finalizar y Cobrar
                         </button>
                       )}
 
-                      {p.estado === "entregado" && (
-                        <span
-                          style={{
-                            color: "#4CAF50",
-                            fontSize: "0.8rem",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Orden Completada {p.rating ? "con Reseña" : ""}
-                        </span>
-                      )}
-
-                      {p.estado !== "pendiente" && p.estado !== "entregado" && (
+                      {p.estado === "cocinando" && (
                         <button
                           className="btn-revertir"
                           onClick={() => cambiarEstado(p.id, "pendiente")}
@@ -591,6 +599,101 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
+      {/* SECCIÓN caja*/}
+      {seccion === "caja" && (
+        <div className="admin-section">
+          <h2 className="titulo-principal">💰 Control de Caja y Ventas</h2>
+
+          <div className="resumen-ventas-grid">
+            <div className="card-admin card-resumen">
+              <h3>Ventas del Día</h3>
+              <p className="monto-dia">S/ {calcularVentas(pedidos, "dia")}</p>
+            </div>
+            <div className="card-admin card-resumen">
+              <h3>Ventas de la Semana</h3>
+              <p className="monto-semana">
+                S/ {calcularVentas(pedidos, "semana")}
+              </p>
+            </div>
+            <div className="card-admin card-resumen">
+              <h3>Total Histórico</h3>
+              <p className="monto-total">
+                S/ {calcularVentas(pedidos, "total")}
+              </p>
+            </div>
+          </div>
+
+          <div className="tabla-container-pro">
+            <h3 className="titulo-principal detalle-transacciones-titulo">
+              📝 Detalle de Transacciones
+            </h3>
+
+            {pedidos.filter((p) => p.estado === "entregado").length === 0 ? (
+              <div className="no-data">Aún no hay ventas registradas.</div>
+            ) : (
+              <table className="tabla-admin-pro">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Tipo / Ref.</th>
+                    <th className="col-total-monto">Total</th>
+                    <th>Reseña</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pedidos
+                    .filter((p) => p.estado === "entregado")
+                    .sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
+                    .map((p) => (
+                      <tr key={p.id}>
+                        <td className="col-fecha">
+                          {p.fecha?.toDate
+                            ? p.fecha
+                                .toDate()
+                                .toLocaleString("es-PE", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                            : "Reciente"}
+                        </td>
+                        <td className="td-plato col-cliente-info">
+                          <div>
+                            <span>{p.cliente?.nombre || "Cliente"}</span>
+                            <small>{p.cliente?.telefono || ""}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="status-badge entregado badge-tipo-ref">
+                            {p.cliente?.tipo}: {p.cliente?.referencia}
+                          </span>
+                        </td>
+                        <td className="td-precio col-total-monto">
+                          S/ {Number(p.total).toFixed(2)}
+                        </td>
+                        <td>
+                          <div className="stars-rating">
+                            {"★".repeat(p.rating || 0)}
+                          </div>
+                          {p.resena && (
+                            <div
+                              className="admin-review-text-small"
+                              title={p.resena}
+                            >
+                              "{p.resena}"
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
       {/* SECCIÓN USUARIOS */}
       {seccion === "usuarios" && (
         <div className="admin-section">

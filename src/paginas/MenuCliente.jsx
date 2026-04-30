@@ -132,6 +132,16 @@ const MenuCliente = ({ restauranteId }) => {
   }, [avisoAgregado]);
   //funcion agregar al carrito
   const agregarAlCarrito = (producto) => {
+    if (datosPedidoRealtime?.estado === "cocinando") {
+      Swal.fire({
+        title: "Cocina trabajando",
+        text: "No puedes agregar más productos mientras tu pedido se está preparando.",
+        icon: "info",
+        confirmButtonColor: "#4CAF50",
+      });
+      return;
+    }
+
     setAvisoAgregado(producto.nombre);
     setCarrito((prev) => {
       const existe = prev.find((item) => item.id === producto.id);
@@ -181,7 +191,7 @@ const MenuCliente = ({ restauranteId }) => {
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
-            tipo: datosCliente?.tipo || "Local",
+            tipo: tipoPedido === "mesa" ? "Mesa" : "Delivery",
             referencia: datosCliente?.referencia || "",
             telefono: datosCliente?.telefono || "No provisto",
           },
@@ -275,7 +285,7 @@ const MenuCliente = ({ restauranteId }) => {
   };
   return (
     <div className="admin-container">
-      {/* Mensaje de aviso al centro) */}
+      {/* Mensaje de aviso) */}
       {avisoAgregado && (
         <div className="toast-agregado">
           <CheckCircle size={20} />
@@ -381,13 +391,32 @@ const MenuCliente = ({ restauranteId }) => {
               ) : (
                 <button
                   className="btn-pedir-mas"
+                  disabled={datosPedidoRealtime.estado === "cocinando"}
+                  style={{
+                    opacity:
+                      datosPedidoRealtime.estado === "cocinando" ? 0.5 : 1,
+                    cursor:
+                      datosPedidoRealtime.estado === "cocinando"
+                        ? "not-allowed"
+                        : "pointer",
+                  }}
                   onClick={() => {
+                    if (datosPedidoRealtime.estado === "cocinando") {
+                      Swal.fire(
+                        "Pedido en preparación",
+                        "No se pueden añadir más productos mientras la cocina está trabajando.",
+                        "info",
+                      );
+                      return;
+                    }
                     setCategoriaActual(null);
                     setVerCarrito(false);
                     window.scrollTo(0, 0);
                   }}
                 >
-                  + Pedir algo adicional
+                  {datosPedidoRealtime.estado === "cocinando"
+                    ? "⏳ Cocinando (No se puede añadir)"
+                    : "+ Pedir algo adicional"}
                 </button>
               )}
             </div>
@@ -643,25 +672,64 @@ const MenuCliente = ({ restauranteId }) => {
                   Atrás
                 </button>
                 <button
+                  type="submit"
                   className="btn-finalizar-pedido"
-                  onClick={() => {
-                    const idGuardado =
-                      pedidoActivoId ||
-                      localStorage.getItem(`ultimoPedido_${restauranteId}`);
-
-                    if (idGuardado) {
-                      enviarPedidoFinal();
-                    } else {
-                      setMostrarFormulario(true);
-                    }
-                  }}
+                  disabled={enviando}
                 >
-                  {pedidoActivoId
-                    ? "Añadir al Pedido Actual"
-                    : "Finalizar Pedido"}
+                  {enviando
+                    ? "Enviando..."
+                    : pedidoActivoId
+                      ? "Añadir al Pedido Actual"
+                      : "Confirmar Orden"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ✅ mostramos el Modal de Calificación */}
+      {mostrarModalCalificacion && (
+        <div className="modal-overlay">
+          <div className="modal-content-calificacion">
+            <h3>¿Qué te pareció tu pedido?</h3>
+
+            <div className="estrellas-container">
+              {[1, 2, 3, 4, 5].map((num) => (
+                <span
+                  key={num}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "2rem",
+                    color: num <= estrellas ? "#ffc107" : "#ccc",
+                  }}
+                  onClick={() => setEstrellas(num)}
+                >
+                  {num <= estrellas ? "★" : "☆"}
+                </span>
+              ))}
+            </div>
+
+            <textarea
+              placeholder="Tu opinión (opcional)..."
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              className="input-resena"
+            />
+
+            <div className="modal-botones">
+              <button
+                className="btn-enviar-resena"
+                onClick={() => finalizarYCalificar(estrellas, comentario)}
+              >
+                Enviar Reseña
+              </button>
+              <button
+                className="btn-omitir"
+                onClick={() => setMostrarModalCalificacion(false)}
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}

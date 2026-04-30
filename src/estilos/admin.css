@@ -331,3 +331,73 @@
 .btn-cancelar-pro:hover {
   background-color: #dc2626;
 }
+/* --- SECCIÓN CAJA: ESTRUCTURA Y RESUMEN --- */
+.resumen-ventas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.card-resumen {
+  text-align: center;
+  padding: 20px;
+}
+
+.card-resumen h3 {
+  color: #64748b;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.card-resumen .monto-dia { color: #22c55e; font-size: 1.5rem; font-weight: 700; }
+.card-resumen .monto-semana { color: #6366f1; font-size: 1.5rem; font-weight: 700; }
+.card-resumen .monto-total { color: #1e293b; font-size: 1.5rem; font-weight: 700; }
+
+/* --- TABLA DE TRANSACCIONES --- */
+.detalle-transacciones-titulo {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+}
+
+.col-fecha {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.col-cliente-info div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.col-cliente-info small {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.badge-tipo-ref {
+  font-size: 0.7rem;
+}
+
+.col-total-monto {
+  text-align: right;
+  padding-right: 30px !important;
+}
+
+.stars-rating {
+  color: #ffc107;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+}
+
+.admin-review-text-small {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

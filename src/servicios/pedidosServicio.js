@@ -24,6 +24,7 @@ export const gestionarPedido = async (
         "pedidos",
         pedidoId,
       );
+
       await updateDoc(pedidoExistenteRef, {
         items: datosPedido.items,
         total: datosPedido.total,
