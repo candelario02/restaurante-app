@@ -59,7 +59,14 @@ export const actualizarEstadoPedido = async (
       "pedidos",
       pedidoId,
     );
-    await updateDoc(pedidoRef, { estado: nuevoEstado });
+
+    const actualizacion = { estado: nuevoEstado };
+
+    if (nuevoEstado === "entregado") {
+      actualizacion.fechaEntrega = serverTimestamp();
+    }
+
+    await updateDoc(pedidoRef, actualizacion);
   } catch (error) {
     console.error("Error al actualizar estado:", error);
     throw error;

@@ -40,30 +40,25 @@ export const useProductos = (restauranteId, categoria) => {
   return productos;
 };
 
-// 🧾 PRODUCTOS (ADMIN)
-export const escucharProductos = (restauranteId, callback) => {
-  if (!restauranteId) {
-    console.warn("Sincronizando: Esperando restauranteId...");
-    return () => {};
-  }
-
-  
+export const escucharPedidos = (restauranteId, callback) => {
   const q = query(
-    collection(db, "productos"),
-    where("restauranteId", "==", restauranteId)
-   
+    collection(db, "restaurantes", restauranteId, "pedidos"),
+    orderBy("fecha", "desc"), 
+    limit(20), 
   );
 
   return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  }, (error) => {
-    console.error("Error en Snapshot Productos:", error.code, error.message);
+    const pedidos = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    callback(pedidos);
   });
 };
 
 // 👤 USUARIOS
 export const escucharUsuarios = (restauranteId, callback) => {
-  if (!restauranteId) return () => {}; 
+  if (!restauranteId) return () => {};
 
   const q = query(
     collection(db, "usuarios"),
@@ -77,7 +72,7 @@ export const escucharUsuarios = (restauranteId, callback) => {
 
 // 📦 PEDIDOS
 export const escucharPedidos = (restauranteId, callback) => {
-  if (!restauranteId) return () => {}; 
+  if (!restauranteId) return () => {};
 
   const q = query(
     collection(db, "pedidos"),

@@ -484,70 +484,74 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {seccion === "pedidos" && (
         <div className="admin-section">
           <h2 className="titulo-seccion">📦 Pedidos en Curso</h2>
-          <div className="grid-admin">
-            {pedidos.map((p) => (
-              <div key={p.id} className="card-admin">
-                <div className="card-header">
-                  <strong>{p.cliente?.nombre || "Cliente"}</strong>
-                  <span className={`status-badge ${p.estado}`}>
-                    {p.estado.toUpperCase()}
-                  </span>
-                </div>
 
-                <div className="items-pedido">
-                  {p.items?.map((item, index) => (
-                    <p key={index}>
-                      {item.cantidad}x {item.nombre}
-                    </p>
-                  ))}
-                  <hr />
-                  <p>
-                    <strong>Total: S/ {p.total}</strong>
-                  </p>
-                </div>
+          {pedidos.length === 0 ? (
+            <div className="no-data">No hay pedidos pendientes por ahora.</div>
+          ) : (
+            <div className="grid-admin">
+              {pedidos
+                .sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
+                .map((p) => (
+                  <div key={p.id} className="card-admin">
+                    <div className="card-header">
+                      <div>
+                        <strong>{p.cliente?.nombre || "Cliente"}</strong>
+                        <p style={{ fontSize: "0.8rem", color: "#666" }}>
+                          {p.cliente?.tipo === "Mesa"
+                            ? `📍 Mesa: ${p.cliente?.referencia}`
+                            : `🛵 Delivery`}
+                        </p>
+                      </div>
+                      <span className={`status-badge ${p.estado}`}>
+                        {p.estado.toUpperCase()}
+                      </span>
+                    </div>
 
-                <div
-                  className="acciones-pedido"
-                  style={{ display: "flex", gap: "10px", marginTop: "10px" }}
-                >
-                  {p.estado === "pendiente" && (
-                    <button
-                      className="btn-primary"
-                      onClick={() => cambiarEstado(p.id, "cocinando")}
-                    >
-                      👨‍🍳 Iniciar Cocina
-                    </button>
-                  )}
+                    <div className="items-pedido">
+                      {p.items?.map((item, index) => (
+                        <p key={index} className="item-fila">
+                          <span className="cantidad">{item.cantidad}x</span>
+                          <span className="nombre">{item.nombre}</span>
+                        </p>
+                      ))}
+                      <hr />
+                      <p className="total-pedido">
+                        <strong>Total: S/ {Number(p.total).toFixed(2)}</strong>
+                      </p>
+                    </div>
 
-                  {p.estado === "cocinando" && (
-                    <button
-                      className="btn-success"
-                      onClick={() => cambiarEstado(p.id, "entregado")}
-                    >
-                      ✅ Entregar Pedido
-                    </button>
-                  )}
+                    <div className="acciones-pedido">
+                      {p.estado === "pendiente" && (
+                        <button
+                          className="btn-primary"
+                          onClick={() => cambiarEstado(p.id, "cocinando")}
+                        >
+                          👨‍🍳 Preparar
+                        </button>
+                      )}
 
-                  {p.estado !== "entregado" && (
-                    <button
-                      className="btn-cancel"
-                      onClick={() => cambiarEstado(p.id, "pendiente")}
-                      style={{
-                        background: "#eee",
-                        color: "#666",
-                        border: "none",
-                        padding: "5px 10px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Revertir
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                      {p.estado === "cocinando" && (
+                        <button
+                          className="btn-success"
+                          onClick={() => cambiarEstado(p.id, "entregado")}
+                        >
+                          ✅ Finalizar
+                        </button>
+                      )}
+
+                      {p.estado !== "pendiente" && p.estado !== "entregado" && (
+                        <button
+                          className="btn-revertir"
+                          onClick={() => cambiarEstado(p.id, "pendiente")}
+                        >
+                          ↩️ Revertir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 

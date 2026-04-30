@@ -102,16 +102,7 @@ const MenuCliente = ({ restauranteId }) => {
 
     const unsubscribe = onSnapshot(pedidoRef, (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        setDatosPedidoRealtime({ id: docSnap.id, ...data });
-
-        if (data.estado === "entregado") {
-          setTimeout(() => {
-            localStorage.removeItem(`ultimoPedido_${restauranteId}`);
-            setPedidoActivoId(null);
-            setDatosPedidoRealtime(null);
-          }, 30000);
-        }
+        setDatosPedidoRealtime({ id: docSnap.id, ...docSnap.data() });
       } else {
         setPedidoActivoId(null);
         localStorage.removeItem(`ultimoPedido_${restauranteId}`);
@@ -156,7 +147,6 @@ const MenuCliente = ({ restauranteId }) => {
 
     try {
       setEnviando(true);
-
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
@@ -169,14 +159,19 @@ const MenuCliente = ({ restauranteId }) => {
       }));
 
       let pedidoParaFirebase;
+      if (idExistente && !datosPedidoRealtime) {
+        throw new Error(
+          "Sincronizando con el servidor... intenta de nuevo en un segundo.",
+        );
+      }
 
       if (idExistente && datosPedidoRealtime) {
         pedidoParaFirebase = {
           items: [...datosPedidoRealtime.items, ...nuevosItems],
-          total: datosPedidoRealtime.total + total,
+          total: Number(datosPedidoRealtime.total) + Number(total),
         };
       } else {
-        // ✅ CASO: NUEVO PEDIDO
+        // ✅ NUEVO PEDIDO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -185,18 +180,17 @@ const MenuCliente = ({ restauranteId }) => {
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
-          total: total,
+          total: Number(total),
+          estado: "pendiente",
         };
       }
 
-      // Llamamos a la función unificada
       const idResultado = await gestionarPedido(
         restauranteId,
         pedidoParaFirebase,
         idExistente,
       );
 
-      // Guardamos persistencia
       if (!idExistente) {
         localStorage.setItem(`ultimoPedido_${restauranteId}`, idResultado);
         setPedidoActivoId(idResultado);
@@ -204,16 +198,15 @@ const MenuCliente = ({ restauranteId }) => {
 
       Swal.fire(
         "¡Éxito!",
-        idExistente ? "Se sumó a tu cuenta." : "Orden enviada a cocina.",
+        idExistente ? "Se sumó a tu cuenta." : "Orden enviada.",
         "success",
       );
-
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
     } catch (error) {
-      console.error("Error crítico:", error);
-      Swal.fire("Error", "No se pudo procesar tu pedido.", "error");
+      console.error("Error:", error);
+      Swal.fire("Aviso", error.message || "No se pudo procesar.", "warning");
     } finally {
       setEnviando(false);
     }
@@ -322,7 +315,11 @@ const MenuCliente = ({ restauranteId }) => {
 
             <button
               className="btn-pedir-mas"
-              onClick={() => setVerCarrito(false)}
+              onClick={() => {
+                setCategoriaActual(null);
+                setVerCarrito(false);
+                window.scrollTo(0, 0);
+              }}
             >
               + Pedir algo adicional
             </button>
