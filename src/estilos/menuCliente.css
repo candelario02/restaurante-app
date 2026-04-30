@@ -230,20 +230,37 @@
 }
 
 .btn-finalizar-pedido {
-  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: white;
-  border: none;
-  padding: 14px;
+  padding: 16px 20px;
   border-radius: 12px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
   width: 100%;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-  transition: transform 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .btn-finalizar-pedido:hover {
-  transform: scale(1.02);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+.btn-finalizar-pedido:active {
+  transform: translateY(0);
+}
+
+.btn-finalizar-pedido.active {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .btn-pagar {

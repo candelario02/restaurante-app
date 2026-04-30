@@ -7,26 +7,45 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// ✅ 1. Crear pedido en la subcolección del restaurante
-export const crearPedido = async (restauranteId, datosPedido) => {
+// ✅ SOLUCIÓN ÚNICA: Maneja creación y actualización
+export const gestionarPedido = async (
+  restauranteId,
+  datosPedido,
+  pedidoId = null,
+) => {
   try {
     const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
 
-    const docRef = await addDoc(pedidosRef, {
-      ...datosPedido,
-      restauranteId,
-      fecha: serverTimestamp(),
-      estado: "pendiente",
-    });
-
-    return docRef.id;
+    if (pedidoId) {
+      const pedidoExistenteRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "pedidos",
+        pedidoId,
+      );
+      await updateDoc(pedidoExistenteRef, {
+        items: datosPedido.items,
+        total: datosPedido.total,
+        fechaActualizacion: serverTimestamp(),
+      });
+      return pedidoId;
+    } else {
+      const docRef = await addDoc(pedidosRef, {
+        ...datosPedido,
+        restauranteId,
+        fecha: serverTimestamp(),
+        estado: "pendiente",
+      });
+      return docRef.id;
+    }
   } catch (error) {
-    console.error("Error en crearPedido:", error);
+    console.error("Error en la gestión del pedido:", error);
     throw error;
   }
 };
 
-// ✅ 2. Actualizar estado (Cocinando, Entregado, etc.)
+// ✅ Mantener para el Admin (Cambiar a Cocinando/Entregado)
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
@@ -43,33 +62,6 @@ export const actualizarEstadoPedido = async (
     await updateDoc(pedidoRef, { estado: nuevoEstado });
   } catch (error) {
     console.error("Error al actualizar estado:", error);
-    throw error;
-  }
-};
-
-// ✅ 3. Agregar nuevos productos a un pedido existente
-export const agregarItemsAlPedido = async (
-  restauranteId,
-  pedidoId,
-  nuevosItems,
-  nuevoTotal,
-) => {
-  try {
-    const pedidoRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "pedidos",
-      pedidoId,
-    );
-
-    await updateDoc(pedidoRef, {
-      items: nuevosItems, 
-      total: nuevoTotal,
-      fechaActualizacion: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error("Error al añadir items:", error);
     throw error;
   }
 };

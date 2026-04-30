@@ -157,60 +157,63 @@ const MenuCliente = ({ restauranteId }) => {
     try {
       setEnviando(true);
 
-      if (pedidoActivoId && datosPedidoRealtime) {
-        const itemsActualizados = [
-          ...datosPedidoRealtime.items,
-          ...carrito.map((item) => ({
-            id: item.id,
-            nombre: item.nombre,
-            precio: Number(item.precio),
-            cantidad: item.cantidad,
-            subtotal: Number(item.precio) * item.cantidad,
-          })),
-        ];
+      const idExistente =
+        pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
-        const nuevoTotal = datosPedidoRealtime.total + total;
+      const nuevosItems = carrito.map((item) => ({
+        id: item.id,
+        nombre: item.nombre,
+        precio: Number(item.precio),
+        cantidad: item.cantidad,
+        subtotal: Number(item.precio) * item.cantidad,
+      }));
 
-        await agregarItemsAlPedido(
-          restauranteId,
-          pedidoActivoId,
-          itemsActualizados,
-          nuevoTotal,
-        );
+      let pedidoParaFirebase;
 
-        Swal.fire("¡Añadido!", "Se sumó a tu cuenta actual.", "success");
-      } else {
-        const pedidoParaFirebase = {
-          cliente: {
-            nombre: datosCliente.nombre,
-            tipo: datosCliente.tipo,
-            referencia: datosCliente.referencia || datosCliente.mesa || "",
-            telefono: datosCliente.telefono || "No provisto",
-          },
-          items: carrito.map((item) => ({
-            id: item.id,
-            nombre: item.nombre,
-            precio: Number(item.precio),
-            cantidad: item.cantidad,
-            subtotal: Number(item.precio) * item.cantidad,
-          })),
-          total: total,
-          estado: "pendiente",
+      if (idExistente && datosPedidoRealtime) {
+        pedidoParaFirebase = {
+          items: [...datosPedidoRealtime.items, ...nuevosItems],
+          total: datosPedidoRealtime.total + total,
         };
-
-        const idNuevo = await crearPedido(restauranteId, pedidoParaFirebase);
-        localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
-        setPedidoActivoId(idNuevo);
-
-        Swal.fire("¡Pedido Enviado!", "Tu orden está en cocina.", "success");
+      } else {
+        // ✅ CASO: NUEVO PEDIDO
+        pedidoParaFirebase = {
+          cliente: {
+            nombre: datosCliente?.nombre || "Cliente",
+            tipo: datosCliente?.tipo || "Local",
+            referencia: datosCliente?.referencia || datosCliente?.mesa || "",
+            telefono: datosCliente?.telefono || "No provisto",
+          },
+          items: nuevosItems,
+          total: total,
+        };
       }
+
+      // Llamamos a la función unificada
+      const idResultado = await gestionarPedido(
+        restauranteId,
+        pedidoParaFirebase,
+        idExistente,
+      );
+
+      // Guardamos persistencia
+      if (!idExistente) {
+        localStorage.setItem(`ultimoPedido_${restauranteId}`, idResultado);
+        setPedidoActivoId(idResultado);
+      }
+
+      Swal.fire(
+        "¡Éxito!",
+        idExistente ? "Se sumó a tu cuenta." : "Orden enviada a cocina.",
+        "success",
+      );
 
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
     } catch (error) {
       console.error("Error crítico:", error);
-      Swal.fire("Error", "No se pudo procesar.", "error");
+      Swal.fire("Error", "No se pudo procesar tu pedido.", "error");
     } finally {
       setEnviando(false);
     }
@@ -575,14 +578,14 @@ const MenuCliente = ({ restauranteId }) => {
                   Atrás
                 </button>
                 <button
-                  className="btn-finalizar"
+                  className="btn-finalizar-pedido"
                   onClick={() => {
                     const idGuardado =
                       pedidoActivoId ||
                       localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
                     if (idGuardado) {
-                      enviarPedidoFinal(); 
+                      enviarPedidoFinal();
                     } else {
                       setMostrarFormulario(true);
                     }
