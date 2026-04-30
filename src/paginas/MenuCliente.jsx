@@ -10,8 +10,8 @@ import {
 } from "../servicios/productosServicio";
 
 import {
-  crearPedido,
-  agregarItemsAlPedido,
+  gestionarPedido,
+  actualizarEstadoPedido,
 } from "../servicios/pedidosServicio";
 
 import {
