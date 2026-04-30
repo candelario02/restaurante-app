@@ -327,8 +327,8 @@ const MenuCliente = ({ restauranteId }) => {
         </div>
       )}
 
-      {/* ✅ VISTA DE CATEGORÍAS principal*/}
-      {!pedidoActivoId && !categoriaActual && (
+      {/* SESION CATEGORÍAS principal*/}
+      {!categoriaActual && (
         <div className="view-principal">
           <header className="menu-header-dinamico">
             <h1>
