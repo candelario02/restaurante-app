@@ -12,6 +12,7 @@ import {
 import {
   gestionarPedido,
   actualizarEstadoPedido,
+  enviarResenaPedido,
 } from "../servicios/pedidosServicio";
 
 import {
@@ -52,7 +53,10 @@ const MenuCliente = ({ restauranteId }) => {
   const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
   const [pedidoActivo, setPedidoActivo] = useState(null);
-
+  const [mostrarModalCalificacion, setMostrarModalCalificacion] =
+    useState(false);
+  const [estrellas, setEstrellas] = useState(0);
+  const [comentario, setComentario] = useState("");
   const [total, setTotal] = useState(0);
 
   const [pedidoActivoId, setPedidoActivoId] = useState(
@@ -167,8 +171,10 @@ const MenuCliente = ({ restauranteId }) => {
 
       if (idExistente && datosPedidoRealtime) {
         pedidoParaFirebase = {
+          cliente: datosPedidoRealtime.cliente,
           items: [...datosPedidoRealtime.items, ...nuevosItems],
           total: Number(datosPedidoRealtime.total) + Number(total),
+          estado: datosPedidoRealtime.estado,
         };
       } else {
         // ✅ NUEVO PEDIDO
@@ -176,12 +182,13 @@ const MenuCliente = ({ restauranteId }) => {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
             tipo: datosCliente?.tipo || "Local",
-            referencia: datosCliente?.referencia || datosCliente?.mesa || "",
+            referencia: datosCliente?.referencia || "",
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
           total: Number(total),
           estado: "pendiente",
+          fecha: new Date().toISOString(),
         };
       }
 
@@ -201,14 +208,40 @@ const MenuCliente = ({ restauranteId }) => {
         idExistente ? "Se sumó a tu cuenta." : "Orden enviada.",
         "success",
       );
+
       setCarrito([]);
+      setCategoriaActual(null);
       setVerCarrito(false);
       setMostrarFormulario(false);
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error("Error:", error);
       Swal.fire("Aviso", error.message || "No se pudo procesar.", "warning");
     } finally {
       setEnviando(false);
+    }
+  };
+
+  //funcion para calificar
+  const finalizarYCalificar = async (estrellas, texto) => {
+    try {
+      await enviarResenaPedido(restauranteId, pedidoActivoId, estrellas, texto);
+
+      localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+
+      setPedidoActivoId(null);
+      setDatosPedidoRealtime(null);
+      setMostrarModalCalificacion(false);
+
+      Swal.fire({
+        title: "¡Gracias!",
+        text: "Tu opinión nos ayuda a mejorar.",
+        icon: "success",
+        confirmButtonColor: "#4CAF50",
+      });
+    } catch (error) {
+      console.error("Error al finalizar:", error);
+      Swal.fire("Error", "No pudimos guardar tu reseña", "error");
     }
   };
   //funcion restar el carrito
@@ -264,7 +297,7 @@ const MenuCliente = ({ restauranteId }) => {
           </button>
         )}
 
-      {/* ✅ SEGUIMIENTO DE PEDIDO  */}
+      {/* ✅ SEGUIMIENTO DE PEDIDO ACTUALIZADO */}
       {pedidoActivoId && datosPedidoRealtime && (
         <div className="view-principal">
           <div className="seguimiento-box">
@@ -278,6 +311,7 @@ const MenuCliente = ({ restauranteId }) => {
             <div className="stepper-container">
               <div className="stepper-line"></div>
 
+              {/* Paso 1: Recibido */}
               <div
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 1 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 1 ? "completed" : ""}`}
               >
@@ -287,6 +321,7 @@ const MenuCliente = ({ restauranteId }) => {
                 <span className="step-label">Recibido</span>
               </div>
 
+              {/* Paso 2: Cocina */}
               <div
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
               >
@@ -296,10 +331,13 @@ const MenuCliente = ({ restauranteId }) => {
                 <span className="step-label">Cocina</span>
               </div>
 
+              {/* Paso 3: Entregado */}
               <div
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 3 ? "active" : ""}`}
               >
-                <div className="step-circle">3</div>
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) >= 3 ? "✓" : "3"}
+                </div>
                 <span className="step-label">Entregado</span>
               </div>
             </div>
@@ -313,16 +351,46 @@ const MenuCliente = ({ restauranteId }) => {
                 "¡Listo! Que lo disfrutes."}
             </p>
 
-            <button
-              className="btn-pedir-mas"
-              onClick={() => {
-                setCategoriaActual(null);
-                setVerCarrito(false);
-                window.scrollTo(0, 0);
-              }}
-            >
-              + Pedir algo adicional
-            </button>
+            <div className="seguimiento-acciones">
+              {datosPedidoRealtime.estado === "entregado" ? (
+                <button
+                  className="btn-finalizar-calificar"
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#4CAF50",
+                    color: "white",
+                    padding: "15px",
+                    borderRadius: "12px",
+                    border: "none",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 10px rgba(76, 175, 80, 0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                  }}
+                  onClick={() => {
+                    // Esta función activará el modal de estrellas que veremos después
+                    setMostrarModalCalificacion(true);
+                  }}
+                >
+                  ⭐ Finalizar y Calificar
+                </button>
+              ) : (
+                <button
+                  className="btn-pedir-mas"
+                  onClick={() => {
+                    setCategoriaActual(null);
+                    setVerCarrito(false);
+                    window.scrollTo(0, 0);
+                  }}
+                >
+                  + Pedir algo adicional
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

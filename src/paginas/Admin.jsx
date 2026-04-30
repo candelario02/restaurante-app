@@ -480,7 +480,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {/* SECCIÓN PEDIDOS */}
+      {/* SECCIÓN PEDIDOS*/}
       {seccion === "pedidos" && (
         <div className="admin-section">
           <h2 className="titulo-seccion">📦 Pedidos en Curso</h2>
@@ -496,11 +496,22 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     <div className="card-header">
                       <div>
                         <strong>{p.cliente?.nombre || "Cliente"}</strong>
-                        <p style={{ fontSize: "0.8rem", color: "#666" }}>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#666",
+                            margin: "4px 0",
+                          }}
+                        >
                           {p.cliente?.tipo === "Mesa"
                             ? `📍 Mesa: ${p.cliente?.referencia}`
-                            : `🛵 Delivery`}
+                            : `🛵 Delivery: ${p.cliente?.referencia}`}
                         </p>
+                        {p.cliente?.telefono && (
+                          <p style={{ fontSize: "0.8rem", color: "#007bff" }}>
+                            📞 {p.cliente.telefono}
+                          </p>
+                        )}
                       </div>
                       <span className={`status-badge ${p.estado}`}>
                         {p.estado.toUpperCase()}
@@ -520,6 +531,19 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </p>
                     </div>
 
+                    {p.rating && (
+                      <div className="admin-review-note">
+                        <div className="admin-review-stars">
+                          {"★".repeat(p.rating)}
+                          {"☆".repeat(5 - p.rating)}
+                        </div>
+
+                        {p.resena && (
+                          <p className="admin-review-text">"{p.resena}"</p>
+                        )}
+                      </div>
+                    )}
+
                     <div className="acciones-pedido">
                       {p.estado === "pendiente" && (
                         <button
@@ -537,6 +561,18 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         >
                           ✅ Finalizar
                         </button>
+                      )}
+
+                      {p.estado === "entregado" && (
+                        <span
+                          style={{
+                            color: "#4CAF50",
+                            fontSize: "0.8rem",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Orden Completada {p.rating ? "con Reseña" : ""}
+                        </span>
                       )}
 
                       {p.estado !== "pendiente" && p.estado !== "entregado" && (
