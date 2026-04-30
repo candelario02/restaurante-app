@@ -44,7 +44,33 @@ export const gestionarPedido = async (
     throw error;
   }
 };
+// Registra la calificación y comentario del cliente
+export const enviarResenaPedido = async (
+  restauranteId,
+  pedidoId,
+  calificacion,
+  comentario,
+) => {
+  try {
+    const pedidoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "pedidos",
+      pedidoId,
+    );
 
+    await updateDoc(pedidoRef, {
+      rating: calificacion,
+      resena: comentario,
+      fechaResena: serverTimestamp(),
+      finalizadoCliente: true,
+    });
+  } catch (error) {
+    console.error("Error al enviar reseña:", error);
+    throw error;
+  }
+};
 // ✅ Mantener para el Admin (Cambiar a Cocinando/Entregado)
 export const actualizarEstadoPedido = async (
   restauranteId,
