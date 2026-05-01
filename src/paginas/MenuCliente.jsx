@@ -503,13 +503,6 @@ const MenuCliente = ({ restauranteId }) => {
           <div className="carrito-modal">
             <div className="carrito-header">
               <h2>🛒 Tu Pedido</h2>
-              <button
-                className="btn-eliminar-item"
-                style={{ background: "transparent" }}
-                onClick={() => setVerCarrito(false)}
-              >
-                ✕
-              </button>
             </div>
 
             <div className="carrito-items">

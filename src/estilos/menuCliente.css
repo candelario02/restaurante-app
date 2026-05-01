@@ -327,14 +327,6 @@
 
 .item-cantidad { font-weight: 800; min-width: 15px; text-align: center; }
 
-.btn-eliminar-item {
-  color: #ef4444;
-  background: #fee2e2;
-  border: none;
-  padding: 6px;
-  border-radius: 8px;
-  cursor: pointer;
-}
 
 .btn-finalizar-pedido {
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -420,13 +412,13 @@
   font-size: 1rem;
 }
 
-.btn-carrito-flotante {
+.carrito-flotante {
   position: fixed;
   bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--primary);
-  color: white;
+  color: rgb(6, 8, 131);
   padding: 15px 30px;
   border-radius: 50px;
   box-shadow: var(--shadow-lg);
