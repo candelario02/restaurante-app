@@ -396,8 +396,7 @@
   font-size: 0.75rem;
   color: #94a3b8;
   font-style: italic;
-  max-width: 150px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 200px; 
+  display: block;
+  word-wrap: break-word; 
 }

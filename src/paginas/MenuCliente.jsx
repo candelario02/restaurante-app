@@ -161,6 +161,7 @@ const MenuCliente = ({ restauranteId }) => {
 
     try {
       setEnviando(true);
+
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
@@ -173,6 +174,7 @@ const MenuCliente = ({ restauranteId }) => {
       }));
 
       let pedidoParaFirebase;
+
       if (idExistente && !datosPedidoRealtime) {
         throw new Error(
           "Sincronizando con el servidor... intenta de nuevo en un segundo.",
@@ -184,10 +186,10 @@ const MenuCliente = ({ restauranteId }) => {
           cliente: datosPedidoRealtime.cliente,
           items: [...datosPedidoRealtime.items, ...nuevosItems],
           total: Number(datosPedidoRealtime.total) + Number(total),
-          estado: datosPedidoRealtime.estado,
+          estado: "pendiente",
         };
       } else {
-        // ✅ NUEVO PEDIDO
+        // ✅ CASO: NUEVO PEDIDO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -215,18 +217,22 @@ const MenuCliente = ({ restauranteId }) => {
 
       Swal.fire(
         "¡Éxito!",
-        idExistente ? "Se sumó a tu cuenta." : "Orden enviada.",
+        idExistente
+          ? "Se sumó a tu cuenta correctamente."
+          : "Orden enviada con éxito.",
         "success",
       );
 
       setCarrito([]);
-      setCategoriaActual(null);
       setVerCarrito(false);
       setMostrarFormulario(false);
-      window.scrollTo(0, 0);
     } catch (error) {
-      console.error("Error:", error);
-      Swal.fire("Aviso", error.message || "No se pudo procesar.", "warning");
+      console.error("Error en enviarPedidoFinal:", error);
+      Swal.fire(
+        "Aviso",
+        error.message || "No se pudo procesar el pedido.",
+        "warning",
+      );
     } finally {
       setEnviando(false);
     }
@@ -391,32 +397,13 @@ const MenuCliente = ({ restauranteId }) => {
               ) : (
                 <button
                   className="btn-pedir-mas"
-                  disabled={datosPedidoRealtime.estado === "cocinando"}
-                  style={{
-                    opacity:
-                      datosPedidoRealtime.estado === "cocinando" ? 0.5 : 1,
-                    cursor:
-                      datosPedidoRealtime.estado === "cocinando"
-                        ? "not-allowed"
-                        : "pointer",
-                  }}
                   onClick={() => {
-                    if (datosPedidoRealtime.estado === "cocinando") {
-                      Swal.fire(
-                        "Pedido en preparación",
-                        "No se pueden añadir más productos mientras la cocina está trabajando.",
-                        "info",
-                      );
-                      return;
-                    }
-                    setCategoriaActual(null);
                     setVerCarrito(false);
-                    window.scrollTo(0, 0);
+                    setCategoriaActual(null);
+                    window.scrollTo({ top: 600, behavior: "smooth" });
                   }}
                 >
-                  {datosPedidoRealtime.estado === "cocinando"
-                    ? "⏳ Cocinando (No se puede añadir)"
-                    : "+ Pedir algo adicional"}
+                  + Pedir algo adicional
                 </button>
               )}
             </div>
@@ -579,7 +566,6 @@ const MenuCliente = ({ restauranteId }) => {
                   disabled={carrito.length === 0 || enviando}
                   onClick={() => {
                     setVerCarrito(false);
-
                     if (pedidoActivoId) {
                       enviarPedidoFinal();
                     } else {

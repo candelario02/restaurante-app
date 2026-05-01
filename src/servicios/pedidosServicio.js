@@ -28,6 +28,7 @@ export const gestionarPedido = async (
       await updateDoc(pedidoExistenteRef, {
         items: datosPedido.items,
         total: datosPedido.total,
+        estado: "pendiente",
         fechaActualizacion: serverTimestamp(),
       });
       return pedidoId;
