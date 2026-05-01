@@ -300,18 +300,14 @@ const MenuCliente = ({ restauranteId }) => {
       )}
 
       {/* ✅ BOTÓN CARRITO FLOTANTE */}
-      {carrito.length > 0 &&
-        !verCarrito &&
-        !mostrarFormulario &&
-        !pedidoActivoId && (
-          <button
-            className="btn-carrito-flotante"
-            onClick={() => setVerCarrito(true)}
-          >
-            <ShoppingCart size={20} />
-            <span>Ver Mi Orden (S/ {total.toFixed(2)})</span>
-          </button>
-        )}
+      {carrito.length > 0 && !mostrarFormulario && (
+        <button
+          className="carrito-flotante"
+          onClick={() => setVerCarrito(true)}
+        >
+          <span>🛒 {carrito.length}</span>
+        </button>
+      )}
 
       {/* ✅ SEGUIMIENTO DE PEDIDO ACTUALIZADO */}
       {pedidoActivoId && datosPedidoRealtime && (
@@ -398,7 +394,7 @@ const MenuCliente = ({ restauranteId }) => {
                 <button
                   className="btn-pedir-mas"
                   onClick={() => {
-                    setVerCarrito(false);
+                    setVerCarrito(true);
                     setCategoriaActual(null);
                     window.scrollTo({ top: 600, behavior: "smooth" });
                   }}
@@ -683,11 +679,8 @@ const MenuCliente = ({ restauranteId }) => {
               {[1, 2, 3, 4, 5].map((num) => (
                 <span
                   key={num}
-                  style={{
-                    cursor: "pointer",
-                    fontSize: "2rem",
-                    color: num <= estrellas ? "#ffc107" : "#ccc",
-                  }}
+                  className="estrella-span"
+                  style={{ color: num <= estrellas ? "#ffc107" : "#ccc" }}
                   onClick={() => setEstrellas(num)}
                 >
                   {num <= estrellas ? "★" : "☆"}
@@ -696,24 +689,25 @@ const MenuCliente = ({ restauranteId }) => {
             </div>
 
             <textarea
-              placeholder="Tu opinión (opcional)..."
+              className="input-resena"
+              placeholder="Cuéntanos tu experiencia (opcional)..."
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
-              className="input-resena"
             />
 
-            <div className="modal-botones">
+            <div className="contenedor-botones-modal">
               <button
                 className="btn-enviar-resena"
                 onClick={() => finalizarYCalificar(estrellas, comentario)}
               >
-                Enviar Reseña
+                Enviar y Finalizar
               </button>
+
               <button
                 className="btn-omitir"
                 onClick={() => setMostrarModalCalificacion(false)}
               >
-                Cancelar
+                Omitir por ahora
               </button>
             </div>
           </div>
