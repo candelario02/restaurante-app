@@ -165,7 +165,6 @@ const MenuCliente = ({ restauranteId }) => {
 
     try {
       setEnviando(true);
-
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
@@ -179,21 +178,21 @@ const MenuCliente = ({ restauranteId }) => {
 
       let pedidoParaFirebase;
 
-      if (idExistente && !datosPedidoRealtime) {
-        throw new Error(
-          "Sincronizando con el servidor... intenta de nuevo en un segundo.",
-        );
-      }
-
       if (idExistente && datosPedidoRealtime) {
+        if (datosPedidoRealtime.estado === "cocinando") {
+          throw new Error(
+            "La cocina ya recibió tu orden. No se pueden realizar más cambios.",
+          );
+        }
+
         pedidoParaFirebase = {
-          cliente: datosPedidoRealtime.cliente,
-          items: [...datosPedidoRealtime.items, ...nuevosItems],
-          total: Number(datosPedidoRealtime.total) + Number(total),
+          ...datosPedidoRealtime,
+          items: nuevosItems,
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           estado: "pendiente",
         };
       } else {
-        // ✅ CASO: NUEVO PEDIDO
+        // CASO: NUEVO PEDIDO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -202,41 +201,31 @@ const MenuCliente = ({ restauranteId }) => {
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
-          total: Number(total),
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           estado: "pendiente",
           fecha: new Date().toISOString(),
         };
       }
 
-      const idResultado = await gestionarPedido(
-        restauranteId,
-        pedidoParaFirebase,
-        idExistente,
-      );
+      await gestionarPedido(restauranteId, pedidoParaFirebase, idExistente);
 
-      if (!idExistente) {
-        localStorage.setItem(`ultimoPedido_${restauranteId}`, idResultado);
-        setPedidoActivoId(idResultado);
-      }
-
-      Swal.fire(
-        "¡Éxito!",
-        idExistente
-          ? "Se sumó a tu cuenta correctamente."
+      await Swal.fire({
+        title: "¡Éxito!",
+        text: idExistente
+          ? "Tu pedido ha sido actualizado."
           : "Orden enviada con éxito.",
-        "success",
-      );
+        icon: "success",
+        timer: 2000,
+      });
 
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
+
+      if (!idExistente) {
+      }
     } catch (error) {
-      console.error("Error en enviarPedidoFinal:", error);
-      Swal.fire(
-        "Aviso",
-        error.message || "No se pudo procesar el pedido.",
-        "warning",
-      );
+      Swal.fire("Aviso", error.message, "warning");
     } finally {
       setEnviando(false);
     }
@@ -327,7 +316,9 @@ const MenuCliente = ({ restauranteId }) => {
             <div className="seguimiento-header">
               <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
               <span className="pedido-id-tag">
-                ID: #{pedidoActivoId.slice(-5)}
+                👤{" "}
+                {datosPedidoRealtime?.cliente?.nombre ||
+                  `ID: #${pedidoActivoId?.slice(-5)}`}
               </span>
             </div>
 
@@ -378,24 +369,7 @@ const MenuCliente = ({ restauranteId }) => {
               {datosPedidoRealtime.estado === "entregado" ? (
                 <button
                   className="btn-finalizar-calificar"
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#4CAF50",
-                    color: "white",
-                    padding: "15px",
-                    borderRadius: "12px",
-                    border: "none",
-                    fontWeight: "bold",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 10px rgba(76, 175, 80, 0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "10px",
-                  }}
                   onClick={() => {
-                    // Esta función activará el modal de estrellas que veremos después
                     setMostrarModalCalificacion(true);
                   }}
                 >
@@ -417,7 +391,7 @@ const MenuCliente = ({ restauranteId }) => {
 
                     const { isConfirmed } = await Swal.fire({
                       title: "¡Perfecto!",
-                      text: "Ahora puedes seleccionar los productos que quieras adicionar a tu pedido actual.",
+                      text: "Ahora puedes seleccionar productos para adicionar o modificar tu pedido actual.",
                       icon: "info",
                       confirmButtonText: "Entendido",
                       confirmButtonColor: "#4CAF50",
@@ -433,7 +407,7 @@ const MenuCliente = ({ restauranteId }) => {
                 >
                   {datosPedidoRealtime?.estado === "pendiente"
                     ? "+ Pedir algo adicional"
-                    : "Pedido en proceso..."}
+                    : "👨‍🍳 Cocina trabajando..."}
                 </button>
               )}
             </div>
@@ -580,7 +554,12 @@ const MenuCliente = ({ restauranteId }) => {
                 <button
                   className="btn-agregar"
                   style={{ background: "#666" }}
-                  onClick={() => setVerCarrito(false)}
+                  onClick={() => {
+                    if (datosPedidoRealtime) {
+                      setCarrito(datosPedidoRealtime.items);
+                    }
+                    setVerCarrito(false);
+                  }}
                 >
                   Cerrar
                 </button>

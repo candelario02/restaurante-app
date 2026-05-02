@@ -568,6 +568,34 @@
 .btn-pedir-mas:active {
   transform: translateY(0);
 }
+/* Estilo para el botón de finalizar y calificar */
+.btn-finalizar-calificar {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.3s ease; 
+}
+
+.btn-finalizar-calificar:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+}
+
+.btn-finalizar-calificar:active {
+  transform: translateY(0);
+}
 @keyframes popInAndOut {
   0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
   15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
