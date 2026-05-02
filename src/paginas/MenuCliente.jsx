@@ -192,7 +192,6 @@ const MenuCliente = ({ restauranteId }) => {
           estado: "pendiente",
         };
       } else {
-        // CASO: NUEVO PEDIDO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -207,7 +206,11 @@ const MenuCliente = ({ restauranteId }) => {
         };
       }
 
-      await gestionarPedido(restauranteId, pedidoParaFirebase, idExistente);
+      const idNuevo = await gestionarPedido(
+        restauranteId,
+        pedidoParaFirebase,
+        idExistente,
+      );
 
       await Swal.fire({
         title: "¡Éxito!",
@@ -221,9 +224,14 @@ const MenuCliente = ({ restauranteId }) => {
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
+      setCategoriaActual(null);
 
-      if (!idExistente) {
+      if (!idExistente && idNuevo) {
+        setPedidoActivoId(idNuevo);
+        localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
       }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       Swal.fire("Aviso", error.message, "warning");
     } finally {
