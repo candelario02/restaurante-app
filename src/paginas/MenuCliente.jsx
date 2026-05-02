@@ -142,7 +142,11 @@ const MenuCliente = ({ restauranteId }) => {
       return;
     }
 
-    setAvisoAgregado(producto.nombre);
+    setAvisoAgregado(null);
+    setTimeout(() => {
+      setAvisoAgregado(`+ ${producto.nombre} añadido`);
+    }, 10);
+
     setCarrito((prev) => {
       const existe = prev.find((item) => item.id === producto.id);
       if (existe) {
@@ -274,7 +278,11 @@ const MenuCliente = ({ restauranteId }) => {
   const eliminarDelCarrito = (id) => {
     const itemEliminado = carrito.find((item) => item.id === id);
     setCarrito((prev) => prev.filter((item) => item.id !== id));
-    setAvisoAgregado(`${itemEliminado.nombre} eliminado`);
+
+    setAvisoAgregado(null);
+    setTimeout(() => {
+      setAvisoAgregado(`- ${itemEliminado.nombre} quitado`);
+    }, 10);
   };
   //funcion para seguimiento dinamico
   const getEtapa = (estado) => {
@@ -293,9 +301,12 @@ const MenuCliente = ({ restauranteId }) => {
     <div className="admin-container">
       {/* Mensaje de aviso) */}
       {avisoAgregado && (
-        <div className="toast-agregado">
+        <div
+          key={avisoAgregado}
+          className={`toast-agregado ${avisoAgregado.startsWith("-") ? "toast-error" : ""}`}
+        >
           <CheckCircle size={20} />
-          <span>{avisoAgregado} agregado</span>
+          <span>{avisoAgregado}</span>
         </div>
       )}
 
@@ -393,13 +404,36 @@ const MenuCliente = ({ restauranteId }) => {
               ) : (
                 <button
                   className="btn-pedir-mas"
-                  onClick={() => {
-                    setVerCarrito(true);
-                    setCategoriaActual(null);
-                    window.scrollTo({ top: 600, behavior: "smooth" });
+                  disabled={datosPedidoRealtime?.estado !== "pendiente"}
+                  onClick={async () => {
+                    if (datosPedidoRealtime?.estado !== "pendiente") {
+                      Swal.fire(
+                        "Aviso",
+                        "Tu pedido ya está en cocina y no se pueden añadir más productos.",
+                        "info",
+                      );
+                      return;
+                    }
+
+                    const { isConfirmed } = await Swal.fire({
+                      title: "¡Perfecto!",
+                      text: "Ahora puedes seleccionar los productos que quieras adicionar a tu pedido actual.",
+                      icon: "info",
+                      confirmButtonText: "Entendido",
+                      confirmButtonColor: "#4CAF50",
+                    });
+
+                    if (isConfirmed) {
+                      setCarrito([...datosPedidoRealtime.items]);
+                      setVerCarrito(true);
+                      setCategoriaActual(null);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
                   }}
                 >
-                  + Pedir algo adicional
+                  {datosPedidoRealtime?.estado === "pendiente"
+                    ? "+ Pedir algo adicional"
+                    : "Pedido en proceso..."}
                 </button>
               )}
             </div>
@@ -619,6 +653,10 @@ const MenuCliente = ({ restauranteId }) => {
                   required
                   className="input-pro"
                   type="number"
+                  onKeyDown={(e) =>
+                    ["e", "E", "+", "-", "."].includes(e.key) &&
+                    e.preventDefault()
+                  }
                 />
               ) : (
                 <>
@@ -634,6 +672,13 @@ const MenuCliente = ({ restauranteId }) => {
                     required
                     className="input-pro"
                     type="tel"
+                    pattern="[0-9]{9}"
+                    maxLength="9"
+                    onInput={(e) => {
+                      e.target.value = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 9);
+                    }}
                   />
                 </>
               )}
