@@ -48,7 +48,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
   const [userRol, setUserRol] = useState("mozo");
-  const [filtroCaja, setFiltroCaja] = useState("mes");
+  const [filtroCaja, setFiltroCaja] = useState("dia");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -627,36 +627,44 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {seccion === "caja" && (
         <div className="admin-section">
           <div className="admin-header-flex">
-            <h2 className="titulo-principal">💰 Control de Ventas</h2>
-            <div className="filtros-caja-container">
-              <select
-                value={filtroCaja}
-                onChange={(e) => setFiltroCaja(e.target.value)}
-                className="select-admin-filtro"
-              >
-                <option value="dia">Hoy</option>
-                <option value="semana">Semana</option>
-                <option value="mes">Mes Actual</option>
-                <option value="anio">Este Año</option>
-                <option value="total">Histórico</option>
-              </select>
-              <button
-                onClick={() =>
-                  exportarCajaExcel(
-                    obtenerEstadisticasCaja(pedidos, filtroCaja).filtrados,
-                    `Caja_${filtroCaja}`,
-                  )
-                }
-                className="btn-exportar-excel"
-              >
-                📊 Exportar Excel
-              </button>
+            <h2 className="titulo-principal">💰 Control de Caja y Ventas</h2>
+
+            {/* Selector con título para guía del admin */}
+            <div className="filtro-admin-wrapper">
+              <label className="label-filtro">Filtrar transacciones por:</label>
+              <div className="filtros-caja-container">
+                <select
+                  value={filtroCaja}
+                  onChange={(e) => setFiltroCaja(e.target.value)}
+                  className="select-admin-filtro"
+                >
+                  <option value="dia">Ventas del Día</option>
+                  <option value="semana">Ventas de la Semana</option>
+                  <option value="mes">Mes Actual</option>
+                  <option value="total">Histórico Total</option>
+                </select>
+                <button
+                  onClick={() =>
+                    exportarCajaExcel(
+                      obtenerEstadisticasCaja(pedidos, filtroCaja).filtrados,
+                      `Caja_${filtroCaja}`,
+                    )
+                  }
+                  className="btn-exportar-excel"
+                >
+                  📊 Exportar Excel
+                </button>
+              </div>
             </div>
           </div>
 
+          {/* Resumen de Cards - Estilo Dashboard */}
           <div className="resumen-ventas-grid">
             <div className="card-admin card-resumen">
-              <h3>Ventas en curso ({filtroCaja})</h3>
+              <h3>
+                VENTAS (
+                {filtroCaja === "dia" ? "HOY" : filtroCaja.toUpperCase()})
+              </h3>
               <p className="monto-dia">
                 S/ {obtenerEstadisticasCaja(pedidos, filtroCaja).monto}
               </p>
@@ -667,14 +675,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </div>
           </div>
 
+          <h3 className="subtitulo-tabla">📝 Detalle de Transacciones</h3>
           <div className="tabla-container-pro">
             <table className="tabla-admin-pro">
               <thead>
                 <tr>
-                  <th>Fecha</th>
-                  <th>Cliente</th>
-                  <th>Total</th>
-                  <th>Acción</th>
+                  <th>FECHA</th>
+                  <th>CLIENTE</th>
+                  <th>TOTAL</th>
+                  <th>RESEÑA</th>
+                  <th>ACCIÓN</th>
                 </tr>
               </thead>
               <tbody>
@@ -683,16 +693,33 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   .map((p) => (
                     <tr key={p.id}>
                       <td>
-                        {p.fecha?.toDate()?.toLocaleString("es-PE", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {p.fecha
+                          ?.toDate()
+                          ?.toLocaleString("es-PE", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                       </td>
-                      <td>{p.cliente?.nombre}</td>
+                      <td>
+                        <strong>{p.cliente?.nombre}</strong>
+                        <br />
+                        <small className="texto-secundario">
+                          {p.cliente?.tipo} {p.cliente?.referencia}
+                        </small>
+                      </td>
                       <td className="col-total-monto">
                         S/ {Number(p.total).toFixed(2)}
+                      </td>
+                      <td className="col-resena">
+                        <div className="estrellas-display">
+                          {"★".repeat(p.rating || 0)}
+                          {"☆".repeat(5 - (p.rating || 0))}
+                        </div>
+                        {p.comentario && (
+                          <i className="comentario-mini">"{p.comentario}"</i>
+                        )}
                       </td>
                       <td>
                         <button
@@ -710,33 +737,52 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
           {pedidoDetalle && (
             <div
-              className="modal-overlay"
+              className="modal-overlay-fijo"
               onClick={() => setPedidoDetalle(null)}
             >
               <div
-                className="modal-detalle-pedido"
+                className="modal-detalle-centrado"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3>Detalle del Pedido - {pedidoDetalle.cliente.nombre}</h3>
-                <ul className="lista-detalle-admin">
-                  {pedidoDetalle.items.map((item, index) => (
-                    <li key={index}>
-                      <span>
-                        {item.cantidad}x {item.nombre}
-                      </span>
-                      <span>S/ {Number(item.subtotal).toFixed(2)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="total-modal-admin">
-                  Total: S/ {Number(pedidoDetalle.total).toFixed(2)}
+                <header className="modal-header">
+                  <h3>Detalle del Pedido</h3>
+                  <button
+                    className="btn-cerrar-x"
+                    onClick={() => setPedidoDetalle(null)}
+                  >
+                    &times;
+                  </button>
+                </header>
+
+                <div className="modal-body">
+                  <p>
+                    <strong>Cliente:</strong> {pedidoDetalle.cliente.nombre}
+                  </p>
+                  <hr />
+                  <ul className="lista-productos-modal">
+                    {pedidoDetalle.items.map((item, index) => (
+                      <li key={index} className="item-fila-modal">
+                        <span>
+                          {item.cantidad}x {item.nombre}
+                        </span>
+                        <span>S/ {Number(item.subtotal).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="modal-total-destacado">
+                    <span>TOTAL</span>
+                    <span>S/ {Number(pedidoDetalle.total).toFixed(2)}</span>
+                  </div>
                 </div>
-                <button
-                  className="btn-cerrar-modal"
-                  onClick={() => setPedidoDetalle(null)}
-                >
-                  Cerrar
-                </button>
+
+                <footer className="modal-footer">
+                  <button
+                    className="btn-accion-primario"
+                    onClick={() => setPedidoDetalle(null)}
+                  >
+                    Entendido
+                  </button>
+                </footer>
               </div>
             </div>
           )}
