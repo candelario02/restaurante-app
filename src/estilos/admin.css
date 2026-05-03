@@ -335,18 +335,37 @@
    --- SECCIÓN CAJA --- 
    ============================================= */
 
-.filtro-admin-wrapper {
+/* Solo el estilo para el select de filtros */
+.select-admin-filtro {
+  padding: 10px 15px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 180px;
+}
+
+.select-admin-filtro:focus {
+  border-color: #6366f1;
+}
+
+.filtros-caja-container {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-  align-items: flex-end;
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 12px;
 }
 
 .label-filtro {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #64748b;
   font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
 }
 
 .resumen-ventas-grid {

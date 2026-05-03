@@ -629,9 +629,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <div className="admin-header-flex">
             <h2 className="titulo-principal">💰 Control de Caja y Ventas</h2>
 
-            {/* Selector con título para guía del admin */}
             <div className="filtro-admin-wrapper">
-              <label className="label-filtro">Filtrar transacciones por:</label>
+              <label className="label-filtro">Filtrar ventas por:</label>
               <div className="filtros-caja-container">
                 <select
                   value={filtroCaja}
@@ -641,7 +640,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="dia">Ventas del Día</option>
                   <option value="semana">Ventas de la Semana</option>
                   <option value="mes">Mes Actual</option>
-                  <option value="total">Histórico Total</option>
+                  <option value="total">Ventas Total</option>
                 </select>
                 <button
                   onClick={() =>
