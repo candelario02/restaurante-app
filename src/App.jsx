@@ -190,7 +190,7 @@ function App() {
             ) : (
               <>
                 <button
-                  className="btn-nav-tab btn-toggle-view"
+                  className="btn-nav-tab"
                   onClick={() => setIsAdmin(!isAdmin)}
                 >
                   {isAdmin ? "Vista Cliente" : "Panel Control"}
