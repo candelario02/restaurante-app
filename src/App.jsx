@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./estilos/app.css";
 
 // Componentes y Páginas
@@ -26,6 +26,7 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
 
   // Estados para notificaciones
+  const esPrimeraCarga = useRef(true);
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
 
   // ✅ LOGICA UNIFICADA: URL + AUTH (Reemplaza los dos primeros useEffect)
@@ -92,7 +93,7 @@ function App() {
     document.addEventListener("click", desbloquearAudio);
     return () => document.removeEventListener("click", desbloquearAudio);
   }, []);
-  //carga de notificaciones
+  //carga de pedios globales
   useEffect(() => {
     if (!restauranteId || !isAdmin) return;
 
@@ -104,12 +105,18 @@ function App() {
 
     const unsub = onSnapshot(q, (snapshot) => {
       const total = snapshot.size;
-      if (total > pedidosPendientes) {
-        audioNotificacion
-          .play()
-          .catch(() => console.log("Permiso de audio pendiente"));
+
+      if (total > pedidosPendientes && !esPrimeraCarga.current) {
+        audioNotificacion.currentTime = 0; 
+        audioNotificacion.play().catch((err) => {
+          console.warn(
+            "Navegador bloqueó audio: Interactúa con la página primero.",
+          );
+        });
       }
+
       setPedidosPendientes(total);
+      esPrimeraCarga.current = false;
     });
 
     return () => unsub();
