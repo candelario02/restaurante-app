@@ -26,8 +26,10 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
 
   // Estados para notificaciones
-  const esPrimeraCarga = useRef(true);
+
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
+  const prevPedidosRef = useRef(0);
+  const esPrimeraCarga = useRef(true);
 
   // ✅ LOGICA UNIFICADA: URL + AUTH (Reemplaza los dos primeros useEffect)
   useEffect(() => {
@@ -77,21 +79,19 @@ function App() {
   }, []);
   //despierta las otificaiones
   useEffect(() => {
-    const desbloquearAudio = () => {
+    const desbloquear = () => {
       audioNotificacion
         .play()
         .then(() => {
           audioNotificacion.pause();
           audioNotificacion.currentTime = 0;
-          console.log("Audio desbloqueado y listo para notificaciones");
+          console.log("Canal de audio listo");
         })
-        .catch((err) => console.log("Esperando interacción para audio..."));
-
-      document.removeEventListener("click", desbloquearAudio);
+        .catch((e) => console.log("Interacción requerida para audio"));
+      document.removeEventListener("click", desbloquear);
     };
-
-    document.addEventListener("click", desbloquearAudio);
-    return () => document.removeEventListener("click", desbloquearAudio);
+    document.addEventListener("click", desbloquear);
+    return () => document.removeEventListener("click", desbloquear);
   }, []);
   //carga de pedios globales
   useEffect(() => {
@@ -104,23 +104,24 @@ function App() {
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
-      const total = snapshot.size;
+      const totalActual = snapshot.size;
 
-      if (total > pedidosPendientes && !esPrimeraCarga.current) {
-        audioNotificacion.currentTime = 0; 
-        audioNotificacion.play().catch((err) => {
-          console.warn(
-            "Navegador bloqueó audio: Interactúa con la página primero.",
-          );
+      if (totalActual > prevPedidosRef.current && !esPrimeraCarga.current) {
+        audioNotificacion.pause();
+        audioNotificacion.currentTime = 0;
+
+        audioNotificacion.play().catch((error) => {
+          console.error("Bloqueo de navegador: Haz clic en la página.", error);
         });
       }
 
-      setPedidosPendientes(total);
+      setPedidosPendientes(totalActual);
+      prevPedidosRef.current = totalActual;
       esPrimeraCarga.current = false;
     });
 
     return () => unsub();
-  }, [restauranteId, isAdmin, pedidosPendientes]);
+  }, [restauranteId, isAdmin]);
   // Cerrar sesión REAL
   const cerrarSesion = async () => {
     await signOut(auth);
