@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import "../estilos/admin.css";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
 // 🔥 SERVICIOS
 import {
   crearProducto,
@@ -32,6 +33,7 @@ import {
 import { escucharProductos, escucharPedidos } from "../hooks/useProductos";
 import { subirImagen } from "../servicios/cloudinaryServicio";
 import { auth } from "../firebase/config";
+
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -46,6 +48,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
   const [userRol, setUserRol] = useState("mozo");
+  const [filtroCaja, setFiltroCaja] = useState("mes");
+  const [pedidoDetalle, setPedidoDetalle] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -275,34 +279,54 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //funcion de caja
-  const calcularVentas = (listaPedidos, periodo) => {
+  const obtenerEstadisticasCaja = (listaPedidos, periodo) => {
     const ahora = new Date();
-    const ventasFiltradas = listaPedidos.filter((p) => {
-      if (p.estado !== "entregado") return false;
-      if (!p.fecha?.toDate) return false;
+    const filtrados = listaPedidos.filter((p) => {
+      if (p.estado !== "entregado" || !p.fecha?.toDate) return false;
+      const fechaP = p.fecha.toDate();
 
-      const fechaPedido = p.fecha.toDate();
-
-      if (periodo === "dia") {
-        return fechaPedido.toDateString() === ahora.toDateString();
-      }
+      if (periodo === "dia")
+        return fechaP.toDateString() === ahora.toDateString();
       if (periodo === "semana") {
-        const sieteDiasAtras = new Date();
-        sieteDiasAtras.setDate(ahora.getDate() - 7);
-        return fechaPedido >= sieteDiasAtras;
+        const sieteDias = new Date();
+        sieteDias.setDate(ahora.getDate() - 7);
+        return fechaP >= sieteDias;
       }
       if (periodo === "mes") {
         return (
-          fechaPedido.getMonth() === ahora.getMonth() &&
-          fechaPedido.getFullYear() === ahora.getFullYear()
+          fechaP.getMonth() === ahora.getMonth() &&
+          fechaP.getFullYear() === ahora.getFullYear()
         );
       }
+      if (periodo === "anio")
+        return fechaP.getFullYear() === ahora.getFullYear();
       return true;
     });
 
-    return ventasFiltradas
+    const monto = filtrados
       .reduce((acc, p) => acc + Number(p.total), 0)
       .toFixed(2);
+    const cantidad = filtrados.length;
+
+    return { monto, cantidad, filtrados };
+  };
+
+  //funcion de exporta a excel
+  const exportarCajaExcel = (datos, nombreArchivo) => {
+    const dataFormateada = datos.map((p) => ({
+      Fecha: p.fecha?.toDate()?.toLocaleString() || "N/A",
+      Cliente: p.cliente?.nombre || "Anonimo",
+      Tipo: p.cliente?.tipo || "N/A",
+      Referencia: p.cliente?.referencia || "N/A",
+      Items: p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", "),
+      Total: Number(p.total),
+      Rating: p.rating || 0,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dataFormateada);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+    XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
   };
   //DISPONIBILIDAD
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
@@ -513,11 +537,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN PEDIDOS*/}
       {seccion === "pedidos" && (
         <div className="admin-section">
-          <h2 className="titulo-seccion">📦 Operaciones en Tiempo Real</h2>
+          <h2 className="titulo-seccion">📦 Pedidos pendientes </h2>
 
           {pedidos.filter((p) => p.estado !== "entregado").length === 0 ? (
             <div className="no-data">
-              Todo en orden. No hay pedidos pendientes.
+              Todo en orden. No hay pedidos recientes.
             </div>
           ) : (
             <div className="grid-admin">
@@ -602,96 +626,120 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN caja*/}
       {seccion === "caja" && (
         <div className="admin-section">
-          <h2 className="titulo-principal">💰 Control de Caja y Ventas</h2>
+          <div className="admin-header-flex">
+            <h2 className="titulo-principal">💰 Control de Ventas</h2>
+            <div className="filtros-caja-container">
+              <select
+                value={filtroCaja}
+                onChange={(e) => setFiltroCaja(e.target.value)}
+                className="select-admin-filtro"
+              >
+                <option value="dia">Hoy</option>
+                <option value="semana">Semana</option>
+                <option value="mes">Mes Actual</option>
+                <option value="anio">Este Año</option>
+                <option value="total">Histórico</option>
+              </select>
+              <button
+                onClick={() =>
+                  exportarCajaExcel(
+                    obtenerEstadisticasCaja(pedidos, filtroCaja).filtrados,
+                    `Caja_${filtroCaja}`,
+                  )
+                }
+                className="btn-exportar-excel"
+              >
+                📊 Exportar Excel
+              </button>
+            </div>
+          </div>
 
           <div className="resumen-ventas-grid">
             <div className="card-admin card-resumen">
-              <h3>Ventas del Día</h3>
-              <p className="monto-dia">S/ {calcularVentas(pedidos, "dia")}</p>
-            </div>
-            <div className="card-admin card-resumen">
-              <h3>Ventas de la Semana</h3>
-              <p className="monto-semana">
-                S/ {calcularVentas(pedidos, "semana")}
+              <h3>Ventas en curso ({filtroCaja})</h3>
+              <p className="monto-dia">
+                S/ {obtenerEstadisticasCaja(pedidos, filtroCaja).monto}
               </p>
-            </div>
-            <div className="card-admin card-resumen">
-              <h3>Total Histórico</h3>
-              <p className="monto-total">
-                S/ {calcularVentas(pedidos, "total")}
-              </p>
+              <small>
+                {obtenerEstadisticasCaja(pedidos, filtroCaja).cantidad} pedidos
+                realizados
+              </small>
             </div>
           </div>
 
           <div className="tabla-container-pro">
-            <h3 className="titulo-principal detalle-transacciones-titulo">
-              📝 Detalle de Transacciones
-            </h3>
-
-            {pedidos.filter((p) => p.estado === "entregado").length === 0 ? (
-              <div className="no-data">Aún no hay ventas registradas.</div>
-            ) : (
-              <table className="tabla-admin-pro">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Tipo / Ref.</th>
-                    <th className="col-total-monto">Total</th>
-                    <th>Reseña</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pedidos
-                    .filter((p) => p.estado === "entregado")
-                    .sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
-                    .map((p) => (
-                      <tr key={p.id}>
-                        <td className="col-fecha">
-                          {p.fecha?.toDate
-                            ? p.fecha
-                                .toDate()
-                                .toLocaleString("es-PE", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                            : "Reciente"}
-                        </td>
-                        <td className="td-plato col-cliente-info">
-                          <div>
-                            <span>{p.cliente?.nombre || "Cliente"}</span>
-                            <small>{p.cliente?.telefono || ""}</small>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="status-badge entregado badge-tipo-ref">
-                            {p.cliente?.tipo}: {p.cliente?.referencia}
-                          </span>
-                        </td>
-                        <td className="td-precio col-total-monto">
-                          S/ {Number(p.total).toFixed(2)}
-                        </td>
-                        <td>
-                          <div className="stars-rating">
-                            {"★".repeat(p.rating || 0)}
-                          </div>
-                          {p.resena && (
-                            <div
-                              className="admin-review-text-small"
-                              title={p.resena}
-                            >
-                              "{p.resena}"
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            )}
+            <table className="tabla-admin-pro">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {obtenerEstadisticasCaja(pedidos, filtroCaja)
+                  .filtrados.sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
+                  .map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        {p.fecha?.toDate()?.toLocaleString("es-PE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td>{p.cliente?.nombre}</td>
+                      <td className="col-total-monto">
+                        S/ {Number(p.total).toFixed(2)}
+                      </td>
+                      <td>
+                        <button
+                          className="btn-ojito-detalle"
+                          onClick={() => setPedidoDetalle(p)}
+                        >
+                          👁️ Ver detalle
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
+
+          {pedidoDetalle && (
+            <div
+              className="modal-overlay"
+              onClick={() => setPedidoDetalle(null)}
+            >
+              <div
+                className="modal-detalle-pedido"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3>Detalle del Pedido - {pedidoDetalle.cliente.nombre}</h3>
+                <ul className="lista-detalle-admin">
+                  {pedidoDetalle.items.map((item, index) => (
+                    <li key={index}>
+                      <span>
+                        {item.cantidad}x {item.nombre}
+                      </span>
+                      <span>S/ {Number(item.subtotal).toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="total-modal-admin">
+                  Total: S/ {Number(pedidoDetalle.total).toFixed(2)}
+                </div>
+                <button
+                  className="btn-cerrar-modal"
+                  onClick={() => setPedidoDetalle(null)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {/* SECCIÓN USUARIOS */}
