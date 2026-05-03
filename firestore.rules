@@ -36,19 +36,36 @@ match /usuarios_admin/{email} {
     get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
 }
 
-    // 🍽️ PRODUCTOS
-  match /productos/{docId} {
+// 🍽️ PRODUCTOS
+match /productos/{docId} {
+  // ✅ Lectura pública: Necesaria para que el QR funcione sin login
   allow read: if true; 
-  
-  // Para crear: validamos el dato que entra
-  allow create: if estaAutenticado() && 
-                get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
 
-  // Para borrar o editar: validamos contra el dato que YA EXISTE en Firestore
+  // ✅ Crear: Solo si está autenticado, coincide el restaurante Y es ADMIN
+  allow create: if estaAutenticado() && 
+                esAdmin() &&
+                getUsuarioData().restauranteId == request.resource.data.restauranteId;
+
+  // ✅ Editar/Borrar: Solo si coincide el restaurante Y es ADMIN
   allow update, delete: if estaAutenticado() && 
-                        get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
+                        esAdmin() &&
+                        getUsuarioData().restauranteId == resource.data.restauranteId;
 }
 
+// 🛠️ Funciones Auxiliares Profesionales
+function estaAutenticado() {
+  return request.auth != null;
+}
+
+function getUsuarioData() {
+  return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
+}
+
+function esAdmin() {
+  let rol = getUsuarioData().rol;
+  // Solo permitimos gestión a admin o superadmin
+  return rol == "admin" || rol == "superadmin";
+}
 
  // 📝 PEDIDOS
 match /pedidos/{document=**} {

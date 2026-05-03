@@ -7,9 +7,9 @@ import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
 
 // Firebase
-import { auth, db } from "./firebase/config"; 
+import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, query, where, onSnapshot } from "firebase/firestore"; 
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 
 // Servicios
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
@@ -27,54 +27,51 @@ function App() {
   // Estados para notificaciones
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const [audioNotificacion] = useState(() => new Audio("/notificacion.mp3"));
-  // cargar datos bd
+  // ✅ LOGICA UNIFICADA: URL + AUTH (Reemplaza los dos primeros useEffect)
   useEffect(() => {
+    const ruta = window.location.pathname;
+    const idDesdeUrl = ruta.split("/")[1];
+    const reservados = ["login", "admin", "dashboard", ""];
+    let idDetectadoPorUrl = null;
+
+    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
+      idDetectadoPorUrl = idDesdeUrl;
+      setRestauranteId(idDesdeUrl);
+      localStorage.setItem("restauranteId", idDesdeUrl);
+    }
+
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
 
       if (usuario) {
         try {
           const datos = await obtenerDatosUsuario(usuario.email);
-
           if (datos && datos.restauranteId) {
             setRestauranteId(datos.restauranteId);
             setRol(datos.rol);
             setIsAdmin(datos.rol === "admin" || datos.rol === "superadmin");
-
             setUser(usuario);
-
-            localStorage.setItem("rolUsuario", datos.rol);
             localStorage.setItem("restauranteId", datos.restauranteId);
-          } else {
-            await signOut(auth);
-            setUser(null);
+            localStorage.setItem("rolUsuario", datos.rol);
           }
         } catch (error) {
           console.error("Error al sincronizar perfil:", error);
-          setUser(null);
         }
       } else {
+        // Al no haber usuario, limpiamos datos de sesión
         setUser(null);
-        setRestauranteId(null);
         setRol(null);
         setIsAdmin(false);
-        localStorage.clear();
+
+        if (!idDetectadoPorUrl) {
+          setRestauranteId(null);
+          localStorage.clear();
+        }
       }
       setCargando(false);
     });
 
     return () => unsub();
-  }, []);
-  //carga para permisos dinamicos
-  useEffect(() => {
-    const ruta = window.location.pathname;
-    const idDesdeUrl = ruta.split("/")[1];
-    const reservados = ["login", "admin", "dashboard", ""];
-
-    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      setRestauranteId(idDesdeUrl);
-      localStorage.setItem("restauranteId", idDesdeUrl);
-    }
   }, []);
   //carga de notificaciones
   useEffect(() => {
