@@ -45,15 +45,29 @@ service cloud.firestore {
                             getUsuarioData().restauranteId == resource.data.restauranteId;
     }
 
-    // 📝 PEDIDOS (Soporta ambas estructuras de colección)
+ // 📝 PEDIDOS (Seguridad Blindada para Reseñas Públicas)
     match /pedidos/{docId} {
       allow read, create: if true; 
-      allow update, delete: if estaAutenticado();
+      
+      // Permitir actualizar SOLO si el usuario es Admin O si un cliente está enviando su reseña
+      allow update: if estaAutenticado() || esSoloResena();
+      
+      allow delete: if estaAutenticado() && esAdmin();
     }
 
     match /restaurantes/{restId}/pedidos/{docId} {
       allow read, create: if true;
-      allow update, delete: if estaAutenticado();
+      
+      allow update: if estaAutenticado() || esSoloResena();
+      
+      allow delete: if estaAutenticado() && esAdmin();
+    }
+
+    // 🔒 FUNCIÓN DE PROTECCIÓN ADICIONAL
+    // Verifica que el cliente solo toque los campos de calificación y nada más
+    function esSoloResena() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
     }
 
     // ⚙️ CONFIGURACIONES

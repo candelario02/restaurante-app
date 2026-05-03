@@ -14,6 +14,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 // Servicios
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
+const audioNotificacion = new Audio("/notificacion.mp3");
 function App() {
   const [user, setUser] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -26,7 +27,7 @@ function App() {
 
   // Estados para notificaciones
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
-  const [audioNotificacion] = useState(() => new Audio("/notificacion.mp3"));
+
   // ✅ LOGICA UNIFICADA: URL + AUTH (Reemplaza los dos primeros useEffect)
   useEffect(() => {
     const ruta = window.location.pathname;
@@ -72,6 +73,24 @@ function App() {
     });
 
     return () => unsub();
+  }, []);
+  //despierta las otificaiones
+  useEffect(() => {
+    const desbloquearAudio = () => {
+      audioNotificacion
+        .play()
+        .then(() => {
+          audioNotificacion.pause();
+          audioNotificacion.currentTime = 0;
+          console.log("Audio desbloqueado y listo para notificaciones");
+        })
+        .catch((err) => console.log("Esperando interacción para audio..."));
+
+      document.removeEventListener("click", desbloquearAudio);
+    };
+
+    document.addEventListener("click", desbloquearAudio);
+    return () => document.removeEventListener("click", desbloquearAudio);
   }, []);
   //carga de notificaciones
   useEffect(() => {
