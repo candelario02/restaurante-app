@@ -250,6 +250,9 @@ const MenuCliente = ({ restauranteId }) => {
       setDatosPedidoRealtime(null);
       setMostrarModalCalificacion(false);
 
+      setEstrellas(5);
+      setComentario("");
+
       Swal.fire({
         title: "¡Gracias!",
         text: "Tu opinión nos ayuda a mejorar.",
@@ -323,11 +326,29 @@ const MenuCliente = ({ restauranteId }) => {
           <div className="seguimiento-box">
             <div className="seguimiento-header">
               <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
-              <span className="pedido-id-tag">
-                👤{" "}
-                {datosPedidoRealtime?.cliente?.nombre ||
-                  `ID: #${pedidoActivoId?.slice(-5)}`}
-              </span>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: "4px",
+                }}
+              >
+                <span className="pedido-id-tag">
+                  👤{" "}
+                  {datosPedidoRealtime?.cliente?.nombre ||
+                    `ID: #${pedidoActivoId?.slice(-5)}`}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                    color: "var(--primary)",
+                  }}
+                >
+                  Total: S/ {Number(datosPedidoRealtime?.total || 0).toFixed(2)}
+                </span>
+              </div>
             </div>
 
             <div className="stepper-container">
