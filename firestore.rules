@@ -2,87 +2,65 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔒 FUNCIONES DE APOYO LIGERAS
+    // 🔒 FUNCIONES GLOBALES DE APOYO
     function estaAutenticado() {
       return request.auth != null;
     }
 
-    // Comprobamos el rol directamente desde el documento del usuario logueado
-    function tieneRol(rolRequerido) {
-      let u = get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
-      return u.rol == rolRequerido || u.rol == "superadmin";
+    function getUsuarioData() {
+      return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
     }
 
-// 👨‍💼 USUARIOS ADMIN
-match /usuarios_admin/{email} {
-  // LECTURA: Ya la tienes bien
-  allow read: if estaAutenticado() && (
-    request.auth.token.email == email || 
-    (
-      get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
-      get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId
-    )
-  );
+    function esAdmin() {
+      let data = getUsuarioData();
+      return data.rol == "admin" || data.rol == "superadmin";
+    }
 
-  // ESCRITURA: Separada para manejar borrados
-  // 1. Para CREAR o ACTUALIZAR: Validamos los datos entrantes (request.resource)
-  allow create, update: if estaAutenticado() && 
-    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
-    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == request.resource.data.restauranteId;
+    // 👨‍💼 USUARIOS ADMIN
+    match /usuarios_admin/{email} {
+      allow read: if estaAutenticado() && (
+        request.auth.token.email == email || 
+        (getUsuarioData().rol == "admin" && getUsuarioData().restauranteId == resource.data.restauranteId)
+      );
 
-  // 2. Para BORRAR: Validamos los datos existentes (resource)
-  allow delete: if estaAutenticado() && 
-    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.rol == "admin" &&
-    get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == resource.data.restauranteId;
-}
+      allow create, update: if estaAutenticado() && 
+        esAdmin() && 
+        getUsuarioData().restauranteId == request.resource.data.restauranteId;
 
-// 🍽️ PRODUCTOS
-match /productos/{docId} {
-  // ✅ Lectura pública: Necesaria para que el QR funcione sin login
-  allow read: if true; 
+      allow delete: if estaAutenticado() && 
+        esAdmin() && 
+        getUsuarioData().restauranteId == resource.data.restauranteId;
+    }
 
-  // ✅ Crear: Solo si está autenticado, coincide el restaurante Y es ADMIN
-  allow create: if estaAutenticado() && 
-                esAdmin() &&
-                getUsuarioData().restauranteId == request.resource.data.restauranteId;
+    // 🍽️ PRODUCTOS
+    match /productos/{docId} {
+      allow read: if true; // ✅ Público para QR
 
-  // ✅ Editar/Borrar: Solo si coincide el restaurante Y es ADMIN
-  allow update, delete: if estaAutenticado() && 
-                        esAdmin() &&
-                        getUsuarioData().restauranteId == resource.data.restauranteId;
-}
+      allow create: if estaAutenticado() && 
+                    esAdmin() && 
+                    getUsuarioData().restauranteId == request.resource.data.restauranteId;
 
-// 🛠️ Funciones Auxiliares Profesionales
-function estaAutenticado() {
-  return request.auth != null;
-}
+      allow update, delete: if estaAutenticado() && 
+                            esAdmin() && 
+                            getUsuarioData().restauranteId == resource.data.restauranteId;
+    }
 
-function getUsuarioData() {
-  return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
-}
+    // 📝 PEDIDOS (Soporta ambas estructuras de colección)
+    match /pedidos/{docId} {
+      allow read, create: if true; 
+      allow update, delete: if estaAutenticado();
+    }
 
-function esAdmin() {
-  let rol = getUsuarioData().rol;
-  // Solo permitimos gestión a admin o superadmin
-  return rol == "admin" || rol == "superadmin";
-}
-
- // 📝 PEDIDOS
-match /pedidos/{document=**} {
-  allow read, create: if true; 
-  allow update, delete: if estaAutenticado();
-}
-
-match /restaurantes/{restId}/pedidos/{document=**} {
-  allow read, create: if true;
-  allow update, delete: if estaAutenticado();
-}
+    match /restaurantes/{restId}/pedidos/{docId} {
+      allow read, create: if true;
+      allow update, delete: if estaAutenticado();
+    }
 
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {
       allow read: if true;
       allow write: if estaAutenticado() && 
-                   get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data.restauranteId == docId;
+                   getUsuarioData().restauranteId == docId;
     }
   }
 }
