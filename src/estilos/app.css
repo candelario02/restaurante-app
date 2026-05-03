@@ -89,6 +89,10 @@ body {
   font-weight: 700;
   cursor: pointer;
   transition: 0.3s;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-nav-salir-rojo:hover {
@@ -104,20 +108,29 @@ body {
   color: white;
   box-shadow: var(--shadow-md);
 }
+.nav-actions {
+  display: flex;
+  flex-direction: row; 
+  align-items: center;
+  gap: 10px;         
+}
 .btn-nav-tab {
-  position: relative;
   background: var(--primary-light);
   color: var(--primary);
   border: 1px solid var(--primary);
-  padding: 6px 14px;
-  height: 36px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  transition: 0.3s;
+  height: 40px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap; 
 }
+
 
 main {
   width: 100%;
