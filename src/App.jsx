@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
 import "./estilos/app.css";
 
+// Componentes y Páginas
 import MenuCliente from "./paginas/MenuCliente";
 import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
 
-import { auth } from "./firebase/config";
+// Firebase
+import { auth, db } from "./firebase/config"; 
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, query, where, onSnapshot } from "firebase/firestore"; 
+
+// Servicios
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
 function App() {
@@ -18,6 +23,10 @@ function App() {
 
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
+
+  // Estados para notificaciones
+  const [pedidosPendientes, setPedidosPendientes] = useState(0);
+  const [audioNotificacion] = useState(() => new Audio("/notificacion.mp3"));
   // cargar datos bd
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
@@ -56,6 +65,39 @@ function App() {
 
     return () => unsub();
   }, []);
+  //carga para permisos dinamicos
+  useEffect(() => {
+    const ruta = window.location.pathname;
+    const idDesdeUrl = ruta.split("/")[1];
+    const reservados = ["login", "admin", "dashboard", ""];
+
+    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
+      setRestauranteId(idDesdeUrl);
+      localStorage.setItem("restauranteId", idDesdeUrl);
+    }
+  }, []);
+  //carga de notificaciones
+  useEffect(() => {
+    if (!restauranteId || !isAdmin) return;
+
+    const q = query(
+      collection(db, "pedidos"),
+      where("restauranteId", "==", restauranteId),
+      where("estado", "==", "pendiente"),
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      const total = snapshot.size;
+      if (total > pedidosPendientes) {
+        audioNotificacion
+          .play()
+          .catch(() => console.log("Permiso de audio pendiente"));
+      }
+      setPedidosPendientes(total);
+    });
+
+    return () => unsub();
+  }, [restauranteId, isAdmin, pedidosPendientes]);
   // Cerrar sesión REAL
   const cerrarSesion = async () => {
     await signOut(auth);
@@ -77,8 +119,8 @@ function App() {
           <div className="brand">
             <span>
               {restauranteId
-                ? restauranteId.replace("_", " ").toUpperCase()
-                : "Cargando..."}
+                ? restauranteId.replace(/_/g, " ").toUpperCase()
+                : "BIENVENIDO"}
             </span>
 
             {user && isAdmin && restauranteId && (
@@ -100,6 +142,11 @@ function App() {
                   onClick={() => setSeccion("pedidos")}
                 >
                   Pedidos
+                  {pedidosPendientes > 0 && (
+                    <span className="badge-notificacion">
+                      {pedidosPendientes}
+                    </span>
+                  )}
                 </button>
                 <button
                   className={`btn-nav-salir ${seccion === "caja" ? "active" : ""}`}
