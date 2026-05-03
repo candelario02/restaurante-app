@@ -175,14 +175,6 @@ function App() {
                 >
                   Caja
                 </button>
-
-                {/* Movidito aquí para que esté alineado con los demás */}
-                <button
-                  className="btn-nav-tab btn-vista-cliente"
-                  onClick={() => setIsAdmin(false)}
-                >
-                  Vista Cliente
-                </button>
               </div>
             )}
           </div>
@@ -196,9 +188,18 @@ function App() {
                 Admin
               </button>
             ) : (
-              <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
-                Salir
-              </button>
+              <>
+                <button
+                  className="btn-nav-tab btn-toggle-view"
+                  onClick={() => setIsAdmin(!isAdmin)}
+                >
+                  {isAdmin ? "Vista Cliente" : "Panel Control"}
+                </button>
+
+                <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
+                  Salir
+                </button>
+              </>
             )}
           </div>
         </div>
