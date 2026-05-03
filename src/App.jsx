@@ -138,7 +138,7 @@ function App() {
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
-            <span>
+            <span className="brand-name">
               {restauranteId
                 ? restauranteId.replace(/_/g, " ").toUpperCase()
                 : "BIENVENIDO"}
@@ -147,19 +147,19 @@ function App() {
             {user && isAdmin && restauranteId && (
               <div className="nav-admin-tabs-horizontal">
                 <button
-                  className={`btn-nav-salir ${seccion === "menu" ? "active" : ""}`}
+                  className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
                   onClick={() => setSeccion("menu")}
                 >
                   Menú
                 </button>
                 <button
-                  className={`btn-nav-salir ${seccion === "usuarios" ? "active" : ""}`}
+                  className={`btn-nav-tab ${seccion === "usuarios" ? "active" : ""}`}
                   onClick={() => setSeccion("usuarios")}
                 >
                   Usuarios
                 </button>
                 <button
-                  className={`btn-nav-salir ${seccion === "pedidos" ? "active" : ""}`}
+                  className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                   onClick={() => setSeccion("pedidos")}
                 >
                   Pedidos
@@ -170,10 +170,18 @@ function App() {
                   )}
                 </button>
                 <button
-                  className={`btn-nav-salir ${seccion === "caja" ? "active" : ""}`}
+                  className={`btn-nav-tab ${seccion === "caja" ? "active" : ""}`}
                   onClick={() => setSeccion("caja")}
                 >
-                  caja
+                  Caja
+                </button>
+
+                {/* Movidito aquí para que esté alineado con los demás */}
+                <button
+                  className="btn-nav-tab btn-vista-cliente"
+                  onClick={() => setIsAdmin(false)}
+                >
+                  Vista Cliente
                 </button>
               </div>
             )}
@@ -188,18 +196,9 @@ function App() {
                 Admin
               </button>
             ) : (
-              <>
-                <button
-                  className="btn-nav-salir"
-                  onClick={() => setIsAdmin(!isAdmin)}
-                >
-                  {isAdmin ? "Vista Cliente" : "Panel Control"}
-                </button>
-
-                <button className="btn-nav-salir" onClick={cerrarSesion}>
-                  Salir
-                </button>
-              </>
+              <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
+                Salir
+              </button>
             )}
           </div>
         </div>

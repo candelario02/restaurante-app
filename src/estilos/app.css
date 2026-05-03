@@ -58,6 +58,12 @@ body {
   width: 100%;
 }
 
+.brand-name {
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
 .btn-nav-admin {
   background: var(--primary-light);
   color: var(--primary);
@@ -68,24 +74,49 @@ body {
 }
 .nav-admin-tabs-horizontal {
   display: flex;
-  flex-direction: row; 
-  gap: 12px;
+  flex-direction: row;
+  gap: 8px;
   align-items: center;
-  margin-left: 25px;
+  margin-left: 20px;
 }
 
-.btn-nav-salir {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 16px;
-  height: 35px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: white;
-  font-weight: 500;
+.btn-nav-salir-rojo {
+  background: #fef2f2;
+  color: var(--danger);
+  border: 1.5px solid var(--danger);
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-nav-salir-rojo:hover {
+  background: var(--danger);
+  color: white;
+}
+.btn-nav-tab:hover {
+  background: var(--primary);
+  color: white;
+}
+.btn-nav-tab.active {
+  background: var(--primary-dark);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+.btn-nav-tab {
+  position: relative;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 6px 14px;
+  height: 36px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 main {
@@ -134,20 +165,18 @@ main {
 }
 .badge-notificacion {
   position: absolute;
-  top: -10px;   
-  right: -10px;  
-  background-color: #ff4d4f;
+  top: -8px;
+  right: -8px;
+  background-color: var(--danger);
   color: white;
-  font-size: 11px;
-  width: 20px;
-  height: 20px;
+  font-size: 10px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 5;
-  animation: pulse 2s infinite;
+  border: 2px solid white;
 }
 
 @keyframes pulse {
