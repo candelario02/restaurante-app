@@ -97,11 +97,9 @@ function App() {
   useEffect(() => {
     if (!restauranteId || !isAdmin) return;
 
-    const q = query(
-      collection(db, "pedidos"),
-      where("restauranteId", "==", restauranteId),
-      where("estado", "==", "pendiente"),
-    );
+    const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
+
+    const q = query(pedidosRef, where("estado", "==", "pendiente"));
 
     const unsub = onSnapshot(q, (snapshot) => {
       const totalActual = snapshot.size;
@@ -109,9 +107,8 @@ function App() {
       if (totalActual > prevPedidosRef.current && !esPrimeraCarga.current) {
         audioNotificacion.pause();
         audioNotificacion.currentTime = 0;
-
         audioNotificacion.play().catch((error) => {
-          console.error("Bloqueo de navegador: Haz clic en la página.", error);
+          console.error("Error de audio:", error);
         });
       }
 
