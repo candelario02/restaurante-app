@@ -584,14 +584,15 @@ const MenuCliente = ({ restauranteId }) => {
                   className="btn-agregar"
                   style={{ background: "#666" }}
                   onClick={() => {
-                    if (datosPedidoRealtime) {
-                      setCarrito(datosPedidoRealtime.items);
+                    if (pedidoActivoId) {
+                      setCarrito([]);
                     }
                     setVerCarrito(false);
                   }}
                 >
                   Cerrar
                 </button>
+
                 <button
                   className="btn-pagar"
                   disabled={carrito.length === 0 || enviando}
