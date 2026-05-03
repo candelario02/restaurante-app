@@ -45,30 +45,35 @@ service cloud.firestore {
                             getUsuarioData().restauranteId == resource.data.restauranteId;
     }
 
- // 📝 PEDIDOS (Seguridad Blindada para Reseñas Públicas)
-    match /pedidos/{docId} {
-      allow read, create: if true; 
-      
-      // Permitir actualizar SOLO si el usuario es Admin O si un cliente está enviando su reseña
-      allow update: if estaAutenticado() || esSoloResena();
-      
-      allow delete: if estaAutenticado() && esAdmin();
-    }
+ // 📝 PEDIDOS (Actualizado para permitir adicionales y reseñas)
+match /restaurantes/{restId}/pedidos/{docId} {
+  
+  allow read, create: if true; 
+  
+  allow update: if 
+    // Opción A: Es un Admin logueado
+    estaAutenticado() || 
+    // Opción B: Es un cliente agregando adicionales (items/total)
+    esAdicional() ||
+    // Opción C: Es un cliente dejando su reseña final
+    esSoloResena();
+  
+  allow delete: if estaAutenticado() && esAdmin();
+}
 
-    match /restaurantes/{restId}/pedidos/{docId} {
-      allow read, create: if true;
-      
-      allow update: if estaAutenticado() || esSoloResena();
-      
-      allow delete: if estaAutenticado() && esAdmin();
-    }
+// 🔒 NUEVA FUNCIÓN PARA ADICIONALES
+// Permite al cliente editar items y total, pero SOLO si el pedido sigue pendiente
+function esAdicional() {
+  return resource.data.estado == 'pendiente' && 
+         request.resource.data.diff(resource.data).affectedKeys()
+         .hasAny(['items', 'total', 'fechaActualizacion', 'estado']);
+}
 
-    // 🔒 FUNCIÓN DE PROTECCIÓN ADICIONAL
-    // Verifica que el cliente solo toque los campos de calificación y nada más
-    function esSoloResena() {
-      return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
-    }
+// 🔒 TU FUNCIÓN DE RESEÑA (Se mantiene igual, es correcta)
+function esSoloResena() {
+  return request.resource.data.diff(resource.data).affectedKeys()
+    .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
+}
 
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {
