@@ -9,6 +9,7 @@ import {
   Save,
   Power,
   Check,
+  Search,
 } from "lucide-react";
 import "../estilos/admin.css";
 import Swal from "sweetalert2";
