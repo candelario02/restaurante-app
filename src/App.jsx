@@ -31,7 +31,7 @@ function App() {
   const prevPedidosRef = useRef(0);
   const esPrimeraCarga = useRef(true);
 
-  // ✅ LOGICA UNIFICADA: URL + AUTH (Reemplaza los dos primeros useEffect)
+  // ✅ LOGICA UNIFICADA ACTUALIZADA: URL + AUTH + REDIRECCIÓN DE ROL
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
@@ -55,6 +55,11 @@ function App() {
             setRol(datos.rol);
             setIsAdmin(datos.rol === "admin" || datos.rol === "superadmin");
             setUser(usuario);
+
+            if (datos.rol === "mozo" || datos.rol === "cajero") {
+              setSeccion("pedidos");
+            }
+
             localStorage.setItem("restauranteId", datos.restauranteId);
             localStorage.setItem("rolUsuario", datos.rol);
           }
@@ -62,7 +67,6 @@ function App() {
           console.error("Error al sincronizar perfil:", error);
         }
       } else {
-        // Al no haber usuario, limpiamos datos de sesión
         setUser(null);
         setRol(null);
         setIsAdmin(false);
@@ -138,26 +142,42 @@ function App() {
       <nav className="top-bar">
         <div className="top-bar-container">
           <div className="brand">
-            <span className="brand-name">
-              {restauranteId
-                ? restauranteId.replace(/_/g, " ").toUpperCase()
-                : "BIENVENIDO"}
-            </span>
+            <div className="brand-info">
+              <span className="brand-name">
+                {restauranteId
+                  ? restauranteId.replace(/_/g, " ").toUpperCase()
+                  : "BIENVENIDO"}
+              </span>
+              {/* ✅ SALUDO BIENVENIDA PROFESIONAL */}
+              {user && (
+                <span className="user-welcome">
+                  👋 Hola, <strong>{user.email.split("@")[0]}</strong>
+                </span>
+              )}
+            </div>
 
-            {user && isAdmin && restauranteId && (
+            {/* ✅ RESTRICCIÓN PROFESIONAL DE PESTAÑAS */}
+            {user && restauranteId && (
               <div className="nav-admin-tabs-horizontal">
-                <button
-                  className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
-                  onClick={() => setSeccion("menu")}
-                >
-                  Menú
-                </button>
-                <button
-                  className={`btn-nav-tab ${seccion === "usuarios" ? "active" : ""}`}
-                  onClick={() => setSeccion("usuarios")}
-                >
-                  Usuarios
-                </button>
+                {/* Solo Admin ve Menú y Usuarios */}
+                {isAdmin && (
+                  <>
+                    <button
+                      className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
+                      onClick={() => setSeccion("menu")}
+                    >
+                      Menú
+                    </button>
+                    <button
+                      className={`btn-nav-tab ${seccion === "usuarios" ? "active" : ""}`}
+                      onClick={() => setSeccion("usuarios")}
+                    >
+                      Usuarios
+                    </button>
+                  </>
+                )}
+
+                {/* MOZOS Y ADMINS ven Pedidos y Caja */}
                 <button
                   className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                   onClick={() => setSeccion("pedidos")}
@@ -189,12 +209,14 @@ function App() {
               </button>
             ) : (
               <>
-                <button
-                  className="btn-nav-tab"
-                  onClick={() => setIsAdmin(!isAdmin)}
-                >
-                  {isAdmin ? "Vista Cliente" : "Panel Control"}
-                </button>
+                {isAdmin && (
+                  <button
+                    className="btn-nav-tab"
+                    onClick={() => setIsAdmin(!isAdmin)}
+                  >
+                    {isAdmin ? "Vista Cliente" : "Panel Control"}
+                  </button>
+                )}
 
                 <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
                   Salir
