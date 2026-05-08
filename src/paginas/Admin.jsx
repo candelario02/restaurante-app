@@ -231,7 +231,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await eliminarProducto(id);
+          await eliminarProducto(id, restauranteId);
           Swal.fire({
             title: "Eliminado",
             text: "El producto ha sido borrado.",
@@ -343,7 +343,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //DISPONIBILIDAD
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
-      await cambiarDisponibilidad(id, estadoActual, restauranteId);
+     await cambiarDisponibilidad(id, !estadoActual, restauranteId);
 
       Swal.fire({
         title: estadoActual ? "Plato Activado" : "Plato Agotado",
@@ -377,7 +377,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await eliminarUsuario(email);
+          await eliminarUsuario(email, restauranteId);
           Swal.fire("Eliminado", "El usuario ha sido removido.", "success");
         } catch (error) {
           Swal.fire("Error", "No se pudo eliminar: " + error.message, "error");

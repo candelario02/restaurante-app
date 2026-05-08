@@ -15,13 +15,22 @@ import {
   signOut,
 } from "firebase/auth";
 
-// 1. REGISTRO (Usa instancia secundaria para no cerrar tu sesión)
+// 1. REGISTRO
 export const registrarUsuario = async (email, password, rol, restauranteId) => {
   const emailLimpio = email.toLowerCase().trim();
   const userCredential = await createUserWithEmailAndPassword(
     authAdmin,
     emailLimpio,
     password,
+  );
+
+  await setDoc(
+    doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
+    {
+      email: emailLimpio,
+      rol: rol,
+      fechaRegistro: new Date(),
+    },
   );
 
   await setDoc(doc(db, "usuarios_admin", emailLimpio), {
@@ -35,7 +44,7 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
   return userCredential.user;
 };
 
-// 2. LOGIN (Lo que Vercel no encontraba)
+// 2. LOGIN 
 export const loginUsuario = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(
     auth,
@@ -70,10 +79,8 @@ export const obtenerDatosUsuario = async (email) => {
 // 4. ESCUCHAR USUARIOS (Para el listado en tiempo real)
 export const escucharUsuarios = (restauranteId, callback) => {
   const q = query(
-    collection(db, "usuarios_admin"),
-    where("restauranteId", "==", restauranteId),
+    collection(db, "restaurantes", restauranteId, "usuarios_admin"),
   );
-
   return onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -83,10 +90,20 @@ export const escucharUsuarios = (restauranteId, callback) => {
   });
 };
 //eliminicion
-export const eliminarUsuario = async (email) => {
-  // El ID del documento es el email en minúsculas
-  const docRef = doc(db, "usuarios_admin", email.toLowerCase().trim());
-  await deleteDoc(docRef);
+export const eliminarUsuario = async (email, restauranteId) => {
+  const emailLimpio = email.toLowerCase().trim();
+
+  const refSede = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "usuarios_admin",
+    emailLimpio,
+  );
+  await deleteDoc(refSede);
+
+  const refGlobal = doc(db, "usuarios_admin", emailLimpio);
+  await deleteDoc(refGlobal);
 };
 
 // 5. LOGOUT

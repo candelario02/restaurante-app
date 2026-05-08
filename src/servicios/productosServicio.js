@@ -15,55 +15,47 @@ import {
 export const crearProducto = async (datos, restauranteId) => {
   if (!restauranteId) throw new Error("ID de restaurante no proporcionado");
 
-  const docRef = await addDoc(collection(db, "productos"), {
-    ...datos,
-    restauranteId: restauranteId,
-    disponible: true,
-    fechaCreacion: new Date(),
-  });
+  const docRef = await addDoc(
+    collection(db, "restaurantes", restauranteId, "productos"),
+    {
+      ...datos,
+      disponible: true,
+      fechaCreacion: new Date(),
+    },
+  );
   return docRef.id;
 };
 
 // Actualizar producto
 export const actualizarProducto = async (id, datos, restauranteId) => {
-  if (!restauranteId)
-    throw new Error("Falta restauranteId para validar permisos");
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+  await updateDoc(docRef, datos);
+};
 
-  await updateDoc(doc(db, "productos", id), {
-    ...datos,
-    restauranteId,
-  });
+export const eliminarProducto = async (id, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId");
+
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+  await deleteDoc(docRef);
 };
 
 export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
-  if (!restauranteId)
-    throw new Error("Falta restauranteId para validar permisos");
+  if (!restauranteId) throw new Error("Falta restauranteId");
 
-  await updateDoc(doc(db, "productos", id), {
-    disponible: estado,
-    restauranteId,
-  });
-};
-
-export const eliminarProducto = async (id) => {
-  const docRef = doc(db, "productos", id);
-  await deleteDoc(docRef);
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+  await updateDoc(docRef, { disponible: estado });
 };
 
 // Obtener productos en tiempo real
 export const obtenerProductos = (restauranteId, categoria, callback) => {
   const q = query(
-    collection(db, "productos"),
-    where("restauranteId", "==", restauranteId),
+    collection(db, "restaurantes", restauranteId, "productos"),
     where("categoria", "==", categoria),
     where("disponible", "==", true),
   );
 
   return onSnapshot(q, (snapshot) => {
-    const datos = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     callback(datos);
   });
 };
