@@ -329,8 +329,8 @@
   bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 75px;
-  height: 75px;
+  width: 70px;
+  height: 70px;
   background: #6366f1; 
   border-radius: 50%;
   box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
@@ -344,16 +344,16 @@
 }
 
 .carrito-flotante span {
-  font-size: 32px;
-  filter: brightness(0) invert(1); 
+  font-size: 30px;
+  filter: brightness(0) invert(1);
 }
 
-.carrito-flotante::after {
-  content: "2"; 
+/* Este es tu nuevo contador dinámico */
+.contador-real {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background: #ffffff; 
+  top: 0;
+  right: 0;
+  background: #ffffff;
   color: #6366f1;
   width: 26px;
   height: 26px;
@@ -363,12 +363,13 @@
   align-items: center;
   font-size: 13px;
   font-weight: 900;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  border: 2px solid #6366f1;
 }
 
 .carrito-flotante:hover {
-  transform: translateX(-50%) translateY(-8px);
-  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+  transform: translateX(-50%) translateY(-10px);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.5);
 }
 
 .carrito-flotante:active {

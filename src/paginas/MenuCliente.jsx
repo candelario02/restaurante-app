@@ -316,7 +316,10 @@ const MenuCliente = ({ restauranteId }) => {
           className="carrito-flotante"
           onClick={() => setVerCarrito(true)}
         >
-          <span>🛒 {carrito.length}</span>
+          <span>🛒</span>
+          {carrito.length > 0 && (
+            <div className="contador-real">{carrito.length}</div>
+          )}
         </button>
       )}
 
