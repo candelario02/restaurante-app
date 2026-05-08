@@ -1,3 +1,6 @@
+/* =============================================
+   1. GLOBALES Y VARIABLES
+   ============================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -32,6 +35,9 @@ body {
   overflow-x: hidden;
 }
 
+/* =============================================
+   2. BARRA SUPERIOR (TOP BAR)
+   ============================================= */
 .top-bar {
   background: white;
   height: var(--top-bar-height);
@@ -64,6 +70,75 @@ body {
   white-space: nowrap;
 }
 
+/* =============================================
+   3. NAVEGACIÓN ADMIN (TABS HORIZONTALES)
+   ============================================= */
+.nav-admin-tabs-horizontal {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  margin-left: 20px;
+}
+
+.btn-nav-tab {
+  position: relative;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.3s;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.btn-nav-tab:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-nav-tab.active {
+  background: var(--primary-dark);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+/* Badge de notificación (pedidos pendientes) */
+.badge-notificacion {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--danger);
+  color: white;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid white;
+  z-index: 10;
+  animation: pulse 2s infinite;
+}
+
+/* =============================================
+   4. ACCIONES DE LA BARRA (Login, Cambiar vista, Salir)
+   ============================================= */
+.nav-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
 .btn-nav-admin {
   background: var(--primary-light);
   color: var(--primary);
@@ -71,13 +146,8 @@ body {
   border-radius: 10px;
   font-weight: 700;
   font-size: 0.9rem;
-}
-.nav-admin-tabs-horizontal {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
-  margin-left: 20px;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-nav-salir-rojo {
@@ -99,91 +169,20 @@ body {
   background: var(--danger);
   color: white;
 }
-.btn-nav-tab:hover {
-  background: var(--primary);
-  color: white;
-}
-.btn-nav-tab.active {
-  background: var(--primary-dark);
-  color: white;
-  box-shadow: var(--shadow-md);
-}
-.nav-actions {
-  display: flex;
-  flex-direction: row; 
-  align-items: center;
-  gap: 10px;         
-}
-.btn-nav-tab {
-  position: relative; /* CRUCIAL: Esto permite que el badge se pegue al botón */
-  background: var(--primary-light);
-  color: var(--primary);
-  border: 1px solid var(--primary);
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: 0.3s;
-  height: 40px; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap; 
-}
 
-.badge-notificacion {
-  position: absolute;
-  top: -10px; 
-  right: -10px;
-  background-color: var(--danger);
-  color: white;
-  font-size: 11px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid white;
-  z-index: 10;
-  animation: pulse 2s infinite; 
-}
-
-
-main {
+/* =============================================
+   5. CONTENIDO PRINCIPAL (MAIN)
+   ============================================= */
+.main-content {
   width: 100%;
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 20px;
 }
 
-.productos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .top-bar-container {
-    padding: 0 15px;
-  }
-
-  .brand span {
-    font-size: 1rem;
-  }
-
-  .productos-grid {
-    grid-template-columns: 1fr; 
-    gap: 15px;
-  }
-
-  .btn-nav-admin, .btn-nav-salir {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-}
-
+/* =============================================
+   6. MODAL DE LOGIN (Overlay y Contenedor)
+   ============================================= */
 .login-modal-overlay {
   position: fixed;
   inset: 0;
@@ -196,8 +195,81 @@ main {
   padding: 15px;
 }
 
+.login-modal-container {
+  background: white;
+  width: 100%;
+  max-width: 400px;
+  padding: 30px 20px;
+  border-radius: 24px;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalJumpIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-cerrar-modal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #f1f5f9;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =============================================
+   7. ANIMACIONES
+   ============================================= */
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
   100% { transform: scale(1); }
+}
+
+@keyframes modalJumpIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =============================================
+   8. RESPONSIVE
+   ============================================= */
+@media (max-width: 768px) {
+  .top-bar-container {
+    padding: 0 15px;
+  }
+
+  .brand span {
+    font-size: 1rem;
+  }
+
+  .btn-nav-admin, .btn-nav-salir-rojo {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .btn-nav-tab {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    height: 34px;
+  }
+
+  .nav-admin-tabs-horizontal {
+    gap: 4px;
+    margin-left: 10px;
+  }
+
+  .badge-notificacion {
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
 }

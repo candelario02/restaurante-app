@@ -10,51 +10,51 @@ function Login({ onClose, onSuccess }) {
   const [cargando, setCargando] = useState(false);
 
   const manejarLogin = async (e) => {
-  e.preventDefault();
-  setError("");
-  setCargando(true);
+    e.preventDefault();
+    setError("");
+    setCargando(true);
 
-  try {
-    const datosUsuario = await loginUsuario(email, password);
-    
-    const { restauranteId, rol } = datosUsuario;
+    try {
+      const datosUsuario = await loginUsuario(email, password);
 
-    if (!restauranteId || !rol) {
-      throw new Error("DATOS_INCOMPLETOS");
+      const { restauranteId, rol } = datosUsuario;
+
+      if (!restauranteId || !rol) {
+        throw new Error("DATOS_INCOMPLETOS");
+      }
+
+      localStorage.setItem("esAdmin", "true");
+      localStorage.setItem("restauranteId", restauranteId);
+      localStorage.setItem("rolUsuario", rol);
+      if (onSuccess) {
+        onSuccess({
+          restauranteId,
+          rol,
+          esAdmin: true,
+        });
+      }
+      if (onClose) onClose();
+    } catch (err) {
+      console.error("Error en el flujo de Login:", err);
+
+      const mensajesError = {
+        NO_AUTORIZADO: "No tienes permisos para acceder a este panel.",
+        "auth/user-not-found": "El usuario no existe.",
+        "auth/wrong-password": "Contraseña incorrecta.",
+        DATOS_INCOMPLETOS: "Error en el perfil: Faltan datos de restaurante.",
+      };
+
+      setError(
+        mensajesError[err.message] || "Error de conexión. Intenta de nuevo.",
+      );
+    } finally {
+      setCargando(false);
     }
-
-    localStorage.setItem("esAdmin", "true");
-    localStorage.setItem("restauranteId", restauranteId);
-    localStorage.setItem("rolUsuario", rol);
-    if (onSuccess) {
-      onSuccess({ 
-        restauranteId, 
-        rol, 
-        esAdmin: true 
-      });
-    }
-    if (onClose) onClose();
-
-  } catch (err) {
-    console.error("Error en el flujo de Login:", err);
-    
-    const mensajesError = {
-      "NO_AUTORIZADO": "No tienes permisos para acceder a este panel.",
-      "auth/user-not-found": "El usuario no existe.",
-      "auth/wrong-password": "Contraseña incorrecta.",
-      "DATOS_INCOMPLETOS": "Error en el perfil: Faltan datos de restaurante."
-    };
-
-    setError(mensajesError[err.message] || "Error de conexión. Intenta de nuevo.");
-    
-  } finally {
-    setCargando(false);
-  }
-};
+  };
 
   return (
     <div className="login-content">
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+      <div className="login-icon-wrapper">
         {error ? (
           <ShieldAlert size={50} color="#ff4d4d" />
         ) : (

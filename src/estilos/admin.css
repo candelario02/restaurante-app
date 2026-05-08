@@ -1,4 +1,6 @@
-/* 1. CONTENEDOR Y SECCIONES */
+/* =============================================
+   1. BASE Y GLOBALES (Aplica a todo el Admin)
+   ============================================= */
 .admin-container {
   padding: 20px;
   animation: fadeIn 0.4s ease;
@@ -25,157 +27,20 @@
   gap: 10px;
 }
 
-/* 2. FORMULARIOS */
-.form-admin {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 30px;
-  background: #f8fafc;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-}
-
-.form-admin input {
-  flex: 1;
-  min-width: 150px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  outline: none;
-}
-
-.form-admin input:focus {
-  border-color: #6366f1;
-}
-
-.btn-primary {
-  background: #6366f1;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
-
-/* 3. GRILLAS Y CARDS */
-.grid-admin {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 15px;
-}
-
-.card-admin {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 15px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.card-admin h3 {
-  font-size: 1rem;
-  color: #334155;
-  margin: 0;
-}
-
-.card-admin p {
-  color: #6366f1;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-/* Acciones (Editar/Eliminar) */
-.acciones {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 10px;
-}
-
-.acciones button {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  background: #f1f5f9;
-  display: flex;
-  justify-content: center;
-}
-
-.acciones button:hover:first-child { color: #6366f1; }
-.acciones button:hover:last-child { color: #ef4444; }
-
-/* 4. ESTADOS (BADGES) */
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  width: fit-content;
-  text-transform: uppercase;
-}
-
-.status-badge.entregado { background: #dcfce7; color: #166534; }
-.status-badge.pendiente { background: #fef9c3; color: #854d0e; }
-
-.btn-success {
-  background: #22c55e;
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* 5. ANIMACIONES */
+/* Animaciones y responsive base */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .form-admin { flex-direction: column; }
   .grid-admin { grid-template-columns: 1fr; }
 }
-/* ... (Tus estilos de admin-container y admin-section se mantienen) ... */
 
-/* 1. TABS DE NAVEGACIÓN */
-.admin-nav-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  border-bottom: 2px solid #f1f5f9;
-  padding-bottom: 10px;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  background: transparent;
-  color: #64748b;
-  font-weight: 600;
-  transition: 0.3s;
-}
-
-.tab-btn.active {
-  background: #6366f1;
-  color: white;
-}
-
-/* 2. FORMULARIO PROFESIONAL (Input Full Width) */
+/* =============================================
+   2. SECCIÓN MENÚ (Productos)
+   ============================================= */
 .form-admin-pro {
   display: grid;
   gap: 15px;
@@ -203,7 +68,34 @@
   gap: 10px;
 }
 
+.preview-imagen-container {
+  width: 100%;
+  max-width: 300px;
+  height: 200px;
+  margin: 10px auto;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+}
+
+.preview-imagen-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-botones-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
 .btn-guardar-pro {
+  flex: 2;
   background: #6366f1;
   color: white;
   padding: 16px;
@@ -216,7 +108,25 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-/* 3. TABLA DE PRODUCTOS (Estilo imagen original) */
+.btn-cancelar-pro {
+  flex: 1;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn-cancelar-pro:hover {
+  background-color: #dc2626;
+}
+
+/* Tabla de productos */
 .tabla-container-pro {
   overflow-x: auto;
   background: white;
@@ -279,63 +189,72 @@
   transition: 0.2s;
 }
 
-.btn-edit { background: #f1f5f9; color: #64748b; }
-.btn-delete { background: #fff1f2; color: #ef4444; }
-
+.btn-edit {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.btn-delete {
+  background: #fff1f2;
+  color: #ef4444;
+}
 .btn-edit:hover { background: #e2e8f0; }
 .btn-delete:hover { background: #fee2e2; }
-/* Contenedor de la vista previa */
-.preview-imagen-container {
-    width: 100%;
-    max-width: 300px; 
-    height: 200px;    
-    margin: 10px auto;
-    overflow: hidden;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f9f9f9;
-}
 
-.preview-imagen-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; 
-}
-.admin-botones-container {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-}
-
-.btn-guardar-pro {
-  flex: 2; 
-}
-
-.btn-cancelar-pro {
-  flex: 1;
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-
-.btn-cancelar-pro:hover {
-  background-color: #dc2626;
-}
 /* =============================================
-   --- SECCIÓN CAJA --- 
+   3. SECCIÓN PEDIDOS
    ============================================= */
+.grid-admin {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
 
-/* Solo el estilo para el select de filtros */
+.card-admin {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-admin h3 {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+}
+.card-admin p {
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: fit-content;
+  text-transform: uppercase;
+}
+.status-badge.entregado { background: #dcfce7; color: #166534; }
+.status-badge.pendiente { background: #fef9c3; color: #854d0e; }
+
+.btn-success {
+  background: #22c55e;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =============================================
+   4. SECCIÓN CAJA (Ventas y estadísticas)
+   ============================================= */
 .select-admin-filtro {
   padding: 10px 15px;
   font-size: 0.9rem;
@@ -349,7 +268,6 @@
   transition: border-color 0.2s;
   min-width: 180px;
 }
-
 .select-admin-filtro:focus {
   border-color: #6366f1;
 }
@@ -382,7 +300,6 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
-
 .card-resumen h3 {
   color: #64748b;
   font-size: 0.85rem;
@@ -390,15 +307,13 @@
   margin-bottom: 10px;
   letter-spacing: 0.5px;
 }
-
-.card-resumen .monto-dia { 
-  color: #22c55e; 
-  font-size: 1.8rem; 
-  font-weight: 800; 
+.card-resumen .monto-dia {
+  color: #22c55e;
+  font-size: 1.8rem;
+  font-weight: 800;
   margin: 5px 0;
 }
 
-/* --- TABLA DE TRANSACCIONES --- */
 .subtitulo-tabla {
   margin-top: 35px;
   margin-bottom: 20px;
@@ -416,17 +331,14 @@
   color: #1e293b;
 }
 
-/* Columna Reseña */
 .col-resena {
   min-width: 150px;
 }
-
 .estrellas-display {
-  color: #f1c40f; /* Amarillo profesional */
+  color: #f1c40f;
   font-size: 1.1rem;
   letter-spacing: 1px;
 }
-
 .comentario-mini {
   display: block;
   font-size: 0.8rem;
@@ -435,17 +347,17 @@
   max-width: 180px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Corta texto largo con ... */
+  text-overflow: ellipsis;
 }
 
-/* --- MODAL DETALLE (CENTRADO TOTAL) --- */
+/* Modales de detalle de pedido */
 .modal-overlay-fijo {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.75); /* Fondo más profundo */
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -476,7 +388,6 @@
   align-items: center;
   border-bottom: 1px solid #e2e8f0;
 }
-
 .modal-header h3 {
   font-size: 1.1rem;
   color: #1e293b;
@@ -497,7 +408,6 @@
   align-items: center;
   transition: all 0.2s;
 }
-
 .btn-cerrar-x:hover {
   background: #e2e8f0;
   color: #0f172a;
@@ -506,13 +416,11 @@
 .modal-body {
   padding: 24px;
 }
-
 .lista-productos-modal {
   list-style: none;
   padding: 0;
   margin: 15px 0;
 }
-
 .item-fila-modal {
   display: flex;
   justify-content: space-between;
@@ -521,7 +429,6 @@
   font-size: 0.95rem;
   color: #334155;
 }
-
 .modal-total-destacado {
   margin-top: 20px;
   padding: 18px;
@@ -535,14 +442,12 @@
   color: #2563eb;
   border: 1px solid #dbeafe;
 }
-
 .modal-footer {
   padding: 16px 24px;
   background: #f8fafc;
   text-align: right;
   border-top: 1px solid #e2e8f0;
 }
-
 .btn-accion-primario {
   background: #2563eb;
   color: white;
@@ -553,7 +458,42 @@
   font-weight: 600;
   transition: background 0.2s;
 }
-
 .btn-accion-primario:hover {
   background: #1d4ed8;
+}
+
+/* =============================================
+   5. SECCIÓN USUARIOS (Gestión de personal)
+   ============================================= */
+.form-admin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-admin input {
+  flex: 1;
+  min-width: 150px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+}
+.form-admin input:focus {
+  border-color: #6366f1;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
 }

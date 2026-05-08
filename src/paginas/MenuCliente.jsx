@@ -326,26 +326,13 @@ const MenuCliente = ({ restauranteId }) => {
           <div className="seguimiento-box">
             <div className="seguimiento-header">
               <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "4px",
-                }}
-              >
+              <div className="seguimiento-header-total">
                 <span className="pedido-id-tag">
                   👤{" "}
                   {datosPedidoRealtime?.cliente?.nombre ||
                     `ID: #${pedidoActivoId?.slice(-5)}`}
                 </span>
-                <span
-                  style={{
-                    fontSize: "0.85rem",
-                    fontWeight: "bold",
-                    color: "var(--primary)",
-                  }}
-                >
+                <span className="seguimiento-total-text">
                   Total: S/ {Number(datosPedidoRealtime?.total || 0).toFixed(2)}
                 </span>
               </div>
@@ -455,12 +442,7 @@ const MenuCliente = ({ restauranteId }) => {
             </h1>
           </header>
 
-          <img
-            src={logoRestaurante}
-            alt="logo"
-            className="logo-circular"
-            style={{ width: 80, borderRadius: "50%", marginBottom: "15px" }}
-          />
+          <img src={logoRestaurante} alt="logo" className="logo-circular" />
           <h2 className="titulo-categoria">¿Qué deseas pedir hoy?</h2>
 
           <div className="categorias-grid-principal">
@@ -498,7 +480,7 @@ const MenuCliente = ({ restauranteId }) => {
               <ArrowLeft size={18} /> Volver
             </button>
             <h2 className="titulo-categoria">{categoriaActual}</h2>
-            <div style={{ width: "80px" }}></div>{" "}
+            <div className="header-categoria-spacer"></div>{" "}
           </div>
 
           <div className="productos-grid">
@@ -581,8 +563,7 @@ const MenuCliente = ({ restauranteId }) => {
 
               <div className="carrito-acciones">
                 <button
-                  className="btn-agregar"
-                  style={{ background: "#666" }}
+                  className="btn-agregar-cerrar"
                   onClick={() => {
                     if (pedidoActivoId) {
                       setCarrito([]);

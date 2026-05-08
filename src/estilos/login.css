@@ -1,20 +1,21 @@
-/* 1. CAPA OSCURA DE FONDO (Overlay) */
+/* =============================================
+   1. MODAL / OVERLAY (Gestionado por el padre)
+   ============================================= */
 .login-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Fondo oscuro */
-  backdrop-filter: blur(4px); /* Desenfoque elegante */
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000; /* Por encima de todo */
+  z-index: 10000;
   padding: 20px;
 }
 
-/* 2. CONTENEDOR BLANCO DEL LOGIN */
 .login-modal-container {
   background: white;
   width: 100%;
@@ -22,11 +23,10 @@
   padding: 30px 20px;
   border-radius: 24px;
   position: relative;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   animation: modalJumpIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Botón X de cerrar */
 .btn-cerrar-modal {
   position: absolute;
   top: 15px;
@@ -41,9 +41,17 @@
   color: #64748b;
 }
 
-/* 3. CLASES QUE YA USAS EN TU JSX (Limpias) */
+/* =============================================
+   2. CONTENIDO PRINCIPAL DEL LOGIN (Usado en este componente)
+   ============================================= */
 .login-content {
   width: 100%;
+}
+
+/* Nueva clase para centrar el ícono (reemplaza el style inline) */
+.login-icon-wrapper {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .login-form {
@@ -60,6 +68,9 @@
   margin-bottom: 5px;
 }
 
+/* =============================================
+   3. INPUTS CON ÍCONOS
+   ============================================= */
 .input-group {
   position: relative;
 }
@@ -87,6 +98,9 @@
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
+/* =============================================
+   4. BOTÓN Y MENSAJES
+   ============================================= */
 .btn-login-submit {
   background: #6366f1;
   color: white;
@@ -102,6 +116,11 @@
   margin-top: 10px;
 }
 
+.btn-login-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .mensaje-alerta.error {
   background: #fff1f2;
   color: #e11d48;
@@ -112,8 +131,16 @@
   border: 1px solid #fecdd3;
 }
 
-/* ANIMACIÓN DE SALTO */
+/* =============================================
+   5. ANIMACIONES
+   ============================================= */
 @keyframes modalJumpIn {
-  from { opacity: 0; transform: translateY(30px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

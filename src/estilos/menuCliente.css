@@ -1,6 +1,6 @@
-/* =========================================
-   1. VARIABLES Y BASE
-   ========================================= */
+/* =============================================
+   1. VARIABLES GLOBALES Y RESET
+   ============================================= */
 :root {
   --primary: #6366f1;
   --primary-light: #eef2ff;
@@ -20,9 +20,9 @@
   animation: fadeIn 0.4s ease;
 }
 
-/* =========================================
-   2. HEADER Y TÍTULOS (Alineación Volver + Título)
-   ========================================= */
+/* =============================================
+   2. HEADER Y TÍTULOS (Volver + título)
+   ============================================= */
 .header-categoria {
   display: flex;
   justify-content: space-between;
@@ -55,118 +55,15 @@
   font-weight: 600;
   cursor: pointer;
 }
-/* =========================================
-   SESIÓN CALIFICACIONES (MODAL)
-   ========================================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
 
+/* Espaciador para alinear título (usado en JSX) */
+.header-categoria-spacer {
+  width: 80px;
 }
 
-.modal-content-calificacion {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-  animation: modalPop 0.3s ease-out;
-}
-
-@keyframes modalPop {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.modal-content-calificacion h3 {
-  margin-bottom: 20px;
-  color: #1a2e4c;
-  font-size: 1.5rem;
-}
-
-.estrellas-container {
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: center;
-  gap: 5px;
-}
-
-.estrella-span {
-  cursor: pointer;
-  font-size: 2.5rem;
-  transition: transform 0.2s ease;
-}
-
-.estrella-span:hover {
-  transform: scale(1.2);
-}
-
-.input-resena {
-  width: 100%;
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  margin-bottom: 20px;
-  min-height: 100px;
-  font-family: inherit;
-  resize: none;
-  outline: none;
-}
-
-.input-resena:focus {
-  border-color: #4CAF50;
-}
-
-.contenedor-botones-modal {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn-enviar-resena {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 15px;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s;
-}
-
-.btn-enviar-resena:hover {
-  background: #45a049;
-}
-
-.btn-omitir {
-  background: transparent;
-  color: #666;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 5px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* =========================================
-   3. VISTA DE CATEGORÍAS (Principal)
-   ========================================= */
+/* =============================================
+   3. VISTA PRINCIPAL (CATEGORÍAS)
+   ============================================= */
 .view-principal {
   display: flex;
   flex-direction: column;
@@ -204,6 +101,7 @@
   transition: all 0.3s ease;
 }
 
+/* Íconos por categoría */
 .icon-comidas { color: #ff9f1c !important; }
 .icon-cafeteria { color: #6d4c41 !important; }
 .icon-bebidas { color: #00b4d8 !important; }
@@ -212,9 +110,15 @@
 .categorias-grid-principal > div:hover { transform: translateY(-8px); }
 .categorias-grid-principal > div:hover svg { border-color: currentColor; box-shadow: var(--shadow-lg); }
 
-/* =========================================
+.logo-circular {
+  width: 80px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+/* =============================================
    4. GRID DE PRODUCTOS
-   ========================================= */
+   ============================================= */
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -231,10 +135,27 @@
   transition: 0.3s;
 }
 
-.producto-card img { width: 100%; height: 130px; object-fit: cover; }
-.producto-info { padding: 12px; }
-.producto-info h3 { font-size: 1rem; margin-bottom: 5px; color: var(--text-main); }
-.precio { color: var(--primary); font-weight: 800; font-size: 1.1rem; }
+.producto-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.producto-info {
+  padding: 12px;
+}
+
+.producto-info h3 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: var(--text-main);
+}
+
+.precio {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
 
 .producto-card.agotado {
   filter: grayscale(1);
@@ -257,10 +178,16 @@
   gap: 8px;
 }
 
-/* =========================================
-   5. CARRITO ELEGANTE (Modal e Items)
-   ========================================= */
-.carrito-overlay, .overlay-msg {
+.btn-agregar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   5. CARRITO (MODAL, ITEMS, BOTONES)
+   ============================================= */
+.carrito-overlay,
+.overlay-msg {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
@@ -271,7 +198,8 @@
   z-index: 1000;
 }
 
-.carrito-modal, .msg-box {
+.carrito-modal,
+.msg-box {
   background: white;
   width: 95%;
   max-width: 450px;
@@ -283,6 +211,22 @@
   flex-direction: column;
 }
 
+.carrito-header h2 {
+  margin: 0;
+}
+
+.carrito-items {
+  max-height: 45vh;
+  overflow-y: auto;
+  padding: 10px;
+  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
 .carrito-item {
   display: flex;
   justify-content: space-between;
@@ -292,19 +236,17 @@
   padding: 12px;
   border-radius: 15px;
 }
-.carrito-items {
-  max-height: 45vh;    
-  overflow-y: auto;   
-  padding: 10px;      
-  margin: 10px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;           
-    scrollbar-width: thin;
-  scrollbar-color: var(--primary) transparent;
+
+.item-info h4 {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-.item-info h4 { margin: 0; font-size: 0.95rem; }
+.item-info span {
+  font-size: 0.85rem;
+  color: var(--primary);
+  font-weight: bold;
+}
 
 .item-controles {
   display: flex;
@@ -326,98 +268,62 @@
   cursor: pointer;
 }
 
-.item-cantidad { font-weight: 800; min-width: 15px; text-align: center; }
+.item-cantidad {
+  font-weight: 800;
+  min-width: 15px;
+  text-align: center;
+}
 
+.carrito-footer {
+  margin-top: auto;
+}
 
-.btn-finalizar-pedido {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: white;
-  padding: 16px 20px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  border: none;
-  width: 100%;
-  cursor: pointer;
+.total-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+.total-monto {
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+
+.carrito-acciones {
+  display: flex;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-  transition: all 0.3s ease;
-  margin-top: 10px;
 }
 
-.btn-finalizar-pedido:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+.btn-agregar-cerrar {
+  background: #666;
+  color: white;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  flex: 1;
 }
-
-.btn-finalizar-pedido:active {
-  transform: translateY(0);
-}
-
-.btn-finalizar-pedido.active {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
 
 .btn-pagar {
-  width: 100%;
   background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
   color: white;
-  padding: 15px;
-  border-radius: 15px;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
   font-weight: 800;
   text-transform: uppercase;
-  margin-top: 10px;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
   cursor: pointer;
+  flex: 1;
 }
 
-/* =========================================
-   6. TOAST Y MENSAJES (Centro de pantalla)
-   ========================================= */
-.toast-agregado {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  background: rgba(16, 185, 129, 0.95); 
-  color: white;
-  padding: 20px 35px;
-  border-radius: var(--radius);
-  z-index: 3000;
-  box-shadow: var(--shadow-lg);
-  font-weight: bold;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  pointer-events: none;
-  
-  animation: popInAndOut 2s ease-in-out forwards;
+.btn-pagar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.toast-agregado.toast-error {
-  background: rgba(239, 68, 68, 0.95); 
-  border-left: 5px solid #b91c1c;
-}
-
-/* =========================================
-   7. OTROS (Inputs, Flotantes, Animaciones)
-   ========================================= */
-.input-pro {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  font-size: 1rem;
-}
-
+/* Botón flotante del carrito */
 .carrito-flotante {
   position: fixed;
   bottom: 25px;
@@ -436,9 +342,44 @@
   gap: 10px;
   cursor: pointer;
 }
-/* =========================================
-   8. SEGUIMIENTO DE PEDIDO (SISTEMA STEPPER)
-   ========================================= */
+
+/* =============================================
+   6. FORMULARIO DE ENTREGA
+   ============================================= */
+.input-pro {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+.acciones-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-finalizar-pedido {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btn-finalizar-pedido:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   7. SEGUIMIENTO DE PEDIDO (STEPPER)
+   ============================================= */
 .seguimiento-box {
   width: 100%;
   border: 2px solid var(--primary-light);
@@ -466,6 +407,19 @@
   font-family: monospace;
 }
 
+.seguimiento-header-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.seguimiento-total-text {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
 .stepper-container {
   display: flex;
   justify-content: space-between;
@@ -477,7 +431,7 @@
 
 .stepper-line {
   position: absolute;
-  top: 16px; 
+  top: 16px;
   left: 10%;
   right: 10%;
   height: 2px;
@@ -541,6 +495,10 @@
   min-height: 1.2rem;
 }
 
+.seguimiento-acciones {
+  margin-top: 15px;
+}
+
 .btn-pedir-mas {
   background: var(--primary-light);
   color: var(--primary);
@@ -555,7 +513,6 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
 }
 
 .btn-pedir-mas:hover {
@@ -566,13 +523,9 @@
   box-shadow: var(--shadow-md);
 }
 
-.btn-pedir-mas:active {
-  transform: translateY(0);
-}
-/* Estilo para el botón de finalizar y calificar */
 .btn-finalizar-calificar {
   width: 100%;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   padding: 15px;
   border-radius: 12px;
@@ -585,7 +538,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: all 0.3s ease; 
+  transition: all 0.3s ease;
 }
 
 .btn-finalizar-calificar:hover {
@@ -594,28 +547,199 @@
   box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
 }
 
-.btn-finalizar-calificar:active {
-  transform: translateY(0);
-}
-@keyframes popInAndOut {
-  0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
-  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-  25% { transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
+/* =============================================
+   8. MODAL DE CALIFICACIÓN
+   ============================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
-@keyframes fadeInUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
+.modal-content-calificacion {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  animation: modalPop 0.3s ease-out;
+}
+
+.modal-content-calificacion h3 {
+  margin-bottom: 20px;
+  color: #1a2e4c;
+  font-size: 1.5rem;
+}
+
+.estrellas-container {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.estrella-span {
+  cursor: pointer;
+  font-size: 2.5rem;
+  transition: transform 0.2s ease;
+}
+
+.estrella-span:hover {
+  transform: scale(1.2);
+}
+
+.input-resena {
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  min-height: 100px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+}
+
+.input-resena:focus {
+  border-color: #4caf50;
+}
+
+.contenedor-botones-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-enviar-resena {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.btn-enviar-resena:hover {
+  background: #45a049;
+}
+
+.btn-omitir {
+  background: transparent;
+  color: #666;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 5px;
+}
+
+/* =============================================
+   9. TOAST Y MENSAJES FLOTANTES
+   ============================================= */
+.toast-agregado {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  background: rgba(16, 185, 129, 0.95);
+  color: white;
+  padding: 20px 35px;
+  border-radius: var(--radius);
+  z-index: 3000;
+  box-shadow: var(--shadow-lg);
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+  animation: popInAndOut 2s ease-in-out forwards;
+}
+
+.toast-agregado.toast-error {
+  background: rgba(239, 68, 68, 0.95);
+  border-left: 5px solid #b91c1c;
+}
+
+/* =============================================
+   10. ANIMACIONES GLOBALES
+   ============================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popInAndOut {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -40%) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.9);
+  }
+}
+
+@keyframes modalPop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =============================================
+   11. RESPONSIVE
+   ============================================= */
 @media (max-width: 480px) {
-  .categorias-grid-principal { gap: 15px; }
-  .categorias-grid-principal svg { width: 90px; height: 90px; padding: 20px; }
+  .categorias-grid-principal {
+    gap: 15px;
+  }
+  .categorias-grid-principal svg {
+    width: 90px;
+    height: 90px;
+    padding: 20px;
+  }
 }
