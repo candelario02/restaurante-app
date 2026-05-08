@@ -177,7 +177,7 @@ function App() {
                   </>
                 )}
 
-                {/* MOZOS Y ADMINS ven Pedidos y Caja */}
+                {/* MOZOS Y ADMIN ven Pedidos y Caja */}
                 <button
                   className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                   onClick={() => setSeccion("pedidos")}
