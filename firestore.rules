@@ -8,6 +8,7 @@ service cloud.firestore {
     }
 
     function getUsuarioData() {
+      // Importante: El login siempre consulta la colección GLOBAL para saber a qué restaurante pertenece
       return get(/databases/$(database)/documents/usuarios_admin/$(request.auth.token.email)).data;
     }
 
@@ -16,70 +17,52 @@ service cloud.firestore {
       return data.rol == "admin" || data.rol == "superadmin";
     }
 
-    // 👨‍💼 USUARIOS ADMIN
+    // 1. 👨‍💼 LOGIN GLOBAL (Solo lectura para que el sistema reconozca al usuario)
     match /usuarios_admin/{email} {
-      allow read: if estaAutenticado() && (
-        request.auth.token.email == email || 
-        (getUsuarioData().rol == "admin" && getUsuarioData().restauranteId == resource.data.restauranteId)
-      );
-
-      allow create, update: if estaAutenticado() && 
-        esAdmin() && 
-        getUsuarioData().restauranteId == request.resource.data.restauranteId;
-
-      allow delete: if estaAutenticado() && 
-        esAdmin() && 
-        getUsuarioData().restauranteId == resource.data.restauranteId;
+      allow read: if true; 
+      allow write: if estaAutenticado() && esAdmin();
     }
 
-    // 🍽️ PRODUCTOS
-    match /productos/{docId} {
-      allow read: if true; // ✅ Público para QR
+    // 2. 🏗️ ESTRUCTURA JERÁRQUICA (RESTAURANTES)
+    match /restaurantes/{restId} {
+      
+      allow read: if true;
 
-      allow create: if estaAutenticado() && 
-                    esAdmin() && 
-                    getUsuarioData().restauranteId == request.resource.data.restauranteId;
+      // 🍽️ PRODUCTOS (Ahora dentro de restaurante)
+      match /productos/{docId} {
+        allow read: if true;
+        allow write: if estaAutenticado() && esAdmin() && getUsuarioData().restauranteId == restId;
+      }
 
-      allow update, delete: if estaAutenticado() && 
-                            esAdmin() && 
-                            getUsuarioData().restauranteId == resource.data.restauranteId;
+      // 📝 PEDIDOS (Tu lógica de adicionales y reseñas corregida)
+      match /pedidos/{docId} {
+        allow read, create: if true;
+        allow update: if estaAutenticado() || esAdicional() || esSoloResena();
+        allow delete: if estaAutenticado() && esAdmin();
+      }
+
+      // 👤 USUARIOS DEL STAFF (Dentro del restaurante)
+      match /usuarios_admin/{email} {
+        allow read, write: if estaAutenticado() && esAdmin() && getUsuarioData().restauranteId == restId;
+      }
     }
 
- // 📝 PEDIDOS (Actualizado para permitir adicionales y reseñas)
-match /restaurantes/{restId}/pedidos/{docId} {
-  
-  allow read, create: if true; 
-  
-  allow update: if 
-    // Opción A: Es un Admin logueado
-    estaAutenticado() || 
-    // Opción B: Es un cliente agregando adicionales (items/total)
-    esAdicional() ||
-    // Opción C: Es un cliente dejando su reseña final
-    esSoloResena();
-  
-  allow delete: if estaAutenticado() && esAdmin();
-}
+    // 🔒 FUNCIONES DE VALIDACIÓN DE PEDIDOS
+    function esAdicional() {
+      return resource.data.estado == 'pendiente' && 
+             request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['items', 'total', 'fechaActualizacion', 'estado']);
+    }
 
-// 🔒 NUEVA FUNCIÓN PARA ADICIONALES
-// Permite al cliente editar items y total, pero SOLO si el pedido sigue pendiente
-function esAdicional() {
-  return resource.data.estado == 'pendiente' && 
-         request.resource.data.diff(resource.data).affectedKeys()
-         .hasAny(['items', 'total', 'fechaActualizacion', 'estado']);
-}
-
-// 🔒 TU FUNCIÓN DE RESEÑA (Se mantiene igual, es correcta)
-function esSoloResena() {
-  return request.resource.data.diff(resource.data).affectedKeys()
-    .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
-}
+    function esSoloResena() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
+    }
 
     // ⚙️ CONFIGURACIONES
     match /configuraciones/{docId} {
       allow read: if true;
-      allow write: if estaAutenticado() && 
-                   getUsuarioData().restauranteId == docId;
+      allow write: if estaAutenticado() && getUsuarioData().restauranteId == docId;
     }
   }
 }
