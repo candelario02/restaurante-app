@@ -148,7 +148,6 @@ function App() {
                   ? restauranteId.replace(/_/g, " ").toUpperCase()
                   : "BIENVENIDO"}
               </span>
-              {/* ✅ SALUDO BIENVENIDA PROFESIONAL */}
               {user && (
                 <span className="user-welcome">
                   👋 Hola, <strong>{user.email.split("@")[0]}</strong>
@@ -156,11 +155,11 @@ function App() {
               )}
             </div>
 
-            {/* ✅ RESTRICCIÓN PROFESIONAL DE PESTAÑAS */}
-            {user && restauranteId && (
+            {/* ✅ SOLO MOSTRAR PESTAÑAS SI isAdmin ES TRUE (MODO PANEL) */}
+            {user && restauranteId && isAdmin && (
               <div className="nav-admin-tabs-horizontal">
-                {/* Solo Admin ve Menú y Usuarios */}
-                {isAdmin && (
+                {/* 🛡️ RESTRICCIÓN DE BOTONES: Solo si el ROL es admin o superadmin */}
+                {(rol === "admin" || rol === "superadmin") && (
                   <>
                     <button
                       className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
@@ -177,7 +176,7 @@ function App() {
                   </>
                 )}
 
-                {/* MOZOS Y ADMIN ven Pedidos y Caja */}
+                {/* ✅ ESTOS SIEMPRE LOS VE EL MOZO/CAJERO (DENTRO DEL PANEL) */}
                 <button
                   className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                   onClick={() => setSeccion("pedidos")}
@@ -209,14 +208,19 @@ function App() {
               </button>
             ) : (
               <>
-                {isAdmin && (
-                  <button
-                    className="btn-nav-tab"
-                    onClick={() => setIsAdmin(!isAdmin)}
-                  >
-                    {isAdmin ? "Vista Cliente" : "Panel Control"}
-                  </button>
-                )}
+                {/* ✅ BOTÓN DE VISTA: Ahora está FUERA del condicional de isAdmin para que no desaparezca */}
+                <button
+                  className="btn-nav-tab"
+                  onClick={() => {
+                    // Si un mozo vuelve al panel, forzamos sección pedidos
+                    if (!isAdmin && (rol === "mozo" || rol === "cajero")) {
+                      setSeccion("pedidos");
+                    }
+                    setIsAdmin(!isAdmin);
+                  }}
+                >
+                  {isAdmin ? "Vista Cliente" : "Volver al Panel"}
+                </button>
 
                 <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
                   Salir
@@ -227,8 +231,8 @@ function App() {
         </div>
       </nav>
 
-      {/* contenido principal */}
       <main className="main-content">
+        {/* 🛡️ RENDERIZADO DEL CONTENIDO: Solo entra a Admin si isAdmin es true */}
         {isAdmin && restauranteId ? (
           <Admin
             seccion={seccion}
@@ -241,7 +245,7 @@ function App() {
         )}
       </main>
 
-      {/* login*/}
+      {/* ... (Tu modal de login igual, solo asegúrate de pasar bien el rol) */}
       {mostrarLogin && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
@@ -251,17 +255,18 @@ function App() {
             >
               ✕
             </button>
-
             <Login
               onClose={() => setMostrarLogin(false)}
               onSuccess={({ restauranteId: id, rol: r }) => {
-                localStorage.setItem("restauranteId", id);
-                localStorage.setItem("rolUsuario", r);
-                localStorage.setItem("esAdmin", "true");
-
                 setRestauranteId(id);
                 setRol(r);
                 setIsAdmin(true);
+                // Forzar sección inicial según rol al loguear
+                if (r === "mozo" || r === "cajero") {
+                  setSeccion("pedidos");
+                } else {
+                  setSeccion("menu");
+                }
                 setMostrarLogin(false);
               }}
             />
