@@ -49,6 +49,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [userPass, setUserPass] = useState("");
   const [userRol, setUserRol] = useState("mozo");
   const [filtroCaja, setFiltroCaja] = useState("dia");
+  const [busqueda, setBusqueda] = useState("");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -196,7 +197,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setEditandoId(null);
     setNombre("");
     setPrecio("");
+    setCategoria("Comidas");
+    setArchivo(null);
+    setImgPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
+  //buscador
+  const productosFiltrados = productos.filter((p) =>
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase()),
+  );
   //edicion
   const prepararEdicion = (p) => {
     setEditandoId(p.id);
@@ -388,7 +399,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN MENÚ */}
       {seccion === "menu" && (
         <div className="admin-section">
-          <h2 className="titulo-seccion">Nuevo Plato</h2>
+          <h2 className="titulo-seccion">
+            {editandoId ? "Editar Producto" : "Nuevo Plato"}
+          </h2>
 
           <form onSubmit={guardarProducto} className="form-admin-pro">
             <input
@@ -445,29 +458,41 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               )}
             </div>
 
-            <div className="admin-botones-container">
+            <div className="admin-acciones-mix">
               <button
                 type="submit"
-                className="btn-guardar-pro"
+                className="btn-guardar-pro-ajustado"
                 disabled={!restauranteId || cargando}
               >
                 {cargando ? (
-                  "Procesando..."
+                  "..."
                 ) : (
                   <>
                     <Save size={18} />
-                    {editandoId ? " Actualizar Producto" : " Guardar Producto"}
+                    {editandoId ? " Actualizar" : " Guardar"}
                   </>
                 )}
               </button>
 
+              <div className="buscador-container-pro">
+                <Search size={18} className="icon-search" />
+                <input
+                  type="text"
+                  placeholder="Buscar plato..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="input-buscar-interno"
+                />
+              </div>
+
               {editandoId && (
                 <button
                   type="button"
-                  className="btn-cancelar-pro"
+                  className="btn-cancelar-pro-circular"
                   onClick={cancelarEdicion}
+                  title="Cancelar edición"
                 >
-                  Cancelar
+                  ✕
                 </button>
               )}
             </div>
@@ -484,7 +509,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 </tr>
               </thead>
               <tbody>
-                {productos.map((p) => (
+                {productosFiltrados.map((p) => (
                   <tr key={p.id}>
                     <td className="td-plato">
                       <img
@@ -692,14 +717,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   .map((p) => (
                     <tr key={p.id}>
                       <td>
-                        {p.fecha
-                          ?.toDate()
-                          ?.toLocaleString("es-PE", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        {p.fecha?.toDate()?.toLocaleString("es-PE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </td>
                       <td>
                         <strong>{p.cliente?.nombre}</strong>
