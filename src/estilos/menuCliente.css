@@ -329,12 +329,12 @@
   bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
-  background: #ffffff;
+  width: 75px;
+  height: 75px;
+  background: #6366f1; 
   border-radius: 50%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+  border: none;
   z-index: 999;
   display: flex;
   justify-content: center;
@@ -344,37 +344,35 @@
 }
 
 .carrito-flotante span {
-  font-size: 30px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  font-size: 32px;
+  filter: brightness(0) invert(1); 
 }
 
 .carrito-flotante::after {
   content: "2"; 
   position: absolute;
-  top: 0px;
-  right: 0px;
-  background: #6366f1; 
-  color: white;
+  top: 2px;
+  right: 2px;
+  background: #ffffff; 
+  color: #6366f1;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 3px solid white;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 13px;
-  font-weight: 800;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .carrito-flotante:hover {
   transform: translateX(-50%) translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  background: #f8fafc;
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
 }
 
 .carrito-flotante:active {
-  transform: translateX(-50%) scale(0.95);
+  transform: translateX(-50%) scale(0.9);
 }
 
 /* =============================================
