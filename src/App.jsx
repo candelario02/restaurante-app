@@ -30,7 +30,17 @@ function App() {
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const prevPedidosRef = useRef(0);
   const esPrimeraCarga = useRef(true);
-// EFECTO de navegacion
+  const limpiarEstadoSesion = () => {
+    setUser(null);
+    setRol(null);
+    setIsAdmin(false);
+    const ruta = window.location.pathname;
+    if (ruta === "/" || ruta === "/login") {
+      setRestauranteId(null);
+      localStorage.clear();
+    }
+  };
+  // EFECTO de navegacion
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
@@ -41,7 +51,7 @@ function App() {
       localStorage.setItem("restauranteId", idDesdeUrl);
     }
   }, []);
-  // EFECTO Gestión de Sesión y Permisos
+  // EFECTO: Gestión de Sesión y Permisos
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
@@ -58,8 +68,10 @@ function App() {
           setRol(datos.rol);
           setIsAdmin(["admin", "superadmin"].includes(datos.rol));
           setUser(usuario);
-
           setRestauranteId(datos.restauranteId);
+
+          localStorage.setItem("restauranteId", datos.restauranteId);
+          localStorage.setItem("rolUsuario", datos.rol);
 
           if (["mozo", "cajero"].includes(datos.rol)) {
             setSeccion("pedidos");
@@ -73,7 +85,7 @@ function App() {
     });
 
     return () => unsub();
-  }, []); 
+  }, []);
   //despierta las otificaiones
   useEffect(() => {
     const desbloquear = () => {
