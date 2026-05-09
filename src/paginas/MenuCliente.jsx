@@ -76,19 +76,6 @@ const MenuCliente = ({ restauranteId }) => {
     cargarConfig();
   }, [restauranteId]);
 
-  //Efecto de productos Productos
-  useEffect(() => {
-    if (!restauranteId || !categoriaActual) return;
-
-    const unsub = obtenerProductos(
-      restauranteId,
-      categoriaActual,
-      setProductos,
-    );
-
-    return () => unsub();
-  }, [categoriaActual, restauranteId]);
-
   // Efecto de seguimeinto
   useEffect(() => {
     if (!pedidoActivoId || !restauranteId) {
@@ -297,6 +284,11 @@ const MenuCliente = ({ restauranteId }) => {
         return 1;
     }
   };
+  const productosParaMostrar = useMemo(() => {
+    return productos.filter(
+      (p) => p.categoria === categoriaActual && p.disponible !== false,
+    );
+  }, [productos, categoriaActual]);
   return (
     <div className="admin-container">
       {/* Mensaje de aviso) */}
@@ -483,15 +475,12 @@ const MenuCliente = ({ restauranteId }) => {
               <ArrowLeft size={18} /> Volver
             </button>
             <h2 className="titulo-categoria">{categoriaActual}</h2>
-            <div className="header-categoria-spacer"></div>{" "}
+            <div className="header-categoria-spacer"></div>
           </div>
 
           <div className="productos-grid">
-            {productos.map((p) => (
-              <div
-                key={p.id}
-                className={`producto-card ${!p.disponible ? "agotado" : ""}`}
-              >
+            {productosParaMostrar.map((p) => (
+              <div key={p.id} className="producto-card">
                 <img src={p.imagenUrl || "placeholder.png"} alt={p.nombre} />
 
                 <div className="producto-info">

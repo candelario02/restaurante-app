@@ -57,9 +57,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
   // cargar datos de bd
   useEffect(() => {
-    if (!restauranteId || !rolUsuario || !auth.currentUser) {
-      return;
-    }
+    if (!restauranteId || !rolUsuario) return;
 
     console.log(
       `[Firebase] Conectando a: ${restauranteId} con rol: ${rolUsuario}`,
@@ -70,14 +68,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     let unsubUser = () => {};
 
     try {
+      // 1. Escuchar PRODUCTOS
       unsubProd = escucharProductos(restauranteId, (data) => {
         setProductos(data);
       });
 
+      // 2. Escuchar PEDIDOS
       unsubPed = escucharPedidos(restauranteId, (data) => {
         setPedidos(data);
       });
 
+      // 3. Escuchar USUARIOS
       if (rolUsuario === "admin" || rolUsuario === "superadmin") {
         unsubUser = escucharUsuarios(restauranteId, (data) => {
           setUsuarios(data);
@@ -93,7 +94,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
       console.log("[Firebase] Suscripciones cerradas.");
     };
-  }, [restauranteId, rolUsuario, seccion]);
+  }, [restauranteId, rolUsuario]);
   //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
@@ -206,9 +207,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //buscador
-  const productosFiltrados = productos.filter((p) =>
-    p.nombre.toLowerCase().includes(busqueda.toLowerCase()),
+ const productosFiltrados = useMemo(() => {
+  return productos.filter((p) =>
+    (p.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
   );
+}, [productos, busqueda]);
   //edicion
   const prepararEdicion = (p) => {
     setEditandoId(p.id);
@@ -343,7 +346,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //DISPONIBILIDAD
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
-     await cambiarDisponibilidad(id, !estadoActual, restauranteId);
+      await cambiarDisponibilidad(id, !estadoActual, restauranteId);
 
       Swal.fire({
         title: estadoActual ? "Plato Activado" : "Plato Agotado",
