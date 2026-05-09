@@ -207,11 +207,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //buscador
- const productosFiltrados = useMemo(() => {
-  return productos.filter((p) =>
-    (p.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
-  );
-}, [productos, busqueda]);
+  const productosFiltrados = React.useMemo(() => {
+    return productos.filter((p) =>
+      (p.nombre || "").toLowerCase().includes(busqueda.toLowerCase()),
+    );
+  }, [productos, busqueda]);
   //edicion
   const prepararEdicion = (p) => {
     setEditandoId(p.id);

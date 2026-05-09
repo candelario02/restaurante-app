@@ -34,11 +34,8 @@ function App() {
     setUser(null);
     setRol(null);
     setIsAdmin(false);
-    const ruta = window.location.pathname;
-    if (ruta === "/" || ruta === "/login") {
-      setRestauranteId(null);
-      localStorage.clear();
-    }
+    setRestauranteId(null);
+    localStorage.clear();
   };
   // EFECTO de navegacion
   useEffect(() => {
