@@ -30,57 +30,50 @@ function App() {
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const prevPedidosRef = useRef(0);
   const esPrimeraCarga = useRef(true);
-
-  // ✅ LOGICA UNIFICADA ACTUALIZADA: URL + AUTH + REDIRECCIÓN DE ROL
+// EFECTO de navegacion
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
     const reservados = ["login", "admin", "dashboard", ""];
-    let idDetectadoPorUrl = null;
 
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      idDetectadoPorUrl = idDesdeUrl;
       setRestauranteId(idDesdeUrl);
       localStorage.setItem("restauranteId", idDesdeUrl);
     }
-
+  }, []);
+  // EFECTO Gestión de Sesión y Permisos
+  useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
 
-      if (usuario) {
-        try {
-          const datos = await obtenerDatosUsuario(usuario.email);
-          if (datos && datos.restauranteId) {
-            setRestauranteId(datos.restauranteId);
-            setRol(datos.rol);
-            setIsAdmin(datos.rol === "admin" || datos.rol === "superadmin");
-            setUser(usuario);
-
-            if (datos.rol === "mozo" || datos.rol === "cajero") {
-              setSeccion("pedidos");
-            }
-
-            localStorage.setItem("restauranteId", datos.restauranteId);
-            localStorage.setItem("rolUsuario", datos.rol);
-          }
-        } catch (error) {
-          console.error("Error al sincronizar perfil:", error);
-        }
-      } else {
-        setUser(null);
-        setRol(null);
-        setIsAdmin(false);
-
-        if (!idDetectadoPorUrl) {
-          setRestauranteId(null);
-          localStorage.clear();
-        }
+      if (!usuario) {
+        limpiarEstadoSesion();
+        setCargando(false);
+        return;
       }
-      setCargando(false);
+
+      try {
+        const datos = await obtenerDatosUsuario(usuario.email);
+        if (datos?.restauranteId) {
+          setRol(datos.rol);
+          setIsAdmin(["admin", "superadmin"].includes(datos.rol));
+          setUser(usuario);
+
+          setRestauranteId(datos.restauranteId);
+
+          if (["mozo", "cajero"].includes(datos.rol)) {
+            setSeccion("pedidos");
+          }
+        }
+      } catch (error) {
+        console.error("Error crítico en sincronización de usuario:", error);
+      } finally {
+        setCargando(false);
+      }
     });
 
     return () => unsub();
-  }, []);
+  }, []); 
   //despierta las otificaiones
   useEffect(() => {
     const desbloquear = () => {
