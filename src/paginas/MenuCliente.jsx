@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { db } from "../firebase/config";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import Swal from "sweetalert2";
 import "../estilos/menuCliente.css";
+
+import {
+  ShoppingBag,
+  Plus,
+  Minus,
+  Trash2,
+  Clock,
+  Utensils,
+  ChevronRight,
+  Star,
+  CheckCircle2,
+} from "lucide-react";
 
 // Servicios
 import {
@@ -13,10 +25,7 @@ import {
 import {
   gestionarPedido,
   enviarResenaPedido,
-  // Quité actualizarEstadoPedido porque el cliente usualmente solo envía, no cambia estados
 } from "../servicios/pedidosServicio";
-
-// Iconos... (Lucide-react)
 
 const MenuCliente = ({ restauranteId }) => {
   // --- ESTADOS ---
@@ -63,10 +72,7 @@ const MenuCliente = ({ restauranteId }) => {
       if (config?.logoUrl) setLogoRestaurante(config.logoUrl);
     });
     const productosRef = collection(db, "productos");
-    const q = query(
-      productosRef,
-      where("restauranteId", "==", restauranteId), 
-    );
+    const q = query(productosRef, where("restauranteId", "==", restauranteId));
 
     const unsub = onSnapshot(
       q,
@@ -135,11 +141,6 @@ const MenuCliente = ({ restauranteId }) => {
       0,
     );
   }, [carrito]);
-
-  // Sincronizar el total calculado con el estado si es necesario
-  useEffect(() => {
-    setTotal(totalCalculado);
-  }, [totalCalculado]);
 
   // 4. Temporizador Aviso
   useEffect(() => {
