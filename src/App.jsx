@@ -66,10 +66,12 @@ function App() {
     const reservados = ["login", "admin", "dashboard", ""];
 
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      setRestauranteId(idDesdeUrl);
-      localStorage.setItem("restauranteId", idDesdeUrl);
+      if (idDesdeUrl !== restauranteId) {
+        setRestauranteId(idDesdeUrl);
+        localStorage.setItem("restauranteId", idDesdeUrl);
+      }
     }
-  }, []);
+  }, [restauranteId]);
 
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
@@ -84,22 +86,28 @@ function App() {
 
       try {
         const datos = await obtenerDatosUsuario(usuario.email);
+
         if (datos?.restauranteId) {
           setUser(usuario);
-          setRol((prev) => (prev !== datos.rol ? datos.rol : prev));
-          setIsAdmin(["admin", "superadmin"].includes(datos.rol));
 
-          if (restauranteId !== datos.restauranteId) {
-            setRestauranteId(datos.restauranteId);
-            localStorage.setItem("restauranteId", datos.restauranteId);
-          }
+          const nuevoRol = datos.rol;
+          setRol((prev) => (prev !== nuevoRol ? nuevoRol : prev));
+          setIsAdmin(["admin", "superadmin"].includes(nuevoRol));
+          setRestauranteId((prevId) => {
+            if (prevId !== datos.restauranteId) {
+              localStorage.setItem("restauranteId", datos.restauranteId);
+              return datos.restauranteId;
+            }
+            return prevId;
+          });
 
-          localStorage.setItem("rolUsuario", datos.rol);
+          localStorage.setItem("rolUsuario", nuevoRol);
 
-          if (["mozo", "cajero"].includes(datos.rol)) {
+          if (["mozo", "cajero"].includes(nuevoRol)) {
             setSeccion("pedidos");
           }
         } else {
+          console.warn("Usuario sin restaurante asignado");
           await signOut(auth);
         }
       } catch (error) {
@@ -110,7 +118,7 @@ function App() {
     });
 
     return () => unsub();
-  }, [restauranteId]); 
+  }, []);
   // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
   useEffect(() => {
     // 🛡️ GUARDA PROFESIONAL: Evita errores de Firebase 'undefined' y bucles
