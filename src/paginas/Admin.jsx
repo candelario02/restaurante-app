@@ -206,7 +206,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //buscador
-  const productosFiltrados = React.useMemo(() => {
+  const productosFiltrados = useMemo(() => {
     return productos.filter((p) =>
       (p.nombre || "").toLowerCase().includes(busqueda.toLowerCase()),
     );
