@@ -68,17 +68,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     let unsubUser = () => {};
 
     try {
-      // 1. Escuchar PRODUCTOS
-      unsubProd = escucharProductos(restauranteId, (data) => {
-        setProductos(data);
-      });
+      if (rolUsuario === "admin" || rolUsuario === "superadmin") {
+        unsubProd = escucharProductosAdmin(restauranteId, (data) => {
+          setProductos(data);
+        });
+      } else {
+        unsubProd = obtenerProductos(restauranteId, categoria, (data) => {
+          setProductos(data);
+        });
+      }
 
-      // 2. Escuchar PEDIDOS
       unsubPed = escucharPedidos(restauranteId, (data) => {
         setPedidos(data);
       });
 
-      // 3. Escuchar USUARIOS
       if (rolUsuario === "admin" || rolUsuario === "superadmin") {
         unsubUser = escucharUsuarios(restauranteId, (data) => {
           setUsuarios(data);
@@ -94,7 +97,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubUser();
       console.log("[Firebase] Suscripciones cerradas.");
     };
-  }, [restauranteId, rolUsuario]);
+  }, [restauranteId, rolUsuario, categoria]);
   //PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();

@@ -59,6 +59,15 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
     callback(datos);
   });
 };
+// Para el Administrador: Ve todo (Incluso lo no disponible)
+export const escucharProductosAdmin = (restauranteId, callback) => {
+  const q = query(collection(db, "restaurantes", restauranteId, "productos"));
+
+  return onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(datos);
+  });
+};
 
 // =============================
 //  CONFIG RESTAURANTE
