@@ -74,13 +74,10 @@ function App() {
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
-      setCargando(true);
-
       if (!usuario) {
         setUser(null);
         setRol(null);
         setIsAdmin(false);
-        localStorage.removeItem("rolUsuario");
         setCargando(false);
         return;
       }
@@ -88,18 +85,21 @@ function App() {
       try {
         const datos = await obtenerDatosUsuario(usuario.email);
         if (datos?.restauranteId) {
-          setRol(datos.rol);
-          setIsAdmin(["admin", "superadmin"].includes(datos.rol));
           setUser(usuario);
-          setRestauranteId(datos.restauranteId);
-          localStorage.setItem("restauranteId", datos.restauranteId);
+          setRol((prev) => (prev !== datos.rol ? datos.rol : prev));
+          setIsAdmin(["admin", "superadmin"].includes(datos.rol));
+
+          if (restauranteId !== datos.restauranteId) {
+            setRestauranteId(datos.restauranteId);
+            localStorage.setItem("restauranteId", datos.restauranteId);
+          }
+
           localStorage.setItem("rolUsuario", datos.rol);
 
           if (["mozo", "cajero"].includes(datos.rol)) {
             setSeccion("pedidos");
           }
         } else {
-          console.warn("Usuario sin perfil en base de datos.");
           await signOut(auth);
         }
       } catch (error) {
@@ -110,8 +110,7 @@ function App() {
     });
 
     return () => unsub();
-  }, []);
-
+  }, [restauranteId]); 
   // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
   useEffect(() => {
     // 🛡️ GUARDA PROFESIONAL: Evita errores de Firebase 'undefined' y bucles
