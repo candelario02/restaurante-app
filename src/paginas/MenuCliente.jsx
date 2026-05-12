@@ -136,22 +136,27 @@ const MenuCliente = ({ restauranteId }) => {
 
     return () => unsubscribe();
   }, [pedidoActivoId, restauranteId]);
-
-  // 3. Cálculo de Total (UseMemo es más eficiente aquí que useEffect)
-  const totalCalculado = useMemo(() => {
-    return carrito.reduce(
-      (acc, item) => acc + (Number(item.precio) || 0) * (item.cantidad || 1),
-      0,
-    );
-  }, [carrito]);
-
-  // 4. Temporizador Aviso
+  // 3. Temporizador Aviso
   useEffect(() => {
     if (avisoAgregado) {
       const timer = setTimeout(() => setAvisoAgregado(null), 2000);
       return () => clearTimeout(timer);
     }
   }, [avisoAgregado]);
+
+  // funcion calculo
+  const totalCalculado = useMemo(() => {
+    return carrito.reduce(
+      (acc, item) => acc + (Number(item.precio) || 0) * (item.cantidad || 1),
+      0,
+    );
+  }, [carrito]);
+  // Funcion para mostrar productos
+  const productosParaMostrar = useMemo(() => {
+    return productos.filter(
+      (p) => p.categoria === categoriaActual && p.disponible !== false,
+    );
+  }, [productos, categoriaActual]);
 
   if (!restauranteId || cargando)
     return (
@@ -318,12 +323,7 @@ const MenuCliente = ({ restauranteId }) => {
       Swal.fire("Error", "No pudimos guardar tu reseña", "error");
     }
   };
-  // Funcion para mostrar productos
-  const productosParaMostrar = useMemo(() => {
-    return productos.filter(
-      (p) => p.categoria === categoriaActual && p.disponible !== false,
-    );
-  }, [productos, categoriaActual]);
+
   //funcion para seguimiento dinamico
   const getEtapa = (estado) => {
     const etapas = {
