@@ -46,6 +46,9 @@ function App() {
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
       setRestauranteId(idDesdeUrl);
       localStorage.setItem("restauranteId", idDesdeUrl);
+    } else {
+      const persistido = localStorage.getItem("restauranteId");
+      if (persistido) setRestauranteId(persistido);
     }
   }, []);
   // EFECTO: Gestión de Sesión y Permisos
@@ -54,13 +57,17 @@ function App() {
       setCargando(true);
 
       if (!usuario) {
-        limpiarEstadoSesion();
+        setUser(null);
+        setRol(null);
+        setIsAdmin(false);
+        localStorage.removeItem("rolUsuario");
         setCargando(false);
         return;
       }
 
       try {
         const datos = await obtenerDatosUsuario(usuario.email);
+
         if (datos?.restauranteId) {
           setRol(datos.rol);
           setIsAdmin(["admin", "superadmin"].includes(datos.rol));
@@ -73,9 +80,14 @@ function App() {
           if (["mozo", "cajero"].includes(datos.rol)) {
             setSeccion("pedidos");
           }
+        } else {
+          console.warn(
+            "Usuario autenticado pero sin documento en subcolección",
+          );
+          await signOut(auth); 
         }
       } catch (error) {
-        console.error("Error crítico en sincronización de usuario:", error);
+        console.error("Error crítico:", error);
       } finally {
         setCargando(false);
       }

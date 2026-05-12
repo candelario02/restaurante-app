@@ -18,8 +18,12 @@ import {
 // 1. REGISTRO
 export const registrarUsuario = async (email, password, rol, restauranteId) => {
   const emailLimpio = email.toLowerCase().trim();
-  
-  const userCredential = await createUserWithEmailAndPassword(authAdmin, emailLimpio, password);
+
+  const userCredential = await createUserWithEmailAndPassword(
+    authAdmin,
+    emailLimpio,
+    password,
+  );
 
   await setDoc(
     doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
@@ -28,14 +32,14 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
       rol: rol,
       restauranteId: restauranteId,
       fechaRegistro: new Date(),
-    }
+    },
   );
 
   await signOut(authAdmin);
   return userCredential.user;
 };
 
-// 2. LOGIN 
+// 2. LOGIN
 export const loginUsuario = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(
     auth,
@@ -61,16 +65,24 @@ export const loginUsuario = async (email, password) => {
 export const obtenerDatosUsuario = async (email) => {
   if (!email) return null;
   const emailLimpio = email.toLowerCase().trim();
-  
-  const resIdPersistido = localStorage.getItem("restauranteId");
-  
-  if (resIdPersistido) {
-    const docRef = doc(db, "restaurantes", resIdPersistido, "usuarios_admin", emailLimpio);
+
+  const resId =
+    localStorage.getItem("restauranteId") ||
+    window.location.pathname.split("/")[1];
+
+  if (resId && resId !== "login" && resId !== "admin") {
+    const docRef = doc(
+      db,
+      "restaurantes",
+      resId,
+      "usuarios_admin",
+      emailLimpio,
+    );
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) return docSnap.data();
   }
-  
-  return null; 
+
+  return null;
 };
 // 4. ESCUCHAR USUARIOS (Para el listado en tiempo real)
 export const escucharUsuarios = (restauranteId, callback) => {
