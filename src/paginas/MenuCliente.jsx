@@ -55,27 +55,37 @@ const MenuCliente = ({ restauranteId }) => {
 
   // 1. Cargar Configuración y Productos (Coherencia con Servicios)
   useEffect(() => {
-    if (!restauranteId) return;
+    if (!restauranteId || restauranteId === "undefined") return;
 
-    const cargarDatosIniciales = async () => {
-      try {
-        setCargando(true);
-        // Cargar Config (Logo)
-        const config = await obtenerConfigRestaurante(restauranteId);
-        if (config?.logoUrl) setLogoRestaurante(config.logoUrl);
+    setCargando(true);
 
-        // Cargar Productos Disponibles
-        const data = await obtenerProductos(restauranteId);
-        // Filtramos solo los disponibles para el cliente
+    obtenerConfigRestaurante(restauranteId).then((config) => {
+      if (config?.logoUrl) setLogoRestaurante(config.logoUrl);
+    });
+    const productosRef = collection(db, "productos");
+    const q = query(
+      productosRef,
+      where("restauranteId", "==", restauranteId), 
+    );
+
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
         setProductos(data.filter((p) => p.disponible !== false));
-      } catch (error) {
-        console.error("Error al cargar menú:", error);
-      } finally {
         setCargando(false);
-      }
-    };
+      },
+      (error) => {
+        console.error("Error en Firebase Menu:", error);
+        setCargando(false);
+      },
+    );
 
-    cargarDatosIniciales();
+    return () => unsub();
   }, [restauranteId]);
 
   // 2. Seguimiento Realtime del Pedido Activo
