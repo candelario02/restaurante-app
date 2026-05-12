@@ -16,20 +16,25 @@ import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
 const audioNotificacion = new Audio("/notificacion.mp3");
 function App() {
+  // --- ESTADOS ---
   const [user, setUser] = useState(null);
-  const [cargando, setCargando] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [restauranteId, setRestauranteId] = useState(null);
   const [rol, setRol] = useState(null);
-
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [cargando, setCargando] = useState(true);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
-
-  // Estados para notificaciones
-
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
+
+  // Inicialización síncrona del ID para evitar el primer render con 'null'
+  const [restauranteId, setRestauranteId] = useState(() => {
+    return localStorage.getItem("restauranteId") || null;
+  });
+
+  // --- REFERENCIAS ---
   const prevPedidosRef = useRef(0);
   const esPrimeraCarga = useRef(true);
+
+  // --- FUNCIONES DE SESIÓN ---
   const limpiarEstadoSesion = () => {
     setUser(null);
     setRol(null);
@@ -37,7 +42,24 @@ function App() {
     setRestauranteId(null);
     localStorage.clear();
   };
-  // EFECTO de navegacion
+
+  const cerrarSesion = async () => {
+    const idActual = restauranteId; // Preservamos el ID para el menú cliente
+    await signOut(auth);
+    localStorage.clear();
+
+    if (idActual) {
+      localStorage.setItem("restauranteId", idActual);
+      setRestauranteId(idActual);
+    }
+
+    setUser(null);
+    setIsAdmin(false);
+    setRol("cliente");
+    setSeccion("menu");
+  };
+
+  // 1. Captura de Identidad desde URL
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
@@ -46,12 +68,10 @@ function App() {
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
       setRestauranteId(idDesdeUrl);
       localStorage.setItem("restauranteId", idDesdeUrl);
-    } else {
-      const persistido = localStorage.getItem("restauranteId");
-      if (persistido) setRestauranteId(persistido);
     }
   }, []);
-  // EFECTO: Gestión de Sesión y Permisos
+
+  // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       setCargando(true);
@@ -67,13 +87,11 @@ function App() {
 
       try {
         const datos = await obtenerDatosUsuario(usuario.email);
-
         if (datos?.restauranteId) {
           setRol(datos.rol);
           setIsAdmin(["admin", "superadmin"].includes(datos.rol));
           setUser(usuario);
           setRestauranteId(datos.restauranteId);
-
           localStorage.setItem("restauranteId", datos.restauranteId);
           localStorage.setItem("rolUsuario", datos.rol);
 
@@ -81,13 +99,11 @@ function App() {
             setSeccion("pedidos");
           }
         } else {
-          console.warn(
-            "Usuario autenticado pero sin documento en subcolección",
-          );
+          console.warn("Usuario sin perfil en base de datos.");
           await signOut(auth);
         }
       } catch (error) {
-        console.error("Error crítico:", error);
+        console.error("Error crítico en carga de perfil:", error);
       } finally {
         setCargando(false);
       }
@@ -95,7 +111,44 @@ function App() {
 
     return () => unsub();
   }, []);
-  //despierta las otificaiones
+
+  // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
+  useEffect(() => {
+    // 🛡️ GUARDA PROFESIONAL: Evita errores de Firebase 'undefined' y bucles
+    if (!restauranteId || !isAdmin) {
+      setPedidosPendientes(0);
+      return;
+    }
+
+    const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
+    const q = query(pedidosRef, where("estado", "==", "pendiente"));
+
+    const unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        const totalActual = snapshot.size;
+
+        if (totalActual > prevPedidosRef.current && !esPrimeraCarga.current) {
+          audioNotificacion.pause();
+          audioNotificacion.currentTime = 0;
+          audioNotificacion
+            .play()
+            .catch(() => console.log("Interacción requerida"));
+        }
+
+        setPedidosPendientes(totalActual);
+        prevPedidosRef.current = totalActual;
+        esPrimeraCarga.current = false;
+      },
+      (error) => {
+        console.error("Error en Snapshot de pedidos:", error);
+      },
+    );
+
+    return () => unsub();
+  }, [restauranteId, isAdmin]); // Se activa solo cuando el ID y el Rol son válidos
+
+  // 4. Desbloqueo de Canal de Audio (UX)
   useEffect(() => {
     const desbloquear = () => {
       audioNotificacion
@@ -103,57 +156,14 @@ function App() {
         .then(() => {
           audioNotificacion.pause();
           audioNotificacion.currentTime = 0;
-          console.log("Canal de audio listo");
         })
-        .catch((e) => console.log("Interacción requerida para audio"));
+        .catch(() => {});
       document.removeEventListener("click", desbloquear);
     };
     document.addEventListener("click", desbloquear);
     return () => document.removeEventListener("click", desbloquear);
   }, []);
-  //carga de pedios globales
-  useEffect(() => {
-    if (!restauranteId || !isAdmin) return;
 
-    const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
-
-    const q = query(pedidosRef, where("estado", "==", "pendiente"));
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      const totalActual = snapshot.size;
-
-      if (totalActual > prevPedidosRef.current && !esPrimeraCarga.current) {
-        audioNotificacion.pause();
-        audioNotificacion.currentTime = 0;
-        audioNotificacion.play().catch((error) => {
-          console.error("Error de audio:", error);
-        });
-      }
-
-      setPedidosPendientes(totalActual);
-      prevPedidosRef.current = totalActual;
-      esPrimeraCarga.current = false;
-    });
-
-    return () => unsub();
-  }, [restauranteId, isAdmin]);
-  // Cerrar sesión REAL
-  const cerrarSesion = async () => {
-    const currentRestauranteId = restauranteId;
-
-    await signOut(auth);
-    localStorage.clear();
-
-    if (currentRestauranteId) {
-      localStorage.setItem("restauranteId", currentRestauranteId);
-      setRestauranteId(currentRestauranteId);
-    }
-
-    setUser(null);
-    setIsAdmin(false);
-    setRol("cliente");
-    setSeccion("menu");
-  };
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;
   }
@@ -252,20 +262,25 @@ function App() {
       </nav>
 
       <main className="main-content">
-        {/* 🛡️ RENDERIZADO DEL CONTENIDO: Solo entra a Admin si isAdmin es true */}
-        {isAdmin && restauranteId ? (
-          <Admin
-            seccion={seccion}
-            setSeccion={setSeccion}
-            restauranteId={restauranteId}
-            rolUsuario={rol}
-          />
+        {restauranteId ? (
+          isAdmin ? (
+            <Admin
+              seccion={seccion}
+              setSeccion={setSeccion}
+              restauranteId={restauranteId}
+              rolUsuario={rol}
+            />
+          ) : (
+            <MenuCliente restauranteId={restauranteId} />
+          )
         ) : (
-          <MenuCliente restauranteId={restauranteId} />
+          <div className="loading-screen">
+            <h2>Bienvenido</h2>
+            <p>Por favor, acceda mediante el enlace de su restaurante.</p>
+          </div>
         )}
       </main>
 
-      {/* ... (Tu modal de login igual, solo asegúrate de pasar bien el rol) */}
       {mostrarLogin && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
