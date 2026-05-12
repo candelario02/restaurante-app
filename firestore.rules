@@ -7,56 +7,52 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Verifica si el usuario existe en la subcolección del restaurante y tiene el rol
     function esAdminDelRestaurante(restId) {
       let emailLimpio = request.auth.token.email.lower();
       let adminPath = /databases/$(database)/documents/restaurantes/$(restId)/usuarios_admin/$(emailLimpio);
       return estaAutenticado() && exists(adminPath) && get(adminPath).data.rol in ["admin", "superadmin"];
     }
 
-    // 1. ESTRUCTURA MULTIPUNTO (RESTAURANTES)
+    // 📂 ESTRUCTURA JERÁRQUICA (image_8e5ade.png)
     match /restaurantes/{restId} {
       allow read: if true;
 
       // 🍽️ PRODUCTOS
       match /productos/{docId} {
-        allow read: if true; 
-        allow write: if esAdminDelRestaurante(restId);
-      }
-
-      // 👤 STAFF DEL LOCAL (Usuarios dentro de cada restaurante)
-      match /usuarios_admin/{email} {
-        allow read: if estaAutenticado() && (request.auth.token.email.lower() == email.lower() || esAdminDelRestaurante(restId));
+        // El Admin ve todo. El cliente solo ve lo que tiene 'disponible: true'
+        allow read: if esAdminDelRestaurante(restId) || resource.data.disponible == true;
         allow write: if esAdminDelRestaurante(restId);
       }
 
       // 📝 PEDIDOS
       match /pedidos/{docId} {
         allow read, create: if true;
-        allow update: if estaAutenticado() || esAdicional() || esSoloResena();
+        // Permitimos update si: 1. Es admin, 2. Es una reseña, 3. Es el cliente modificando un pedido pendiente
+        allow update: if esAdminDelRestaurante(restId) || esSoloResena() || esModificacionCliente();
         allow delete: if esAdminDelRestaurante(restId);
       }
-      
-      // ⚙️ CONFIGURACIONES (Movido adentro de restaurantes para que restId funcione)
+
+      // ⚙️ CONFIGURACIONES
       match /configuraciones/{docId} {
         allow read: if true;
         allow write: if esAdminDelRestaurante(restId);
       }
+      
+      // 👤 STAFF
+      match /usuarios_admin/{email} {
+        allow read: if estaAutenticado() && (request.auth.token.email.lower() == email.lower() || esAdminDelRestaurante(restId));
+        allow write: if esAdminDelRestaurante(restId);
+      }
     }
 
-    // 2. PERFIL GLOBAL (Solo lectura para validación inicial)
-    match /usuarios_admin/{email} {
-      allow read: if true;
-      allow write: if false; 
+    // 🔥 FUNCIONES DE VALIDACIÓN PARA PEDIDOS
+    function esModificacionCliente() {
+      // El cliente puede actualizar su pedido solo si el estado actual en DB es 'pendiente'
+      return resource.data.estado == 'pendiente';
     }
 
-    // Funciones de validación de pedidos
-    function esAdicional() {
-      return resource.data.estado == 'pendiente' && 
-             request.resource.data.diff(resource.data).affectedKeys()
-             .hasAny(['items', 'total', 'fechaActualizacion', 'estado']);
-    }
     function esSoloResena() {
+      // Permite actualizar solo los campos de calificación, sin importar el estado del pedido
       return request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
     }

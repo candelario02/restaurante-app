@@ -70,17 +70,3 @@ export const escucharPedidos = (restauranteId, callback) => {
   });
 };
 
-// ==========================================
-// 👤 USUARIOS (ADMIN)
-// ==========================================
-export const escucharUsuarios = (restauranteId, callback) => {
-  if (!restauranteId) return () => {};
-
-  const q = query(
-    collection(db, "restaurantes", restauranteId, "usuarios_admin"),
-  );
-
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  });
-};

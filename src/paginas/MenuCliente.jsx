@@ -66,13 +66,16 @@ const MenuCliente = ({ restauranteId }) => {
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
-    setCargando(true);
+    if (productos.length === 0) setCargando(true);
 
-    obtenerConfigRestaurante(restauranteId).then((config) => {
-      if (config?.logoUrl) setLogoRestaurante(config.logoUrl);
-    });
-    const productosRef = collection(db, "productos");
-    const q = query(productosRef, where("restauranteId", "==", restauranteId));
+    const productosRef = collection(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+    );
+
+    const q = query(productosRef, where("disponible", "==", true));
 
     const unsub = onSnapshot(
       q,
@@ -82,7 +85,7 @@ const MenuCliente = ({ restauranteId }) => {
           ...doc.data(),
         }));
 
-        setProductos(data.filter((p) => p.disponible !== false));
+        setProductos(data);
         setCargando(false);
       },
       (error) => {

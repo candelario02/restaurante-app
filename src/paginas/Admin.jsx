@@ -26,15 +26,12 @@ import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 import {
   registrarUsuario,
   eliminarUsuario,
+  escucharUsuarios,
 } from "../servicios/usuariosServicio";
 import { subirImagen } from "../servicios/cloudinaryServicio";
 
 // 🔥 HOOKS
-import {
-  escucharProductosAdmin,
-  escucharPedidos,
-  escucharUsuarios,
-} from "../hooks/useProductos";
+import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
 import { auth } from "../firebase/config";
