@@ -7,47 +7,50 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Verifica si el usuario tiene rol de admin dentro del restaurante específico
+    // Verifica si el usuario existe en la subcolección del restaurante y tiene el rol
     function esAdminDelRestaurante(restId) {
-      let adminPath = /databases/$(database)/documents/restaurantes/$(restId)/usuarios_admin/$(request.auth.token.email);
-      // exists() evita que la regla explote si el documento aún no ha sido creado
+      let emailLimpio = request.auth.token.email.lower();
+      let adminPath = /databases/$(database)/documents/restaurantes/$(restId)/usuarios_admin/$(emailLimpio);
       return estaAutenticado() && exists(adminPath) && get(adminPath).data.rol in ["admin", "superadmin"];
     }
 
-    // 1. PERFIL GLOBAL (Solo para el primer login)
-    match /usuarios_admin/{email} {
-      allow read: if true;
-      allow write: if false; 
-    }
-
-    // 2. ESTRUCTURA MULTIPUNTO (RESTAURANTES)
+    // 1. ESTRUCTURA MULTIPUNTO (RESTAURANTES)
     match /restaurantes/{restId} {
-      
-      // Permitir leer datos básicos del restaurante (nombre, etc.)
       allow read: if true;
 
-      // 🍽️ PRODUCTOS (Menú)
+      // 🍽️ PRODUCTOS
       match /productos/{docId} {
-        allow read: if true; // Cualquiera ve el menú
-        allow write: if esAdminDelRestaurante(restId); // Solo admin del local
+        allow read: if true; 
+        allow write: if esAdminDelRestaurante(restId);
       }
 
-      // 👤 STAFF DEL LOCAL
+      // 👤 STAFF DEL LOCAL (Usuarios dentro de cada restaurante)
       match /usuarios_admin/{email} {
-        // El usuario puede leer su propio perfil o el admin del local gestiona todo
-        allow read: if estaAutenticado() && (request.auth.token.email == email || esAdminDelRestaurante(restId));
+        allow read: if estaAutenticado() && (request.auth.token.email.lower() == email.lower() || esAdminDelRestaurante(restId));
         allow write: if esAdminDelRestaurante(restId);
       }
 
       // 📝 PEDIDOS
       match /pedidos/{docId} {
-        allow read, create: if true; // Clientes crean y ven sus pedidos
+        allow read, create: if true;
         allow update: if estaAutenticado() || esAdicional() || esSoloResena();
         allow delete: if esAdminDelRestaurante(restId);
       }
+      
+      // ⚙️ CONFIGURACIONES (Movido adentro de restaurantes para que restId funcione)
+      match /configuraciones/{docId} {
+        allow read: if true;
+        allow write: if esAdminDelRestaurante(restId);
+      }
     }
 
-    // Funciones de validación de pedidos (Sin cambios)
+    // 2. PERFIL GLOBAL (Solo lectura para validación inicial)
+    match /usuarios_admin/{email} {
+      allow read: if true;
+      allow write: if false; 
+    }
+
+    // Funciones de validación de pedidos
     function esAdicional() {
       return resource.data.estado == 'pendiente' && 
              request.resource.data.diff(resource.data).affectedKeys()
@@ -56,12 +59,6 @@ service cloud.firestore {
     function esSoloResena() {
       return request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['rating', 'resena', 'fechaResena', 'finalizadoCliente']);
-    }
-
-    // ⚙️ CONFIGURACIONES DEL LOCAL
-    match /configuraciones/{docId} {
-      allow read: if true;
-      allow write: if esAdminDelRestaurante(restId);
     }
   }
 }
