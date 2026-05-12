@@ -84,7 +84,7 @@ function App() {
           console.warn(
             "Usuario autenticado pero sin documento en subcolección",
           );
-          await signOut(auth); 
+          await signOut(auth);
         }
       } catch (error) {
         console.error("Error crítico:", error);
@@ -139,12 +139,18 @@ function App() {
   }, [restauranteId, isAdmin]);
   // Cerrar sesión REAL
   const cerrarSesion = async () => {
+    const currentRestauranteId = restauranteId;
+
     await signOut(auth);
     localStorage.clear();
 
+    if (currentRestauranteId) {
+      localStorage.setItem("restauranteId", currentRestauranteId);
+      setRestauranteId(currentRestauranteId);
+    }
+
     setUser(null);
     setIsAdmin(false);
-    setRestauranteId(null);
     setRol("cliente");
     setSeccion("menu");
   };

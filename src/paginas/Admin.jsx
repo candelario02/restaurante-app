@@ -20,19 +20,23 @@ import {
   actualizarProducto,
   eliminarProducto,
   cambiarDisponibilidad,
+  obtenerProductos,
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
-
-// Une todo lo de usuarios en una sola línea
 import {
   registrarUsuario,
   eliminarUsuario,
-  escucharUsuarios,
 } from "../servicios/usuariosServicio";
-
-// 🔥 HOOKS TIEMPO REAL
-import { escucharProductos, escucharPedidos } from "../hooks/useProductos";
 import { subirImagen } from "../servicios/cloudinaryServicio";
+
+// 🔥 HOOKS
+import {
+  escucharProductosAdmin,
+  escucharPedidos,
+  escucharUsuarios,
+} from "../hooks/useProductos";
+
+// 🔥 CONFIGURACIÓN
 import { auth } from "../firebase/config";
 
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
@@ -59,8 +63,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   useEffect(() => {
     if (!restauranteId || !rolUsuario) return;
 
+    const isAdmin = rolUsuario === "admin" || rolUsuario === "superadmin";
     console.log(
-      `[Firebase] Conectando a: ${restauranteId} con rol: ${rolUsuario}`,
+      `[Firebase] Conectando a: ${restauranteId} (Admin: ${isAdmin})`,
     );
 
     let unsubProd = () => {};
@@ -68,34 +73,28 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     let unsubUser = () => {};
 
     try {
-      if (rolUsuario === "admin" || rolUsuario === "superadmin") {
-        unsubProd = escucharProductosAdmin(restauranteId, (data) => {
-          setProductos(data);
-        });
+      // 1. PRODUCTOS
+      if (isAdmin) {
+        unsubProd = escucharProductosAdmin(restauranteId, setProductos);
       } else {
-        unsubProd = obtenerProductos(restauranteId, categoria, (data) => {
-          setProductos(data);
-        });
+        unsubProd = obtenerProductos(restauranteId, categoria, setProductos);
       }
 
-      unsubPed = escucharPedidos(restauranteId, (data) => {
-        setPedidos(data);
-      });
+      // 2. PEDIDOS
+      unsubPed = escucharPedidos(restauranteId, setPedidos);
 
-      if (rolUsuario === "admin" || rolUsuario === "superadmin") {
-        unsubUser = escucharUsuarios(restauranteId, (data) => {
-          setUsuarios(data);
-        });
+      // 3. USUARIOS (Admin)
+      if (isAdmin) {
+        unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
     } catch (error) {
-      console.error("Error en suscripciones de Firebase:", error);
+      console.error("Error al suscribirse a Firebase:", error);
     }
 
     return () => {
       unsubProd();
       unsubPed();
       unsubUser();
-      console.log("[Firebase] Suscripciones cerradas.");
     };
   }, [restauranteId, rolUsuario, categoria]);
   //PRODUCTOS
@@ -259,24 +258,61 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     e.preventDefault();
 
     if (!userEmail.trim() || !userPass.trim()) {
-      return Swal.fire({ icon: "warning", title: "Campos vacíos" });
+      return Swal.fire({
+        icon: "warning",
+        title: "Campos vacíos",
+        text: "Email y contraseña son obligatorios.",
+      });
     }
 
+    if (userPass.length < 6) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Contraseña débil",
+        text: "Debe tener al menos 6 caracteres.",
+      });
+    }
+
+    if (!restauranteId) {
+      return Swal.fire({
+        icon: "error",
+        title: "Error de contexto",
+        text: "No se detectó el ID del restaurante.",
+      });
+    }
+
+    if (cargando) return;
+
     try {
+      setCargando(true);
+
       await registrarUsuario(userEmail, userPass, userRol, restauranteId);
 
+      // 3. Éxito
       Swal.fire({
         icon: "success",
         title: "¡Registro Exitoso!",
-        text: `Se ha creado el perfil de ${userRol} para ${userEmail}.`,
+        text: `Se ha creado el perfil de ${userRol.toUpperCase()} para ${userEmail}.`,
         confirmButtonColor: "#6366f1",
+        timer: 2000,
       });
 
       setUserEmail("");
       setUserPass("");
       setUserRol("mozo");
     } catch (error) {
-      Swal.fire({ icon: "error", title: "Error", text: error.message });
+      let mensajeError = error.message;
+      if (error.code === "auth/email-already-in-use") {
+        mensajeError = "Este correo ya está registrado en el sistema.";
+      }
+
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar",
+        text: mensajeError,
+      });
+    } finally {
+      setCargando(false);
     }
   };
   // 📦 PEDIDOS
@@ -413,12 +449,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <form onSubmit={guardarProducto} className="form-admin-pro">
             <input
               className="input-pro"
+              required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Nombre del plato"
             />
             <input
               className="input-pro"
+              type="number"
+              required
               value={precio}
               onChange={(e) => setPrecio(e.target.value)}
               placeholder="Precio (S/)"
@@ -453,6 +492,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 type="button"
                 className={`btn-upload-pro ${imgPreview ? "success" : ""}`}
                 onClick={manejarClickImagen}
+                disabled={cargando}
               >
                 {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
                 {imgPreview ? " Imagen Cargada" : " Subir Imagen"}
@@ -470,9 +510,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 type="submit"
                 className="btn-guardar-pro-ajustado"
                 disabled={!restauranteId || cargando}
+                style={{ opacity: cargando ? 0.7 : 1 }}
               >
                 {cargando ? (
-                  "..."
+                  "Procesando..."
                 ) : (
                   <>
                     <Save size={18} />
@@ -526,14 +567,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       />
                       <span>{p.nombre}</span>
                     </td>
-                    <td className="td-precio">S/ {p.precio}</td>
+                    <td className="td-precio">
+                      S/ {Number(p.precio).toFixed(2)}
+                    </td>
                     <td>
                       <button
                         className="btn-status-pro"
+                        disabled={cargando}
                         onClick={() =>
                           manejarDisponibilidad(
                             p.id,
-                            !p.disponible,
+                            p.disponible,
                             restauranteId,
                           )
                         }
@@ -579,7 +623,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <div className="grid-admin">
               {pedidos
                 .filter((p) => p.estado !== "entregado")
-                .sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
+                .sort(
+                  (a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0),
+                )
                 .map((p) => (
                   <div key={p.id} className="card-admin">
                     <div className="card-header">
@@ -603,7 +649,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         )}
                       </div>
                       <span className={`status-badge ${p.estado}`}>
-                        {p.estado.toUpperCase()}
+                        {(p.estado || "pendiente").toUpperCase()}
                       </span>
                     </div>
 
@@ -616,7 +662,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       ))}
                       <hr />
                       <p className="total-pedido">
-                        <strong>Total: S/ {Number(p.total).toFixed(2)}</strong>
+                        <strong>
+                          Total: S/ {Number(p.total || 0).toFixed(2)}
+                        </strong>
                       </p>
                     </div>
 
@@ -624,6 +672,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       {p.estado === "pendiente" && (
                         <button
                           className="btn-primary"
+                          disabled={cargando}
                           onClick={() => cambiarEstado(p.id, "cocinando")}
                         >
                           👨‍🍳 Preparar
@@ -633,6 +682,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       {p.estado === "cocinando" && (
                         <button
                           className="btn-success"
+                          disabled={cargando}
                           onClick={() => cambiarEstado(p.id, "entregado")}
                         >
                           ✅ Finalizar y Cobrar
@@ -642,6 +692,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       {p.estado === "cocinando" && (
                         <button
                           className="btn-revertir"
+                          disabled={cargando}
+                          style={{ marginLeft: "8px" }}
                           onClick={() => cambiarEstado(p.id, "pendiente")}
                         >
                           ↩️ Revertir
@@ -655,7 +707,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         </div>
       )}
 
-      {/* SECCIÓN caja*/}
+      {/* SECCIÓN CAJA */}
       {seccion === "caja" && (
         <div className="admin-section">
           <div className="admin-header-flex">
@@ -675,13 +727,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="total">Ventas Total</option>
                 </select>
                 <button
-                  onClick={() =>
-                    exportarCajaExcel(
-                      obtenerEstadisticasCaja(pedidos, filtroCaja).filtrados,
-                      `Caja_${filtroCaja}`,
-                    )
-                  }
+                  onClick={() => {
+                    const { filtrados } = obtenerEstadisticasCaja(
+                      pedidos,
+                      filtroCaja,
+                    );
+                    exportarCajaExcel(filtrados, `Reporte_Caja_${filtroCaja}`);
+                  }}
                   className="btn-exportar-excel"
+                  disabled={pedidos.length === 0}
                 >
                   📊 Exportar Excel
                 </button>
@@ -689,7 +743,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </div>
           </div>
 
-          {/* Resumen de Cards - Estilo Dashboard */}
           <div className="resumen-ventas-grid">
             <div className="card-admin card-resumen">
               <h3>
@@ -697,7 +750,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 {filtroCaja === "dia" ? "HOY" : filtroCaja.toUpperCase()})
               </h3>
               <p className="monto-dia">
-                S/ {obtenerEstadisticasCaja(pedidos, filtroCaja).monto}
+                S/{" "}
+                {Number(
+                  obtenerEstadisticasCaja(pedidos, filtroCaja).monto,
+                ).toFixed(2)}
               </p>
               <small>
                 {obtenerEstadisticasCaja(pedidos, filtroCaja).cantidad} pedidos
@@ -720,26 +776,30 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               </thead>
               <tbody>
                 {obtenerEstadisticasCaja(pedidos, filtroCaja)
-                  .filtrados.sort((a, b) => b.fecha?.seconds - a.fecha?.seconds)
+                  .filtrados.sort(
+                    (a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0),
+                  )
                   .map((p) => (
                     <tr key={p.id}>
                       <td>
-                        {p.fecha?.toDate()?.toLocaleString("es-PE", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {p.fecha?.toDate
+                          ? p.fecha.toDate().toLocaleString("es-PE", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "Sin fecha"}
                       </td>
                       <td>
-                        <strong>{p.cliente?.nombre}</strong>
+                        <strong>{p.cliente?.nombre || "Cte. Genérico"}</strong>
                         <br />
                         <small className="texto-secundario">
                           {p.cliente?.tipo} {p.cliente?.referencia}
                         </small>
                       </td>
                       <td className="col-total-monto">
-                        S/ {Number(p.total).toFixed(2)}
+                        S/ {Number(p.total || 0).toFixed(2)}
                       </td>
                       <td className="col-resena">
                         <div className="estrellas-display">
@@ -764,6 +824,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </table>
           </div>
 
+          {/* MODAL DETALLE */}
           {pedidoDetalle && (
             <div
               className="modal-overlay-fijo"
@@ -785,22 +846,44 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                 <div className="modal-body">
                   <p>
-                    <strong>Cliente:</strong> {pedidoDetalle.cliente.nombre}
+                    <strong>Cliente:</strong> {pedidoDetalle.cliente?.nombre}
+                  </p>
+                  <p>
+                    <strong>Referencia:</strong>{" "}
+                    {pedidoDetalle.cliente?.referencia}
                   </p>
                   <hr />
-                  <ul className="lista-productos-modal">
-                    {pedidoDetalle.items.map((item, index) => (
-                      <li key={index} className="item-fila-modal">
+                  <ul
+                    className="lista-productos-modal"
+                    style={{ listStyle: "none", padding: 0 }}
+                  >
+                    {pedidoDetalle.items?.map((item, index) => (
+                      <li
+                        key={index}
+                        className="item-fila-modal"
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "8px",
+                        }}
+                      >
                         <span>
                           {item.cantidad}x {item.nombre}
                         </span>
-                        <span>S/ {Number(item.subtotal).toFixed(2)}</span>
+                        <span>
+                          S/{" "}
+                          {Number(
+                            item.subtotal || item.precio * item.cantidad,
+                          ).toFixed(2)}
+                        </span>
                       </li>
                     ))}
                   </ul>
                   <div className="modal-total-destacado">
-                    <span>TOTAL</span>
-                    <span>S/ {Number(pedidoDetalle.total).toFixed(2)}</span>
+                    <strong>TOTAL</strong>
+                    <strong>
+                      S/ {Number(pedidoDetalle.total || 0).toFixed(2)}
+                    </strong>
                   </div>
                 </div>
 
@@ -809,7 +892,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     className="btn-accion-primario"
                     onClick={() => setPedidoDetalle(null)}
                   >
-                    Entendido
+                    Cerrar
                   </button>
                 </footer>
               </div>
@@ -824,6 +907,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <form onSubmit={registrarAdmin} className="form-admin">
             <input
               className="input-pro"
+              type="email"
+              required
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               placeholder="Correo electrónico"
@@ -831,9 +916,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <input
               className="input-pro"
               type="password"
+              required
+              minLength={6}
               value={userPass}
               onChange={(e) => setUserPass(e.target.value)}
-              placeholder="Contraseña"
+              placeholder="Contraseña (mín. 6 caracteres)"
             />
             <select
               className="input-pro"
@@ -846,13 +933,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </select>
 
             <button
+              type="submit"
+              disabled={cargando || userPass.length < 6}
               className="btn-primary"
-              style={{ width: "100%", marginTop: "10px" }}
+              style={{
+                width: "100%",
+                marginTop: "10px",
+                opacity: cargando || userPass.length < 6 ? 0.6 : 1,
+                cursor:
+                  cargando || userPass.length < 6 ? "not-allowed" : "pointer",
+              }}
             >
-              Registrar Nuevo{" "}
-              {userRol.charAt(0).toUpperCase() + userRol.slice(1)}
+              {cargando
+                ? "Procesando..."
+                : `Registrar Nuevo ${userRol.charAt(0).toUpperCase() + userRol.slice(1)}`}
             </button>
           </form>
+
           <div className="grid-admin" style={{ marginTop: "30px" }}>
             {usuarios.length === 0 ? (
               <p className="text-center">Cargando personal o lista vacía...</p>
@@ -878,8 +975,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     onClick={() => confirmarEliminarUser(u.email)}
                     className="btn-delete-icon"
                     title="Eliminar usuario"
+                    disabled={cargando}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: cargando ? "not-allowed" : "pointer",
+                    }}
                   >
-                    <Trash2 size={20} color="#ef4444" />
+                    <Trash2
+                      size={20}
+                      color={cargando ? "#9ca3af" : "#ef4444"}
+                    />
                   </button>
                 </div>
               ))

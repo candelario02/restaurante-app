@@ -21,19 +21,13 @@ export const useProductos = (restauranteId, categoria) => {
     if (!restauranteId || !categoria) return;
 
     const q = query(
-      collection(db, "productos"),
-      where("restauranteId", "==", restauranteId),
+      collection(db, "restaurantes", restauranteId, "productos"),
       where("categoria", "==", categoria),
       where("disponible", "==", true),
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
-      setProductos(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })),
-      );
+      setProductos(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
 
     return () => unsub();
@@ -45,13 +39,10 @@ export const useProductos = (restauranteId, categoria) => {
 // ==========================================
 // 🛠️ PRODUCTOS (VISTA ADMIN - TODA LA LISTA)
 // ==========================================
-export const escucharProductos = (restauranteId, callback) => {
+export const escucharProductosAdmin = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
-  const q = query(
-    collection(db, "productos"),
-    where("restauranteId", "==", restauranteId),
-  );
+  const q = query(collection(db, "restaurantes", restauranteId, "productos"));
 
   return onSnapshot(q, (snapshot) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
@@ -79,7 +70,6 @@ export const escucharPedidos = (restauranteId, callback) => {
   });
 };
 
-
 // ==========================================
 // 👤 USUARIOS (ADMIN)
 // ==========================================
@@ -87,8 +77,7 @@ export const escucharUsuarios = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
   const q = query(
-    collection(db, "usuarios"),
-    where("restauranteId", "==", restauranteId),
+    collection(db, "restaurantes", restauranteId, "usuarios_admin"),
   );
 
   return onSnapshot(q, (snapshot) => {

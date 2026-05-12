@@ -5,7 +5,6 @@ import {
   getDoc,
   collection,
   query,
-  where,
   onSnapshot,
   deleteDoc,
 } from "firebase/firestore";
@@ -15,16 +14,19 @@ import {
   signOut,
 } from "firebase/auth";
 
-// 1. REGISTRO
+// 1. REGISTRO (Optimizado)
 export const registrarUsuario = async (email, password, rol, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId para registrar");
   const emailLimpio = email.toLowerCase().trim();
 
+  // Usamos authAdmin para no cerrar la sesión del administrador actual
   const userCredential = await createUserWithEmailAndPassword(
     authAdmin,
     emailLimpio,
     password,
   );
 
+  // Guardamos en la ruta profesional: restaurantes > ID > usuarios_admin > EMAIL
   await setDoc(
     doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
     {
@@ -61,16 +63,21 @@ export const loginUsuario = async (email, password) => {
   };
 };
 
-// 3. OBTENER DATOS (Necesario para el login)
+// 3. OBTENER DATOS (Prioridad: URL > LocalStorage)
 export const obtenerDatosUsuario = async (email) => {
   if (!email) return null;
   const emailLimpio = email.toLowerCase().trim();
 
-  const resId =
-    localStorage.getItem("restauranteId") ||
-    window.location.pathname.split("/")[1];
+  // Obtenemos el ID de la URL de forma segura
+  const pathSegments = window.location.pathname.split("/");
+  const resIdUrl = pathSegments[1];
 
-  if (resId && resId !== "login" && resId !== "admin") {
+  const resId =
+    resIdUrl && !["login", "admin", ""].includes(resIdUrl)
+      ? resIdUrl
+      : localStorage.getItem("restauranteId");
+
+  if (resId) {
     const docRef = doc(
       db,
       "restaurantes",
@@ -84,11 +91,15 @@ export const obtenerDatosUsuario = async (email) => {
 
   return null;
 };
-// 4. ESCUCHAR USUARIOS (Para el listado en tiempo real)
+
+// 4. ESCUCHAR USUARIOS (Tiempo Real)
 export const escucharUsuarios = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+
   const q = query(
     collection(db, "restaurantes", restauranteId, "usuarios_admin"),
   );
+
   return onSnapshot(q, (snapshot) => {
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -97,10 +108,13 @@ export const escucharUsuarios = (restauranteId, callback) => {
     callback(data);
   });
 };
-//eliminicion
+
+// 5. ELIMINACIÓN (Limpia)
 export const eliminarUsuario = async (email, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId para eliminar");
   const emailLimpio = email.toLowerCase().trim();
 
+  // Borramos solo de la subcolección del restaurante (donde realmente vive)
   const refSede = doc(
     db,
     "restaurantes",
@@ -108,13 +122,14 @@ export const eliminarUsuario = async (email, restauranteId) => {
     "usuarios_admin",
     emailLimpio,
   );
+
   await deleteDoc(refSede);
 
-  const refGlobal = doc(db, "usuarios_admin", emailLimpio);
-  await deleteDoc(refGlobal);
+  // Nota: Si en el futuro agregas una colección global 'usuarios',
+  // aquí deberías borrar también esa referencia.
 };
 
-// 5. LOGOUT
+// 6. LOGOUT
 export const logoutUsuario = async () => {
   await signOut(auth);
 };

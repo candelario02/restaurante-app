@@ -26,6 +26,7 @@ function Login({ onClose, onSuccess }) {
       localStorage.setItem("esAdmin", "true");
       localStorage.setItem("restauranteId", restauranteId);
       localStorage.setItem("rolUsuario", rol);
+
       if (onSuccess) {
         onSuccess({
           restauranteId,
@@ -33,19 +34,25 @@ function Login({ onClose, onSuccess }) {
           esAdmin: true,
         });
       }
+
       if (onClose) onClose();
     } catch (err) {
       console.error("Error en el flujo de Login:", err);
 
+      const errorCode = err.code || err.message;
+
       const mensajesError = {
         NO_AUTORIZADO: "No tienes permisos para acceder a este panel.",
-        "auth/user-not-found": "El usuario no existe.",
-        "auth/wrong-password": "Contraseña incorrecta.",
-        DATOS_INCOMPLETOS: "Error en el perfil: Faltan datos de restaurante.",
+        "auth/user-not-found": "El correo no está registrado.",
+        "auth/wrong-password": "La contraseña es incorrecta.",
+        "auth/invalid-email": "El formato del correo no es válido.",
+        "auth/too-many-requests": "Demasiados intentos. Intenta más tarde.",
+        DATOS_INCOMPLETOS: "Tu perfil no tiene un restaurante asignado.",
       };
 
       setError(
-        mensajesError[err.message] || "Error de conexión. Intenta de nuevo.",
+        mensajesError[errorCode] ||
+          "Error de credenciales. Revisa e intenta de nuevo.",
       );
     } finally {
       setCargando(false);
@@ -56,7 +63,7 @@ function Login({ onClose, onSuccess }) {
     <div className="login-content">
       <div className="login-icon-wrapper">
         {error ? (
-          <ShieldAlert size={50} color="#ff4d4d" />
+          <ShieldAlert size={50} color="#ff4d4d" className="animar-error" />
         ) : (
           <Lock size={50} color="#f6ad55" />
         )}
@@ -64,15 +71,20 @@ function Login({ onClose, onSuccess }) {
 
       <form onSubmit={manejarLogin} className="login-form">
         <h2 className="titulo-principal">Acceso Panel</h2>
+        <p className="subtitulo-login">
+          Ingresa tus credenciales de{" "}
+          {email.includes("@admin") ? "Administrador" : "Personal"}
+        </p>
 
         <div className="input-group">
           <Mail size={18} className="input-icon" />
           <input
             type="email"
-            placeholder="Correo"
+            placeholder="correo@ejemplo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="input-pro"
           />
         </div>
 
@@ -84,17 +96,27 @@ function Login({ onClose, onSuccess }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="input-pro"
           />
         </div>
 
-        {error && <div className="mensaje-alerta error">{error}</div>}
+        {error && (
+          <div className="mensaje-alerta error-login">
+            <span>{error}</span>
+          </div>
+        )}
 
-        <button type="submit" className="btn-login-submit" disabled={cargando}>
+        <button
+          type="submit"
+          className={`btn-login-submit ${cargando ? "cargando" : ""}`}
+          disabled={cargando}
+        >
           {cargando ? (
-            "Entrando..."
+            <span className="spinner"></span>
           ) : (
             <>
-              <LogIn size={18} /> Entrar
+              <LogIn size={18} />
+              <span>Entrar al Sistema</span>
             </>
           )}
         </button>
