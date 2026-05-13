@@ -703,7 +703,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           style={{ marginLeft: "8px" }}
                           onClick={() => cambiarEstado(p.id, "pendiente")}
                         >
-                          ↩️ Revertir
+                          🔃 Revertir
                         </button>
                       )}
                     </div>
