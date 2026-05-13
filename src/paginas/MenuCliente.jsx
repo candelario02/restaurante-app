@@ -57,7 +57,7 @@ const MenuCliente = ({ restauranteId }) => {
     localStorage.getItem(`ultimoPedido_${restauranteId}`),
   );
   const [datosPedidoRealtime, setDatosPedidoRealtime] = useState(null);
-
+  const [tiempoRestante, setTiempoRestante] = useState(600);
   // Reseñas
   const [mostrarModalCalificacion, setMostrarModalCalificacion] =
     useState(false);
@@ -101,6 +101,29 @@ const MenuCliente = ({ restauranteId }) => {
 
     return () => unsub();
   }, [restauranteId]);
+  //Seguimeto para el contador regresivo
+  useEffect(() => {
+    let intervalo;
+
+    if (datosPedidoRealtime?.estado === "cocinando" && tiempoRestante > 0) {
+      intervalo = setInterval(() => {
+        setTiempoRestante((prev) => prev - 1);
+      }, 1000);
+    } else if (datosPedidoRealtime?.estado === "entregado") {
+      setTiempoRestante(0);
+      clearInterval(intervalo);
+    }
+
+    return () => clearInterval(intervalo);
+  }, [datosPedidoRealtime?.estado, tiempoRestante]);
+
+  // Función auxiliar para mostrar el formato MM:SS
+  const formatearTiempo = (segundos) => {
+    if (segundos <= 0) return "¡Listo!";
+    const m = Math.floor(segundos / 60);
+    const s = segundos % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
+  };
 
   // 2. Seguimiento Realtime del Pedido Activo
   useEffect(() => {
@@ -400,13 +423,27 @@ const MenuCliente = ({ restauranteId }) => {
               <div
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
               >
-                <div className="step-circle pulse-animation">
-                  <Utensils size={16} />
+                <div
+                  className={`step-circle ${datosPedidoRealtime.estado === "cocinando" ? "pulse-animation" : ""}`}
+                >
+                  <Utensils size={14} />
                 </div>
                 <span className="step-label">Cocina</span>
-                {/* Solo mostramos el contador si está en etapa de cocina */}
+
+                {/* Contador Dinámico */}
                 {datosPedidoRealtime.estado === "cocinando" && (
-                  <div className="contador-espera">5-10 min</div>
+                  <div className="contador-espera pulse-animation">
+                    ⏱️ {formatearTiempo(tiempoRestante)}
+                  </div>
+                )}
+
+                {datosPedidoRealtime.estado === "pendiente" && (
+                  <div
+                    className="contador-espera"
+                    style={{ background: "#64748b" }}
+                  >
+                    En espera...
+                  </div>
                 )}
               </div>
 

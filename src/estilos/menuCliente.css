@@ -424,50 +424,50 @@
 }
 
 /* =============================================
-   7. SEGUIMIENTO DE PEDIDO - VERSIÓN FINAL COMBINADA
+   7. SEGUIMIENTO DE PEDIDO - DISEÑO PROFESIONAL
    ============================================= */
 
-/* Unimos las clases para que no haya conflicto de fondos */
 .seguimiento-box.tarjeta-def-oscura {
   width: 100%;
-  max-width: 600px;
-  /* Fondo oscuro sólido y cristalino de la referencia */
+  max-width: 800px !important; 
   background: #0f172a !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 24px;
-  margin: 0 auto 20px auto;
+  padding: 12px 20px !important; 
+  margin: -30px auto 20px auto !important; 
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.4s ease-out;
-}
-
-/* Forzamos colores de texto para que sean visibles */
-.tarjeta-def-oscura .titulo-categoria,
-.tarjeta-def-oscura .seguimiento-footer-msg {
-  color: white !important;
+  position: relative;
 }
 
 .seguimiento-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+}
+
+.pedido-id-tag {
+  color: #f8fafc !important; 
+  background: rgba(255, 255, 255, 0.15) !important;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
 }
 
 .seguimiento-total-text {
   font-size: 1rem;
   font-weight: bold;
-  color: #818cf8 !important; /* Azul brillante de la referencia */
+  color: #818cf8 !important;
 }
 
-/* --- STEPPER CORREGIDO --- */
 .stepper-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 35px 0;
+  margin: 30px 0 15px 0;
   position: relative;
 }
 
@@ -486,13 +486,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   position: relative;
 }
 
 .step-circle {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: #1e293b !important;
   border: 2px solid rgba(255, 255, 255, 0.1) !important;
@@ -503,13 +503,12 @@
   transition: all 0.4s ease;
 }
 
-/* Estados del Stepper */
+/* Estados */
 .step.active .step-circle {
   background: #6366f1 !important;
   border-color: #818cf8 !important;
   color: white !important;
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
-  transform: scale(1.1);
 }
 
 .step.completed .step-circle {
@@ -519,26 +518,27 @@
 }
 
 .step-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #94a3b8;
 }
 
-.step.active .step-label {
-  color: white !important;
-}
-
-/* --- ELEMENTOS ADICIONALES (Contador y Animación) --- */
+/* --- CONTADOR Y ANIMACIÓN --- */
 .contador-espera {
   position: absolute;
-  top: -30px;
-  background: #6366f1;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4f46e5; 
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   padding: 3px 10px;
   border-radius: 12px;
   font-weight: 800;
   white-space: nowrap;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 10;
 }
 
 .pulse-animation {
@@ -546,34 +546,35 @@
 }
 
 @keyframes pulse-blue {
-  0% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
 }
 
-/* --- BOTONES --- */
+/* --- BOTONES Y TEXTOS --- */
+.seguimiento-footer-msg {
+  color: #e2e8f0 !important;
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 10px 0;
+}
+
 .btn-pedir-mas {
   background: rgba(255, 255, 255, 0.05) !important;
   color: white !important;
   border: 1px dashed rgba(255, 255, 255, 0.2) !important;
-  padding: 14px;
-  border-radius: 16px;
+  padding: 10px;
+  border-radius: 12px;
   font-weight: 600;
   width: 100%;
   cursor: pointer;
-  margin-top: 10px;
 }
 
 .btn-pedir-mas:disabled {
-  background: rgba(99, 102, 241, 0.2) !important;
+  background: rgba(99, 102, 241, 0.1) !important;
   color: #a5b4fc !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  cursor: default;
 }
 /* =============================================
    8. MODAL DE CALIFICACIÓN
