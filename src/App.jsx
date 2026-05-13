@@ -60,19 +60,18 @@ function App() {
   };
 
   // 1. Captura de Identidad desde URL
-  useEffect(() => {
-    const ruta = window.location.pathname;
-    const idDesdeUrl = ruta.split("/")[1];
-    const reservados = ["login", "admin", "dashboard", ""];
+ useEffect(() => {
+  const ruta = window.location.pathname;
+  const idDesdeUrl = ruta.split("/")[1];
+  const reservados = ["login", "admin", "dashboard", ""];
 
-    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      if (idDesdeUrl !== restauranteId) {
-        setRestauranteId(idDesdeUrl);
-        localStorage.setItem("restauranteId", idDesdeUrl);
-      }
+  if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
+    if (!localStorage.getItem("restauranteId")) {
+      setRestauranteId(idDesdeUrl);
+      localStorage.setItem("restauranteId", idDesdeUrl);
     }
-  }, [restauranteId]);
-
+  }
+}, []);
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
