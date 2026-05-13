@@ -49,7 +49,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
-  const [userRol, setUserRol] = useState("mozo");
+  const [userRol, setUserRol] = useState("");
   const [filtroCaja, setFiltroCaja] = useState("dia");
   const [busqueda, setBusqueda] = useState("");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
@@ -278,14 +278,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     }
 
+    if (!userRol) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Rol no seleccionado",
+        text: "Debes elegir un rol para el nuevo usuario.",
+        confirmButtonColor: "#6366f1",
+      });
+    }
+
     if (cargando) return;
 
     try {
       setCargando(true);
-
       await registrarUsuario(userEmail, userPass, userRol, restauranteId);
 
-      // 3. Éxito
       Swal.fire({
         icon: "success",
         title: "¡Registro Exitoso!",
@@ -296,13 +303,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
       setUserEmail("");
       setUserPass("");
-      setUserRol("mozo");
+      setUserRol("");
     } catch (error) {
       let mensajeError = error.message;
       if (error.code === "auth/email-already-in-use") {
         mensajeError = "Este correo ya está registrado en el sistema.";
       }
-
       Swal.fire({
         icon: "error",
         title: "Error al registrar",
@@ -928,6 +934,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               value={userRol}
               onChange={(e) => setUserRol(e.target.value)}
             >
+              <option value="" disabled>
+                Seleccionar Rol
+              </option>
               <option value="mozo">Mozo (Solo Pedidos)</option>
               <option value="cajero">Cajero (Pedidos y Pagos)</option>
               <option value="admin">Administrador (Control Total)</option>
@@ -935,7 +944,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
             <button
               type="submit"
-              disabled={cargando || userPass.length < 6}
+              disabled={cargando || userPass.length <6 || !userRol}
               className="btn-primary"
               style={{
                 width: "100%",
