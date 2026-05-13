@@ -441,6 +441,18 @@
   animation: slideUp 0.4s ease-out;
   position: relative;
 }
+.seguimiento-box .titulo-categoria {
+  color: #ffffff !important; 
+}
+.seguimiento-box .pedido-id-tag {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; 
+  padding: 5px 12px;
+  border-radius: 12px;
+}
 
 .seguimiento-header {
   display: flex;
@@ -553,10 +565,10 @@
 
 /* --- BOTONES Y TEXTOS --- */
 .seguimiento-footer-msg {
-  color: #e2e8f0 !important;
+  color: #ffffff !important;
+  opacity: 0.9;
   text-align: center;
-  font-size: 0.85rem;
-  margin: 10px 0;
+  font-weight: 500;
 }
 
 .btn-pedir-mas {

@@ -396,7 +396,7 @@ const MenuCliente = ({ restauranteId }) => {
               <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
               <div className="seguimiento-header-total">
                 <span className="pedido-id-tag">
-                  👤{" "}
+                  🧍‍♂️{" "}
                   {datosPedidoRealtime?.cliente?.nombre ||
                     `ID: #${pedidoActivoId?.slice(-5)}`}
                 </span>
