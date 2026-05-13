@@ -18,7 +18,7 @@ import {
   Pizza,
   Coffee,
   Droplet,
-   CheckCircle,
+  CheckCircle,
 } from "lucide-react";
 
 // Servicios
@@ -35,7 +35,7 @@ import {
 const MenuCliente = ({ restauranteId }) => {
   // --- ESTADOS ---
   const [productos, setProductos] = useState([]);
-  const [cargando, setCargando] = useState(true); 
+  const [cargando, setCargando] = useState(true);
   const [categoriaActual, setCategoriaActual] = useState(null);
   const [carrito, setCarrito] = useState([]);
   const [verCarrito, setVerCarrito] = useState(false);
@@ -48,7 +48,7 @@ const MenuCliente = ({ restauranteId }) => {
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [direccion, setDireccion] = useState(""); 
+  const [direccion, setDireccion] = useState("");
   const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
 
@@ -284,6 +284,7 @@ const MenuCliente = ({ restauranteId }) => {
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
+      setCategoriaActual(null);
 
       if (!idExistente && idNuevo) {
         setPedidoActivoId(idNuevo);
@@ -364,7 +365,114 @@ const MenuCliente = ({ restauranteId }) => {
           )}
         </button>
       )}
+      {/* SESION DE PEDIDO */}
+      {pedidoActivoId && datosPedidoRealtime && (
+        <div className="view-principal">
+          <div className="seguimiento-box">
+            <div className="seguimiento-header">
+              <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
+              <div className="seguimiento-header-total">
+                <span className="pedido-id-tag">
+                  👤{" "}
+                  {datosPedidoRealtime?.cliente?.nombre ||
+                    `ID: #${pedidoActivoId?.slice(-5)}`}
+                </span>
+                <span className="seguimiento-total-text">
+                  Total: S/ {Number(datosPedidoRealtime?.total || 0).toFixed(2)}
+                </span>
+              </div>
+            </div>
 
+            <div className="stepper-container">
+              <div className="stepper-line"></div>
+
+              {/* Paso 1: Recibido */}
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 1 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 1 ? "completed" : ""}`}
+              >
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) > 1 ? "✓" : "1"}
+                </div>
+                <span className="step-label">Recibido</span>
+              </div>
+
+              {/* Paso 2: Cocina */}
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
+              >
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) > 2 ? "✓" : "2"}
+                </div>
+                <span className="step-label">Cocina</span>
+              </div>
+
+              {/* Paso 3: Entregado */}
+              <div
+                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 3 ? "active" : ""}`}
+              >
+                <div className="step-circle">
+                  {getEtapa(datosPedidoRealtime.estado) >= 3 ? "✓" : "3"}
+                </div>
+                <span className="step-label">Entregado</span>
+              </div>
+            </div>
+
+            <p className="seguimiento-footer-msg">
+              {datosPedidoRealtime.estado === "pendiente" &&
+                "Estamos validando tu pedido..."}
+              {datosPedidoRealtime.estado === "cocinando" &&
+                "¡Tu orden está en el fuego! 🔥"}
+              {datosPedidoRealtime.estado === "entregado" &&
+                "¡Listo! Que lo disfrutes."}
+            </p>
+
+            <div className="seguimiento-acciones">
+              {datosPedidoRealtime.estado === "entregado" ? (
+                <button
+                  className="btn-finalizar-calificar"
+                  onClick={() => setMostrarModalCalificacion(true)}
+                >
+                  ⭐ Finalizar y Calificar
+                </button>
+              ) : (
+                <button
+                  className="btn-pedir-mas"
+                  disabled={datosPedidoRealtime?.estado !== "pendiente"}
+                  onClick={async () => {
+                    if (datosPedidoRealtime?.estado !== "pendiente") {
+                      Swal.fire(
+                        "Aviso",
+                        "Tu pedido ya está en cocina y no se pueden añadir más productos.",
+                        "info",
+                      );
+                      return;
+                    }
+
+                    const { isConfirmed } = await Swal.fire({
+                      title: "¡Perfecto!",
+                      text: "Tu carrito se cargará con tu pedido actual para que puedas añadir algo más.",
+                      icon: "info",
+                      confirmButtonText: "Entendido",
+                      confirmButtonColor: "#4CAF50",
+                    });
+
+                    if (isConfirmed) {
+                      setCarrito([...datosPedidoRealtime.items]);
+                      setVerCarrito(true);
+                      setCategoriaActual(null);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
+                >
+                  {datosPedidoRealtime?.estado === "pendiente"
+                    ? "+ Pedir algo adicional"
+                    : "👨‍🍳 Cocina trabajando..."}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {/* SESION CATEGORÍAS principal */}
       {!categoriaActual && (
         <div className="view-principal">
@@ -482,114 +590,7 @@ const MenuCliente = ({ restauranteId }) => {
           )}
         </div>
       )}
-      {/* SESION DE PEDIDO */}
-      {pedidoActivoId && datosPedidoRealtime && (
-        <div className="view-principal">
-          <div className="seguimiento-box">
-            <div className="seguimiento-header">
-              <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
-              <div className="seguimiento-header-total">
-                <span className="pedido-id-tag">
-                  👤{" "}
-                  {datosPedidoRealtime?.cliente?.nombre ||
-                    `ID: #${pedidoActivoId?.slice(-5)}`}
-                </span>
-                <span className="seguimiento-total-text">
-                  Total: S/ {Number(datosPedidoRealtime?.total || 0).toFixed(2)}
-                </span>
-              </div>
-            </div>
 
-            <div className="stepper-container">
-              <div className="stepper-line"></div>
-
-              {/* Paso 1: Recibido */}
-              <div
-                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 1 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 1 ? "completed" : ""}`}
-              >
-                <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) > 1 ? "✓" : "1"}
-                </div>
-                <span className="step-label">Recibido</span>
-              </div>
-
-              {/* Paso 2: Cocina */}
-              <div
-                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
-              >
-                <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) > 2 ? "✓" : "2"}
-                </div>
-                <span className="step-label">Cocina</span>
-              </div>
-
-              {/* Paso 3: Entregado */}
-              <div
-                className={`step ${getEtapa(datosPedidoRealtime.estado) >= 3 ? "active" : ""}`}
-              >
-                <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) >= 3 ? "✓" : "3"}
-                </div>
-                <span className="step-label">Entregado</span>
-              </div>
-            </div>
-
-            <p className="seguimiento-footer-msg">
-              {datosPedidoRealtime.estado === "pendiente" &&
-                "Estamos validando tu pedido..."}
-              {datosPedidoRealtime.estado === "cocinando" &&
-                "¡Tu orden está en el fuego! 🔥"}
-              {datosPedidoRealtime.estado === "entregado" &&
-                "¡Listo! Que lo disfrutes."}
-            </p>
-
-            <div className="seguimiento-acciones">
-              {datosPedidoRealtime.estado === "entregado" ? (
-                <button
-                  className="btn-finalizar-calificar"
-                  onClick={() => setMostrarModalCalificacion(true)}
-                >
-                  ⭐ Finalizar y Calificar
-                </button>
-              ) : (
-                <button
-                  className="btn-pedir-mas"
-                  disabled={datosPedidoRealtime?.estado !== "pendiente"}
-                  onClick={async () => {
-                    if (datosPedidoRealtime?.estado !== "pendiente") {
-                      Swal.fire(
-                        "Aviso",
-                        "Tu pedido ya está en cocina y no se pueden añadir más productos.",
-                        "info",
-                      );
-                      return;
-                    }
-
-                    const { isConfirmed } = await Swal.fire({
-                      title: "¡Perfecto!",
-                      text: "Tu carrito se cargará con tu pedido actual para que puedas añadir algo más.",
-                      icon: "info",
-                      confirmButtonText: "Entendido",
-                      confirmButtonColor: "#4CAF50",
-                    });
-
-                    if (isConfirmed) {
-                      setCarrito([...datosPedidoRealtime.items]);
-                      setVerCarrito(true);
-                      setCategoriaActual(null);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  }}
-                >
-                  {datosPedidoRealtime?.estado === "pendiente"
-                    ? "+ Pedir algo adicional"
-                    : "👨‍🍳 Cocina trabajando..."}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
       {/* SESION DEL CARRITO */}
       {verCarrito && (
         <div className="carrito-overlay">
