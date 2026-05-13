@@ -34,8 +34,8 @@ import {
 const MenuCliente = ({ restauranteId }) => {
   // --- ESTADOS ---
   const [productos, setProductos] = useState([]);
-  const [cargando, setCargando] = useState(true); // Estado de carga inicial
-  const [categoriaActual, setCategoriaActual] = useState("Todos");
+  const [cargando, setCargando] = useState(true); 
+  const [categoriaActual, setCategoriaActual] = useState("null");
   const [carrito, setCarrito] = useState([]);
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
