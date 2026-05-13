@@ -42,7 +42,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [pedidos, setPedidos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
-  const [categoria, setCategoria] = useState("Categoria");
+  const [categoria, setCategoria] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
   const [archivo, setArchivo] = useState(null);
   const [imgPreview, setImgPreview] = useState("");
@@ -465,10 +465,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
+              <option value="" disabled>
+                Seleccionar categoría
+              </option>
               <option value="Comidas">Comidas</option>
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
-              <option value="Cafeteria">Cafeteria</option>
+              <option value="Cafeteria">Cafetería</option>
             </select>
 
             <div className="upload-box">
