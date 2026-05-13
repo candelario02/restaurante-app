@@ -515,25 +515,39 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <div className="admin-acciones-mix">
               <button
                 type="submit"
-                className="btn-guardar-pro-ajustado"
+                className="btn-guardar-pro-compacto"
                 disabled={!restauranteId || cargando}
-                style={{ opacity: cargando ? 0.7 : 1 }}
               >
                 {cargando ? (
-                  "Procesando..."
+                  "..."
+                ) : editandoId ? (
+                  <Edit size={18} />
                 ) : (
-                  <>
-                    <Save size={18} />
-                    {editandoId ? " Actualizar" : " Guardar"}
-                  </>
+                  <Save size={18} />
                 )}
+                <span>{editandoId ? " Act." : " Guardar"}</span>
               </button>
 
+              <div className="filtro-container-pro">
+                <select
+                  className="select-filtro-tabla"
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
+                  <option value="">Todos</option>
+                  <option value="Comidas">Comidas</option>
+                  <option value="Bebidas">Bebidas</option>
+                  <option value="Entradas">Entradas</option>
+                  <option value="Cafeteria">Cafetería</option>
+                </select>
+              </div>
+
+              {/* BUSCADOR */}
               <div className="buscador-container-pro">
                 <Search size={18} className="icon-search" />
                 <input
                   type="text"
-                  placeholder="Buscar plato..."
+                  placeholder="Buscar..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
                   className="input-buscar-interno"
@@ -545,7 +559,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   type="button"
                   className="btn-cancelar-pro-circular"
                   onClick={cancelarEdicion}
-                  title="Cancelar edición"
                 >
                   ✕
                 </button>
@@ -944,7 +957,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
             <button
               type="submit"
-              disabled={cargando || userPass.length <6 || !userRol}
+              disabled={cargando || userPass.length < 6 || !userRol}
               className="btn-primary"
               style={{
                 width: "100%",
