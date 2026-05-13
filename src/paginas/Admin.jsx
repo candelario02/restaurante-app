@@ -51,6 +51,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [userPass, setUserPass] = useState("");
   const [userRol, setUserRol] = useState("");
   const [filtroCaja, setFiltroCaja] = useState("dia");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
 
@@ -207,10 +208,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   };
   //buscador
   const productosFiltrados = useMemo(() => {
-    return productos.filter((p) =>
-      (p.nombre || "").toLowerCase().includes(busqueda.toLowerCase()),
-    );
-  }, [productos, busqueda]);
+    return productos.filter((p) => {
+      const coincideNombre = (p.nombre || "")
+        .toLowerCase()
+        .includes(busqueda.toLowerCase());
+      const coincideCategoria =
+        filtroCategoria === "" || p.categoria === filtroCategoria;
+
+      return coincideNombre && coincideCategoria;
+    });
+  }, [productos, busqueda, filtroCategoria]);
   //edicion
   const prepararEdicion = (p) => {
     setEditandoId(p.id);
