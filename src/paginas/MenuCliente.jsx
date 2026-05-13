@@ -14,6 +14,10 @@ import {
   ChevronRight,
   Star,
   CheckCircle2,
+  ArrowLeft,
+  Pizza,
+  Coffee,
+  Droplet,
 } from "lucide-react";
 
 // Servicios
