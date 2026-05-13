@@ -18,6 +18,7 @@ import {
   Pizza,
   Coffee,
   Droplet,
+   CheckCircle,
 } from "lucide-react";
 
 // Servicios
@@ -47,7 +48,7 @@ const MenuCliente = ({ restauranteId }) => {
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [direccion, setDireccion] = useState(""); // Referencia o Mesa
+  const [direccion, setDireccion] = useState(""); 
   const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
 
