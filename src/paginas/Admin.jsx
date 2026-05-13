@@ -42,7 +42,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [pedidos, setPedidos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
-  const [categoria, setCategoria] = useState("Comidas");
+  const [categoria, setCategoria] = useState("Categoria");
   const [editandoId, setEditandoId] = useState(null);
   const [archivo, setArchivo] = useState(null);
   const [imgPreview, setImgPreview] = useState("");
@@ -383,9 +383,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
       await cambiarDisponibilidad(id, !estadoActual, restauranteId);
+      const nuevoEstado = !estadoActual;
 
       Swal.fire({
-        title: estadoActual ? "Plato Activado" : "Plato Agotado",
+        title: nuevoEstado ? "Plato Activado" : "Plato Agotado",
         icon: "success",
         timer: 800,
         showConfirmButton: false,
