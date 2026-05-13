@@ -42,7 +42,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [pedidos, setPedidos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
-  const [categoria, setCategoria] = useState(null);
+  const [categoria, setCategoria] = useState("");
   const [editandoId, setEditandoId] = useState(null);
   const [archivo, setArchivo] = useState(null);
   const [imgPreview, setImgPreview] = useState("");
