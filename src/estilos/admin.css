@@ -312,6 +312,15 @@
   font-weight: 600;
   cursor: pointer;
 }
+.btn-revertir {
+ background: #22c55e;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* =============================================
    4. SECCIÓN CAJA (Ventas y estadísticas)

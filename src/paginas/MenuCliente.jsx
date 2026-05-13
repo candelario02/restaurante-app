@@ -365,10 +365,10 @@ const MenuCliente = ({ restauranteId }) => {
           )}
         </button>
       )}
-      {/* SESION DE PEDIDO */}
+      {/* SESION DE SEGUIMIENTO PEDIDO */}
       {pedidoActivoId && datosPedidoRealtime && (
         <div className="view-principal">
-          <div className="seguimiento-box">
+          <div className="seguimiento-box tarjeta-def-oscura">
             <div className="seguimiento-header">
               <h3 className="titulo-categoria">Sigue tu Orden 🥣</h3>
               <div className="seguimiento-header-total">
@@ -391,19 +391,23 @@ const MenuCliente = ({ restauranteId }) => {
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 1 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 1 ? "completed" : ""}`}
               >
                 <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) > 1 ? "✓" : "1"}
+                  <ShoppingBag size={16} />
                 </div>
                 <span className="step-label">Recibido</span>
               </div>
 
-              {/* Paso 2: Cocina */}
+              {/* Paso 2: Cocina + CONTADOR */}
               <div
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 2 ? "active" : ""} ${getEtapa(datosPedidoRealtime.estado) > 2 ? "completed" : ""}`}
               >
-                <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) > 2 ? "✓" : "2"}
+                <div className="step-circle pulse-animation">
+                  <Utensils size={16} />
                 </div>
                 <span className="step-label">Cocina</span>
+                {/* Solo mostramos el contador si está en etapa de cocina */}
+                {datosPedidoRealtime.estado === "cocinando" && (
+                  <div className="contador-espera">5-10 min</div>
+                )}
               </div>
 
               {/* Paso 3: Entregado */}
@@ -411,7 +415,7 @@ const MenuCliente = ({ restauranteId }) => {
                 className={`step ${getEtapa(datosPedidoRealtime.estado) >= 3 ? "active" : ""}`}
               >
                 <div className="step-circle">
-                  {getEtapa(datosPedidoRealtime.estado) >= 3 ? "✓" : "3"}
+                  <CheckCircle size={16} />
                 </div>
                 <span className="step-label">Entregado</span>
               </div>
