@@ -41,55 +41,49 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
   return userCredential.user;
 };
 
-// 2. LOGIN
-export const loginUsuario = async (email, password) => {
+// 2. LOGIN (ahora recibe restauranteId)
+export const loginUsuario = async (email, password, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId para login");
   const userCredential = await signInWithEmailAndPassword(
     auth,
     email.trim(),
     password,
   );
   const userEmail = userCredential.user.email.toLowerCase().trim();
-  const datos = await obtenerDatosUsuario(userEmail);
-
-  if (!datos || !datos.restauranteId) {
+  // Buscar el rol dentro del restaurante específico (el de la URL)
+  const docRef = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "usuarios_admin",
+    userEmail,
+  );
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) {
     await signOut(auth);
-    throw new Error("USUARIO_SIN_PERFIL_CONFIGURADO");
+    throw new Error("USUARIO_SIN_PERFIL_EN_ESTE_RESTAURANTE");
   }
-
+  const data = docSnap.data();
   return {
     user: userCredential.user,
-    restauranteId: datos.restauranteId,
-    rol: datos.rol,
+    restauranteId: restauranteId,
+    rol: data.rol,
   };
 };
 
-// 3. OBTENER DATOS (Prioridad: URL > LocalStorage)
-export const obtenerDatosUsuario = async (email) => {
-  if (!email) return null;
+// 3. OBTENER DATOS (ahora recibe restauranteId)
+export const obtenerDatosUsuario = async (email, restauranteId) => {
+  if (!email || !restauranteId) return null;
   const emailLimpio = email.toLowerCase().trim();
-
-  // Obtenemos el ID de la URL de forma segura
-  const pathSegments = window.location.pathname.split("/");
-  const resIdUrl = pathSegments[1];
-
-  const resId =
-    resIdUrl && !["login", "admin", ""].includes(resIdUrl)
-      ? resIdUrl
-      : localStorage.getItem("restauranteId");
-
-  if (resId) {
-    const docRef = doc(
-      db,
-      "restaurantes",
-      resId,
-      "usuarios_admin",
-      emailLimpio,
-    );
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) return docSnap.data();
-  }
-
-  return null;
+  const docRef = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "usuarios_admin",
+    emailLimpio,
+  );
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? docSnap.data() : null;
 };
 
 // 4. ESCUCHAR USUARIOS (Tiempo Real)

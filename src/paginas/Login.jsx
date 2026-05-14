@@ -3,7 +3,7 @@ import { loginUsuario } from "../servicios/usuariosServicio";
 import { Lock, Mail, LogIn, ShieldAlert } from "lucide-react";
 import "../estilos/login.css";
 
-function Login({ onClose, onSuccess }) {
+function Login({ onClose, onSuccess, restauranteId }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,7 +15,7 @@ function Login({ onClose, onSuccess }) {
     setCargando(true);
 
     try {
-      const datosUsuario = await loginUsuario(email, password);
+      const datosUsuario = await loginUsuario(email, password, restauranteId);
 
       const { restauranteId, rol } = datosUsuario;
 

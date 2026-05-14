@@ -60,18 +60,18 @@ function App() {
   };
 
   // 1. Captura de Identidad desde URL
- useEffect(() => {
-  const ruta = window.location.pathname;
-  const idDesdeUrl = ruta.split("/")[1];
-  const reservados = ["login", "admin", "dashboard", ""];
-
-  if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-    if (!localStorage.getItem("restauranteId")) {
-      setRestauranteId(idDesdeUrl);
-      localStorage.setItem("restauranteId", idDesdeUrl);
+  useEffect(() => {
+    const ruta = window.location.pathname;
+    const idDesdeUrl = ruta.split("/")[1];
+    const reservados = ["login", "admin", "dashboard", ""];
+    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
+      if (restauranteId !== idDesdeUrl) {
+        setRestauranteId(idDesdeUrl);
+        localStorage.setItem("restauranteId", idDesdeUrl);
+      }
     }
-  }
-}, []);
+  }, [restauranteId]);
+
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (usuario) => {
@@ -82,31 +82,18 @@ function App() {
         setCargando(false);
         return;
       }
-
       try {
-        const datos = await obtenerDatosUsuario(usuario.email);
-
-        if (datos?.restauranteId) {
+        // Importante: usar el restauranteId actual (de la URL)
+        const datos = await obtenerDatosUsuario(usuario.email, restauranteId);
+        if (datos?.rol) {
           setUser(usuario);
-
-          const nuevoRol = datos.rol;
-          setRol((prev) => (prev !== nuevoRol ? nuevoRol : prev));
-          setIsAdmin(["admin", "superadmin"].includes(nuevoRol));
-          setRestauranteId((prevId) => {
-            if (prevId !== datos.restauranteId) {
-              localStorage.setItem("restauranteId", datos.restauranteId);
-              return datos.restauranteId;
-            }
-            return prevId;
-          });
-
-          localStorage.setItem("rolUsuario", nuevoRol);
-
-          if (["mozo", "cajero"].includes(nuevoRol)) {
-            setSeccion("pedidos");
-          }
+          setRol(datos.rol);
+          setIsAdmin(["admin", "superadmin"].includes(datos.rol));
+          // No modifiques restauranteId aquí
+          localStorage.setItem("rolUsuario", datos.rol);
+          if (["mozo", "cajero"].includes(datos.rol)) setSeccion("pedidos");
         } else {
-          console.warn("Usuario sin restaurante asignado");
+          console.warn("Usuario sin permisos en este restaurante");
           await signOut(auth);
         }
       } catch (error) {
@@ -115,9 +102,9 @@ function App() {
         setCargando(false);
       }
     });
-
     return () => unsub();
-  }, []);
+  }, [restauranteId]);
+
   // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
   useEffect(() => {
     // 🛡️ GUARDA PROFESIONAL: Evita errores de Firebase 'undefined' y bucles
@@ -302,7 +289,6 @@ function App() {
                 setRestauranteId(id);
                 setRol(r);
                 setIsAdmin(true);
-                // Forzar sección inicial según rol al loguear
                 if (r === "mozo" || r === "cajero") {
                   setSeccion("pedidos");
                 } else {
@@ -310,6 +296,7 @@ function App() {
                 }
                 setMostrarLogin(false);
               }}
+              restauranteId={restauranteId} 
             />
           </div>
         </div>
