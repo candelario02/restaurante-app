@@ -247,16 +247,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          console.log("ID del producto:", id);
+          console.log("publicIdCloudinary:", publicIdCloudinary);
+
           await eliminarProducto(id, restauranteId);
 
           if (publicIdCloudinary) {
-            await fetch("/api/cloudinary/delete", {
+            const response = await fetch("/api/cloudinary/delete", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ public_id: publicIdCloudinary }),
             });
+            console.log(
+              "Respuesta del endpoint:",
+              response.status,
+              await response.text(),
+            );
           }
-
           Swal.fire({
             title: "Eliminado",
             text: "El producto y su imagen han sido borrados.",
@@ -639,8 +646,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         <Edit size={16} />
                       </button>
                       <button
-                        className="btn-delete"
-                        onClick={() => manejarEliminar(p.id)}
+                        onClick={() => manejarEliminar(p.id, p.cloudinaryId)}
                       >
                         <Trash2 size={16} />
                       </button>
