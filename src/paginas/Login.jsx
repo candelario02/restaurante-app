@@ -17,19 +17,19 @@ function Login({ onClose, onSuccess, restauranteId }) {
     try {
       const datosUsuario = await loginUsuario(email, password, restauranteId);
 
-      const { restauranteId, rol } = datosUsuario;
+      const { restauranteId: idRestaurante, rol } = datosUsuario;
 
-      if (!restauranteId || !rol) {
+      if (!idRestaurante || !rol) {
         throw new Error("DATOS_INCOMPLETOS");
       }
 
       localStorage.setItem("esAdmin", "true");
-      localStorage.setItem("restauranteId", restauranteId);
+      localStorage.setItem("restauranteId", idRestaurante);
       localStorage.setItem("rolUsuario", rol);
 
       if (onSuccess) {
         onSuccess({
-          restauranteId,
+          restauranteId: idRestaurante,
           rol,
           esAdmin: true,
         });

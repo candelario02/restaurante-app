@@ -24,6 +24,7 @@ function App() {
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
+  const [urlListo, setUrlListo] = useState(false);
 
   // Inicialización síncrona del ID para evitar el primer render con 'null'
   const [restauranteId, setRestauranteId] = useState(() => {
@@ -70,10 +71,12 @@ function App() {
         localStorage.setItem("restauranteId", idDesdeUrl);
       }
     }
-  }, [restauranteId]);
+    setUrlListo(true); 
+  }, []); 
 
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
+    if (!urlListo) return;
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (!usuario) {
         setUser(null);
@@ -103,7 +106,7 @@ function App() {
       }
     });
     return () => unsub();
-  }, [restauranteId]);
+  }, [urlListo, restauranteId]);
 
   // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
   useEffect(() => {
@@ -296,7 +299,7 @@ function App() {
                 }
                 setMostrarLogin(false);
               }}
-              restauranteId={restauranteId} 
+              restauranteId={restauranteId}
             />
           </div>
         </div>
