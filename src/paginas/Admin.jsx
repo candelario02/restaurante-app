@@ -54,6 +54,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
+  const [publicIdExistente, setPublicIdExistente] = useState(null);
 
   const fileInputRef = useRef(null);
 
@@ -139,9 +140,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       setCargando(true);
 
       let urlFinal = editandoId ? imgPreview : "";
+      let nuevoPublicId = publicIdExistente;
 
       if (archivo) {
-        urlFinal = await subirImagen(archivo);
+        const resultado = await subirImagen(
+          archivo,
+          editandoId ? publicIdExistente : null,
+        );
+        if (!resultado) throw new Error("Error al subir la imagen");
+        urlFinal = resultado.url;
+        nuevoPublicId = resultado.public_id;
       }
 
       const datos = {
@@ -149,22 +157,19 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         precio: Number(precio),
         categoria,
         imagenUrl: urlFinal || "",
+        cloudinaryId: nuevoPublicId,
       };
 
       if (editandoId) {
         await actualizarProducto(editandoId, datos, restauranteId);
-        // Alerta de éxito para actualización
         Swal.fire({
           icon: "success",
           title: "¡Actualizado!",
-          text: "El producto se actualizó correctamente.",
-          showConfirmButton: false,
           timer: 2000,
-          position: "center",
+          showConfirmButton: false,
         });
       } else {
         await crearProducto(datos, restauranteId);
-        // Alerta de éxito para creación
         Swal.fire({
           icon: "success",
           title: "¡Creado!",
@@ -202,6 +207,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setCategoria("Comidas");
     setArchivo(null);
     setImgPreview(null);
+    setPublicIdExistente(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -225,12 +231,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setPrecio(p.precio);
     setCategoria(p.categoria);
     setImgPreview(p.imagenUrl);
+    setPublicIdExistente(p.cloudinaryId || null);
   };
-
-  const manejarEliminar = (id) => {
+  // 1. Funcion de borrar
+  const manejarEliminar = (id, publicIdCloudinary) => {
     Swal.fire({
       title: "¿Estás seguro?",
-      text: "Este plato se eliminará permanentemente del menú.",
+      text: "Este plato y su imagen se eliminarán permanentemente.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -241,9 +248,18 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       if (result.isConfirmed) {
         try {
           await eliminarProducto(id, restauranteId);
+
+          if (publicIdCloudinary) {
+            await fetch("/api/cloudinary/delete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ public_id: publicIdCloudinary }),
+            });
+          }
+
           Swal.fire({
             title: "Eliminado",
-            text: "El producto ha sido borrado.",
+            text: "El producto y su imagen han sido borrados.",
             icon: "success",
             timer: 1500,
             showConfirmButton: false,

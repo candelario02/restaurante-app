@@ -1,46 +1,28 @@
-// src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
   setPersistence,
-  browserLocalPersistence
+  browserLocalPersistence,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Configuración Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDbhwRwkFdu_2hOLo_0e0jSgDXFx8Azw8Q",
-  authDomain: "restaurante-app-4a75c.firebaseapp.com",
-  projectId: "restaurante-app-4a75c",
-  storageBucket: "restaurante-app-4a75c.appspot.com",
-  messagingSenderId: "391265984048",
-  appId: "1:391265984048:web:89c671c2dabeb95cded7f5",
-  measurementId: "G-YJF0B71MFP"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// 1. Inicializar App 
 const app = initializeApp(firebaseConfig);
-
-// 2. Inicializar App Secundaria 
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-// Auth Principal (Tu sesión)
+
 export const auth = getAuth(app);
-
-// Auth Administrativo (El "túnel" para crear empleados)
 export const authAdmin = getAuth(secondaryApp);
+setPersistence(auth, browserLocalPersistence);
 
-// Persistencia de sesión (Solo para tu cuenta principal)
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Persistencia LOCAL activada");
-  })
-  .catch((error) => {
-    console.error("Error en persistencia:", error);
-  });
-
-// Firestore (Base de datos compartida)
 export const db = getFirestore(app);
-
-// Storage (Archivos compartidos)
 export const storage = getStorage(app);

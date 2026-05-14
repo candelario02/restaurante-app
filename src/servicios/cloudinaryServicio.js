@@ -1,24 +1,32 @@
-export const subirImagen = async (file) => {
+export const subirImagen = async (file, publicId = null) => {
   if (!file) return null;
 
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-  formData.append("folder", "img_restaurantes"); // ✅ Se guardará en tu carpeta específica
+  formData.append(
+    "upload_preset",
+    import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+  );
+  formData.append("folder", "img_restaurantes");
+
+  if (publicId) {
+    formData.append("public_id", publicId);
+    formData.append("invalidate", true);
+  }
 
   try {
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
+      { method: "POST", body: formData },
     );
 
     if (!response.ok) throw new Error("Error al subir a Cloudinary");
 
     const data = await response.json();
-    return data.secure_url; 
+    return {
+      url: data.secure_url,
+      public_id: data.public_id,
+    };
   } catch (error) {
     console.error("Cloudinary Error:", error);
     return null;
