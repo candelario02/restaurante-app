@@ -24,8 +24,6 @@ function App() {
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
-  const [urlListo, setUrlListo] = useState(false);
-  
 
   // Inicialización síncrona del ID para evitar el primer render con 'null'
   const [restauranteId, setRestauranteId] = useState(() => {
@@ -62,18 +60,16 @@ function App() {
   };
 
   // 1. Captura de Identidad desde URL
-  useEffect(() => {
-    const ruta = window.location.pathname;
-    const idDesdeUrl = ruta.split("/")[1];
+  const [restauranteId, setRestauranteId] = useState(() => {
+    
+    const path = window.location.pathname;
+    const idDesdeUrl = path.split("/")[1];
     const reservados = ["login", "admin", "dashboard", ""];
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      if (restauranteId !== idDesdeUrl) {
-        setRestauranteId(idDesdeUrl);
-        localStorage.setItem("restauranteId", idDesdeUrl);
-      }
+      return idDesdeUrl;
     }
-    setUrlListo(true); 
-  }, []); 
+    return localStorage.getItem("restauranteId") || null;
+  });
 
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
@@ -278,7 +274,7 @@ function App() {
         )}
       </main>
 
-      {mostrarLogin && urlListo && (
+      {mostrarLogin  && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
             <button
