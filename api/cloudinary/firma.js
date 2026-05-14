@@ -1,35 +1,42 @@
 import crypto from "crypto";
 
 export default async function handler(req, res) {
-  // Solo aceptamos POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
-  // Obtenemos los parámetros necesarios para la firma
-  const { public_id, folder, timestamp: clientTimestamp } = req.body;
+  const { public_id, folder, overwrite, invalidate } = req.body;
 
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
   if (!apiSecret) {
     return res.status(500).json({ error: "Faltan credenciales de Cloudinary" });
   }
 
-  // Generamos el timestamp actual
   const timestamp = Math.floor(Date.now() / 1000);
 
-  // Construimos la cadena a firmar (similar a como lo haces en delete.js)
-  let signatureString = `timestamp=${timestamp}`;
-  if (public_id) signatureString += `&public_id=${public_id}`;
-  if (folder) signatureString += `&folder=${folder}`;
-  signatureString += apiSecret;
+  // Parámetros que se enviarán a Cloudinary
+  const params = {
+    folder: folder || "img_restaurantes",
+    invalidate: invalidate ? "1" : "0",
+    overwrite: overwrite ? "1" : "0",
+    public_id: public_id,
+    timestamp: timestamp.toString(),
+  };
 
-  // Generamos la firma SHA-1
+  // Orden alfabético estricto
+  const sortedKeys = Object.keys(params).sort();
+  let signatureString = "";
+  for (const key of sortedKeys) {
+    signatureString += `${key}=${params[key]}&`;
+  }
+  // Remover el último '&' y agregar el apiSecret
+  signatureString = signatureString.slice(0, -1) + apiSecret;
+
   const signature = crypto
     .createHash("sha1")
     .update(signatureString)
     .digest("hex");
 
-  // Devolvemos la firma y el timestamp al frontend
   res.status(200).json({
     signature,
     timestamp,
