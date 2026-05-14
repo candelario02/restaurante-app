@@ -199,7 +199,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       setCargando(false);
     }
   };
-
+//funcion cabcelar edidcion
   const cancelarEdicion = () => {
     setEditandoId(null);
     setNombre("");
