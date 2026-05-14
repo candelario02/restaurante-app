@@ -1,20 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./estilos/app.css";
-
-// Componentes y Páginas
 import MenuCliente from "./paginas/MenuCliente";
 import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
-
-// Firebase
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-
-// Servicios
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 
 const audioNotificacion = new Audio("/notificacion.mp3");
+
 function App() {
   // --- ESTADOS ---
   const [user, setUser] = useState(null);
@@ -25,41 +20,7 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
 
-  // Inicialización síncrona del ID para evitar el primer render con 'null'
-  const [restauranteId, setRestauranteId] = useState(() => {
-    return localStorage.getItem("restauranteId") || null;
-  });
-
-  // --- REFERENCIAS ---
-  const prevPedidosRef = useRef(0);
-  const esPrimeraCarga = useRef(true);
-
-  // --- FUNCIONES DE SESIÓN ---
-  const limpiarEstadoSesion = () => {
-    setUser(null);
-    setRol(null);
-    setIsAdmin(false);
-    setRestauranteId(null);
-    localStorage.clear();
-  };
-
-  const cerrarSesion = async () => {
-    const idActual = restauranteId; // Preservamos el ID para el menú cliente
-    await signOut(auth);
-    localStorage.clear();
-
-    if (idActual) {
-      localStorage.setItem("restauranteId", idActual);
-      setRestauranteId(idActual);
-    }
-
-    setUser(null);
-    setIsAdmin(false);
-    setRol("cliente");
-    setSeccion("menu");
-  };
-
-  // 1. Captura de Identidad desde URL
+  // 🔥 ÚNICA declaración de restauranteId: prioriza URL, luego localStorage
   const [restauranteId, setRestauranteId] = useState(() => {
     const idDesdeUrl = window.location.pathname.split("/")[1];
     const reservados = ["login", "admin", "dashboard", ""];
@@ -69,8 +30,41 @@ function App() {
     return localStorage.getItem("restauranteId") || null;
   });
 
-  // 2. Gestión de Autenticación y Perfil
+  // --- REFERENCIAS ---
+  const prevPedidosRef = useRef(0);
+  const esPrimeraCarga = useRef(true);
+
+  // --- FUNCIONES DE SESIÓN ---
+  const cerrarSesion = async () => {
+    const idActual = restauranteId;
+    await signOut(auth);
+    localStorage.clear();
+    if (idActual) {
+      localStorage.setItem("restauranteId", idActual);
+      setRestauranteId(idActual);
+    }
+    setUser(null);
+    setIsAdmin(false);
+    setRol("cliente");
+    setSeccion("menu");
+  };
+
+  // 🔥 Sincronizar restauranteId con la URL cuando cambia (navegación manual)
   useEffect(() => {
+    const ruta = window.location.pathname;
+    const idDesdeUrl = ruta.split("/")[1];
+    const reservados = ["login", "admin", "dashboard", ""];
+    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
+      if (restauranteId !== idDesdeUrl) {
+        setRestauranteId(idDesdeUrl);
+        localStorage.setItem("restauranteId", idDesdeUrl);
+      }
+    }
+  }, [restauranteId]); // dependencia para evitar bucles
+
+  // Autenticación (espera a que restauranteId tenga valor, si es null no hace nada)
+  useEffect(() => {
+    if (!restauranteId) return; // ← CRÍTICO: si no hay ID, esperar
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (!usuario) {
         setUser(null);
@@ -80,13 +74,11 @@ function App() {
         return;
       }
       try {
-        // Importante: usar el restauranteId actual (de la URL)
         const datos = await obtenerDatosUsuario(usuario.email, restauranteId);
         if (datos?.rol) {
           setUser(usuario);
           setRol(datos.rol);
           setIsAdmin(["admin", "superadmin"].includes(datos.rol));
-          // No modifiques restauranteId aquí
           localStorage.setItem("rolUsuario", datos.rol);
           if (["mozo", "cajero"].includes(datos.rol)) setSeccion("pedidos");
         } else {
@@ -94,7 +86,7 @@ function App() {
           await signOut(auth);
         }
       } catch (error) {
-        console.error("Error crítico en carga de perfil:", error);
+        console.error("Error en carga de perfil:", error);
       } finally {
         setCargando(false);
       }
@@ -102,51 +94,38 @@ function App() {
     return () => unsub();
   }, [restauranteId]);
 
-  // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
+  // Notificaciones (sin cambios)
   useEffect(() => {
-    // 🛡️ GUARDA PROFESIONAL: Evita errores de Firebase 'undefined' y bucles
     if (!restauranteId || !isAdmin) {
       setPedidosPendientes(0);
       return;
     }
-
     const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
     const q = query(pedidosRef, where("estado", "==", "pendiente"));
-
     const unsub = onSnapshot(
       q,
       (snapshot) => {
         const totalActual = snapshot.size;
-
         if (totalActual > prevPedidosRef.current && !esPrimeraCarga.current) {
           audioNotificacion.pause();
           audioNotificacion.currentTime = 0;
-          audioNotificacion
-            .play()
-            .catch(() => console.log("Interacción requerida"));
+          audioNotificacion.play().catch(() => {});
         }
-
         setPedidosPendientes(totalActual);
         prevPedidosRef.current = totalActual;
         esPrimeraCarga.current = false;
       },
-      (error) => {
-        console.error("Error en Snapshot de pedidos:", error);
-      },
+      (error) => console.error("Error en Snapshot:", error),
     );
-
     return () => unsub();
-  }, [restauranteId, isAdmin]); // Se activa solo cuando el ID y el Rol son válidos
+  }, [restauranteId, isAdmin]);
 
-  // 4. Desbloqueo de Canal de Audio (UX)
+  // Audio (sin cambios)
   useEffect(() => {
     const desbloquear = () => {
       audioNotificacion
         .play()
-        .then(() => {
-          audioNotificacion.pause();
-          audioNotificacion.currentTime = 0;
-        })
+        .then(() => audioNotificacion.pause())
         .catch(() => {});
       document.removeEventListener("click", desbloquear);
     };
@@ -157,6 +136,7 @@ function App() {
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;
   }
+
   return (
     <div className="App">
       <nav className="top-bar">
@@ -174,11 +154,8 @@ function App() {
                 </span>
               )}
             </div>
-
-            {/* ✅ SOLO MOSTRAR PESTAÑAS SI isAdmin ES TRUE (MODO PANEL) */}
             {user && restauranteId && isAdmin && (
               <div className="nav-admin-tabs-horizontal">
-                {/* 🛡️ RESTRICCIÓN DE BOTONES: Solo si el ROL es admin o superadmin */}
                 {(rol === "admin" || rol === "superadmin") && (
                   <>
                     <button
@@ -195,13 +172,11 @@ function App() {
                     </button>
                   </>
                 )}
-
-                {/* ✅ ESTOS SIEMPRE LOS VE EL MOZO/CAJERO (DENTRO DEL PANEL) */}
                 <button
                   className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                   onClick={() => setSeccion("pedidos")}
                 >
-                  Pedidos
+                  Pedidos{" "}
                   {pedidosPendientes > 0 && (
                     <span className="badge-notificacion">
                       {pedidosPendientes}
@@ -217,7 +192,6 @@ function App() {
               </div>
             )}
           </div>
-
           <div className="nav-actions">
             {!user ? (
               <button
@@ -228,20 +202,12 @@ function App() {
               </button>
             ) : (
               <>
-                {/* ✅ BOTÓN DE VISTA: Ahora está FUERA del condicional de isAdmin para que no desaparezca */}
                 <button
                   className="btn-nav-tab"
-                  onClick={() => {
-                    // Si un mozo vuelve al panel, forzamos sección pedidos
-                    if (!isAdmin && (rol === "mozo" || rol === "cajero")) {
-                      setSeccion("pedidos");
-                    }
-                    setIsAdmin(!isAdmin);
-                  }}
+                  onClick={() => setIsAdmin(!isAdmin)}
                 >
                   {isAdmin ? "Vista Cliente" : "Volver al Panel"}
                 </button>
-
                 <button className="btn-nav-salir-rojo" onClick={cerrarSesion}>
                   Salir
                 </button>
@@ -250,7 +216,6 @@ function App() {
           </div>
         </div>
       </nav>
-
       <main className="main-content">
         {restauranteId ? (
           isAdmin ? (
@@ -270,7 +235,6 @@ function App() {
           </div>
         )}
       </main>
-
       {mostrarLogin && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
@@ -286,11 +250,7 @@ function App() {
                 setRestauranteId(id);
                 setRol(r);
                 setIsAdmin(true);
-                if (r === "mozo" || r === "cajero") {
-                  setSeccion("pedidos");
-                } else {
-                  setSeccion("menu");
-                }
+                setSeccion(r === "mozo" || r === "cajero" ? "pedidos" : "menu");
                 setMostrarLogin(false);
               }}
               restauranteId={restauranteId}
