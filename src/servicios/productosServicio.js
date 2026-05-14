@@ -55,7 +55,6 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
     where("categoria", "==", categoria),
     where("disponible", "==", true),
   );
-
   return onSnapshot(q, (snapshot) => {
     const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     callback(datos);
