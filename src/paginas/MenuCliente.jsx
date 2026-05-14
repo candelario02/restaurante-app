@@ -43,6 +43,8 @@ const MenuCliente = ({ restauranteId }) => {
   const [avisoAgregado, setAvisoAgregado] = useState(null);
   const [logoRestaurante, setLogoRestaurante] = useState(
     "/logo_resturante.gif",
+    "/logorestauranteN.gif",
+    
   );
 
   // Formulario Pedido
