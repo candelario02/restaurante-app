@@ -61,9 +61,7 @@ function App() {
 
   // 1. Captura de Identidad desde URL
   const [restauranteId, setRestauranteId] = useState(() => {
-    
-    const path = window.location.pathname;
-    const idDesdeUrl = path.split("/")[1];
+    const idDesdeUrl = window.location.pathname.split("/")[1];
     const reservados = ["login", "admin", "dashboard", ""];
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
       return idDesdeUrl;
@@ -73,7 +71,6 @@ function App() {
 
   // 2. Gestión de Autenticación y Perfil
   useEffect(() => {
-    if (!urlListo) return;
     const unsub = onAuthStateChanged(auth, async (usuario) => {
       if (!usuario) {
         setUser(null);
@@ -103,7 +100,7 @@ function App() {
       }
     });
     return () => unsub();
-  }, [urlListo, restauranteId]);
+  }, [restauranteId]);
 
   // 3. Sistema de Notificaciones (Escucha Pedidos Pendientes)
   useEffect(() => {
@@ -274,7 +271,7 @@ function App() {
         )}
       </main>
 
-      {mostrarLogin  && (
+      {mostrarLogin && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
             <button
