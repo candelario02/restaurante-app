@@ -25,6 +25,7 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const [urlListo, setUrlListo] = useState(false);
+  
 
   // Inicialización síncrona del ID para evitar el primer render con 'null'
   const [restauranteId, setRestauranteId] = useState(() => {
@@ -277,7 +278,7 @@ function App() {
         )}
       </main>
 
-      {mostrarLogin && (
+      {mostrarLogin && urlListo && (
         <div className="login-modal-overlay">
           <div className="login-modal-container">
             <button
