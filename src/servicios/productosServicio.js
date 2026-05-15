@@ -78,14 +78,23 @@ export const escucharProductosAdmin = (restauranteId, callback) => {
 
 export const obtenerConfigRestaurante = async (restauranteId) => {
   if (!restauranteId) return null;
-  const docRef = doc(
-    db,
-    "restaurantes",
-    restauranteId,
-    "configuraciones",
-    "datos",
-  );
-
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data() : null;
+  try {
+    const docRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "configuraciones",
+      "datos",
+    );
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.warn("No se encontró el documento de configuración en Firebase");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error en obtenerConfigRestaurante:", error);
+    return null;
+  }
 };

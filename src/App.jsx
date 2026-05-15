@@ -140,13 +140,15 @@ function App() {
   useEffect(() => {
     const cargarConfig = async () => {
       if (!restauranteId) {
-        setConfiguracion(null); // Limpia si no hay ID
+        setConfiguracion(null);
         return;
       }
       try {
-        setConfiguracion(null);
+        setConfiguracion(null); // Limpieza previa preventiva
 
+        // ¡OJO AQUÍ! Asegúrate de que se llame exactamente igual a la importación:
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
+
         if (datosConfig) {
           setConfiguracion(datosConfig);
           document.title = datosConfig.nombre || "Restaurante";
