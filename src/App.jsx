@@ -139,8 +139,13 @@ function App() {
   //use para cambio de pestanas dinamicas
   useEffect(() => {
     const cargarConfig = async () => {
-      if (!restauranteId) return;
+      if (!restauranteId) {
+        setConfiguracion(null); // Limpia si no hay ID
+        return;
+      }
       try {
+        setConfiguracion(null);
+
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
         if (datosConfig) {
           setConfiguracion(datosConfig);
@@ -151,7 +156,7 @@ function App() {
       }
     };
     cargarConfig();
-  }, [restauranteId]);
+  }, [restauranteId]); // Ejecuta limpiamente cada vez que cambia la URL
 
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;
