@@ -144,21 +144,31 @@ function App() {
         return;
       }
       try {
-        setConfiguracion(null); // Limpieza previa preventiva
+        setConfiguracion(null);
 
-        // ¡OJO AQUÍ! Asegúrate de que se llame exactamente igual a la importación:
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
-
         if (datosConfig) {
           setConfiguracion(datosConfig);
+
           document.title = datosConfig.nombre || "Restaurante";
+          if (datosConfig.logOut) {
+            let link = document.querySelector("link[rel~='icon']");
+
+            if (!link) {
+              link = document.createElement("link");
+              link.rel = "icon";
+              document.head.appendChild(link);
+            }
+
+            link.href = `/${datosConfig.logOut.trim()}`;
+          }
         }
       } catch (error) {
         console.error("Error cargando configuración:", error);
       }
     };
     cargarConfig();
-  }, [restauranteId]); // Ejecuta limpiamente cada vez que cambia la URL
+  }, [restauranteId]);
 
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;

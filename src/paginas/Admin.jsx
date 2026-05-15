@@ -855,8 +855,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           {"★".repeat(p.rating || 0)}
                           {"☆".repeat(5 - (p.rating || 0))}
                         </div>
-                        {p.comentario && (
-                          <i className="comentario-mini">"{p.comentario}"</i>
+                        {p.resena && (
+                          <i className="comentario-mini">"{p.resena}"</i>
                         )}
                       </td>
                       <td>
