@@ -359,7 +359,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     };
     return etapas[estado] || 1;
   };
-
+console.log("DEBUG LOGO:", {
+  recibido: logoRestaurante,
+  tipo: typeof logoRestaurante
+});
   return (
     <div className="admin-container">
       {/* Mensaje de aviso) */}
