@@ -19,11 +19,12 @@ function App() {
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
+  const [configuracion, setConfiguracion] = useState(null);
 
   // 🔥 Modifica la inicialización para ser estricto con la URL
   const [restauranteId, setRestauranteId] = useState(() => {
     const pathParts = window.location.pathname.split("/");
-    const idDesdeUrl = pathParts[1]; 
+    const idDesdeUrl = pathParts[1];
 
     const reservados = ["login", "admin", "dashboard", ""];
 
@@ -51,7 +52,6 @@ function App() {
     setRol("cliente");
     setSeccion("menu");
   };
-
   // 🔥 Sincronizar restauranteId con la URL cuando cambia (navegación manual)
   useEffect(() => {
     const ruta = window.location.pathname;
@@ -135,6 +135,28 @@ function App() {
     document.addEventListener("click", desbloquear);
     return () => document.removeEventListener("click", desbloquear);
   }, []);
+  //para pestana y titulo dinamico
+  useEffect(() => {
+    const cargarConfig = async () => {
+      if (!restauranteId) {
+        document.title = "Mi App de Restaurantes";
+        return;
+      }
+
+      try {
+        const datosConfig = await obtenerConfigRestaurante(restauranteId);
+        if (datosConfig) {
+          setConfiguracion(datosConfig);
+          const nombreDisplay = restauranteId.replace(/_/g, " ").toUpperCase();
+          document.title = nombreDisplay;
+        }
+      } catch (error) {
+        console.error("Error cargando configuración:", error);
+      }
+    };
+
+    cargarConfig();
+  }, [restauranteId]);
 
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;
@@ -229,7 +251,10 @@ function App() {
               rolUsuario={rol}
             />
           ) : (
-            <MenuCliente restauranteId={restauranteId} />
+            <MenuCliente
+              restauranteId={restauranteId}
+              logoRestaurante={configuracion?.logOut}
+            />
           )
         ) : (
           <div className="loading-screen">

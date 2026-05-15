@@ -44,7 +44,6 @@ const MenuCliente = ({ restauranteId }) => {
   const [logoRestaurante, setLogoRestaurante] = useState(
     "/logo_resturante.gif",
     "/logorestauranteN.gif",
-    
   );
 
   // Formulario Pedido
@@ -528,7 +527,10 @@ const MenuCliente = ({ restauranteId }) => {
           </header>
 
           <img
-            src={logoRestaurante || "/logo_resturante.gif"}
+            /* Si existe logoRestaurante en Firebase, lo usa; si no, usa el gif por defecto */
+            src={
+              logoRestaurante ? `/${logoRestaurante}` : "/logo_resturante.gif"
+            }
             alt="logo restaurante"
             className="logo-circular"
             onError={(e) => (e.target.src = "/logo_resturante.gif")}
