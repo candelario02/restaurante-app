@@ -32,7 +32,7 @@ import {
   enviarResenaPedido,
 } from "../servicios/pedidosServicio";
 
-const MenuCliente = ({ restauranteId, logoRestaurante }) => {
+const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   // --- ESTADOS ---
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -516,20 +516,22 @@ const MenuCliente = ({ restauranteId, logoRestaurante }) => {
         <div className="view-principal">
           <header className="menu-header-dinamico">
             <h1>
-              {restauranteId
-                ? restauranteId.replace(/_/g, " ").toUpperCase()
-                : "NUESTRO MENÚ"}
+              {nombreRestaurante ||
+                restauranteId?.replace(/_/g, " ").toUpperCase() ||
+                "NUESTRO MENÚ"}
             </h1>
           </header>
 
           <img
-            /* Si existe logoRestaurante en Firebase, lo usa; si no, usa el gif por defecto */
             src={
               logoRestaurante ? `/${logoRestaurante}` : "/logo_resturante.gif"
             }
             alt="logo restaurante"
             className="logo-circular"
-            onError={(e) => (e.target.src = "/logo_resturante.gif")}
+            onError={(e) => {
+              console.log("Error cargando:", logoRestaurante);
+              e.target.src = "/logo_resturante.gif";
+            }}
           />
 
           <h2 className="titulo-categoria">¿Qué deseas pedir hoy?</h2>

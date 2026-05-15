@@ -135,7 +135,6 @@ function App() {
     document.addEventListener("click", desbloquear);
     return () => document.removeEventListener("click", desbloquear);
   }, []);
-  //para pestana y titulo dinamico
   useEffect(() => {
     const cargarConfig = async () => {
       if (!restauranteId) {
@@ -147,8 +146,11 @@ function App() {
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
         if (datosConfig) {
           setConfiguracion(datosConfig);
-          const nombreDisplay = restauranteId.replace(/_/g, " ").toUpperCase();
-          document.title = nombreDisplay;
+
+          const nombreParaMostrar =
+            datosConfig.nombre ||
+            restauranteId.replace(/_/g, " ").toUpperCase();
+          document.title = nombreParaMostrar;
         }
       } catch (error) {
         console.error("Error cargando configuración:", error);
@@ -169,9 +171,11 @@ function App() {
           <div className="brand">
             <div className="brand-info">
               <span className="brand-name">
-                {restauranteId
-                  ? restauranteId.replace(/_/g, " ").toUpperCase()
-                  : "BIENVENIDO"}
+                {configuracion?.nombre
+                  ? configuracion.nombre.toUpperCase()
+                  : restauranteId
+                    ? restauranteId.replace(/_/g, " ").toUpperCase()
+                    : "BIENVENIDO"}
               </span>
               {user && (
                 <span className="user-welcome">
@@ -254,6 +258,7 @@ function App() {
             <MenuCliente
               restauranteId={restauranteId}
               logoRestaurante={configuracion?.logOut}
+              nombreRestaurante={configuracion?.nombre}
             />
           )
         ) : (
