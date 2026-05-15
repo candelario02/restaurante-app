@@ -524,12 +524,17 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
           <img
             src={
-              logoRestaurante ? `/${logoRestaurante}` : "/logo_resturante.gif"
+              logoRestaurante
+                ? `/${logoRestaurante}`
+                : "/logo_resturante.gif"
             }
             alt="logo restaurante"
             className="logo-circular"
             onError={(e) => {
-              console.log("Error cargando:", logoRestaurante);
+              console.log(
+                "Error cargando el logo específico:",
+                logoRestaurante,
+              );
               e.target.src = "/logo_resturante.gif";
             }}
           />
