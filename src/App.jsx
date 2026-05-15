@@ -20,14 +20,17 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
 
-  // 🔥 ÚNICA declaración de restauranteId: prioriza URL, luego localStorage
+  // 🔥 Modifica la inicialización para ser estricto con la URL
   const [restauranteId, setRestauranteId] = useState(() => {
-    const idDesdeUrl = window.location.pathname.split("/")[1];
+    const pathParts = window.location.pathname.split("/");
+    const idDesdeUrl = pathParts[1]; 
+
     const reservados = ["login", "admin", "dashboard", ""];
-    if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
-      return idDesdeUrl;
+
+    if (!idDesdeUrl || reservados.includes(idDesdeUrl)) {
+      return null;
     }
-    return localStorage.getItem("restauranteId") || null;
+    return idDesdeUrl;
   });
 
   // --- REFERENCIAS ---
