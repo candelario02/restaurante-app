@@ -144,13 +144,16 @@ function App() {
         return;
       }
       try {
-        setConfiguracion(null);
-
+        // SE ELIMINÓ: setConfiguracion(null) de aquí para evitar el bucle infinito
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
+
         if (datosConfig) {
           setConfiguracion(datosConfig);
 
+          // 1. Cambia el título de la pestaña
           document.title = datosConfig.nombre || "Restaurante";
+
+          // 2. Cambia el icono de la pestaña dinámicamente
           if (datosConfig.logOut) {
             let link = document.querySelector("link[rel~='icon']");
 
