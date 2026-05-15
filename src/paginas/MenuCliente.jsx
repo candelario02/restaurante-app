@@ -32,7 +32,7 @@ import {
   enviarResenaPedido,
 } from "../servicios/pedidosServicio";
 
-const MenuCliente = ({ restauranteId }) => {
+const MenuCliente = ({ restauranteId, logoRestaurante }) => {
   // --- ESTADOS ---
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -41,10 +41,6 @@ const MenuCliente = ({ restauranteId }) => {
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [avisoAgregado, setAvisoAgregado] = useState(null);
-  const [logoRestaurante, setLogoRestaurante] = useState(
-    "/logo_resturante.gif",
-    "/logorestauranteN.gif",
-  );
 
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
