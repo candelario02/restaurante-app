@@ -6,8 +6,9 @@ import Login from "./paginas/Login";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { obtenerDatosUsuario, obtenerConfigRestaurante } from "./servicios/usuariosServicio";
-
+//para obtener datos de ussuarios y restaurante
+import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
+import { obtenerConfigRestaurante } from "./servicios/productosServicio";
 const audioNotificacion = new Audio("/notificacion.mp3");
 
 function App() {
@@ -135,28 +136,20 @@ function App() {
     document.addEventListener("click", desbloquear);
     return () => document.removeEventListener("click", desbloquear);
   }, []);
+  //use para cambio de pestanas dinamicas
   useEffect(() => {
     const cargarConfig = async () => {
-      if (!restauranteId) {
-        document.title = "Mi App de Restaurantes";
-        return;
-      }
-
+      if (!restauranteId) return;
       try {
         const datosConfig = await obtenerConfigRestaurante(restauranteId);
         if (datosConfig) {
           setConfiguracion(datosConfig);
-
-          const nombreParaMostrar =
-            datosConfig.nombre ||
-            restauranteId.replace(/_/g, " ").toUpperCase();
-          document.title = nombreParaMostrar;
+          document.title = datosConfig.nombre || "Restaurante";
         }
       } catch (error) {
         console.error("Error cargando configuración:", error);
       }
     };
-
     cargarConfig();
   }, [restauranteId]);
 

@@ -127,3 +127,4 @@ export const eliminarUsuario = async (email, restauranteId) => {
 export const logoutUsuario = async () => {
   await signOut(auth);
 };
+

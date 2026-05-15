@@ -26,25 +26,4 @@ setPersistence(auth, browserLocalPersistence);
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const obtenerConfigRestaurante = async (restauranteId) => {
-  try {
-    const docRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "configuraciones",
-      "datos",
-    );
-    const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-      return docSnap.data();
-    } else {
-      console.log("No se encontró el documento de configuración");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error al obtener config:", error);
-    throw error;
-  }
-};
