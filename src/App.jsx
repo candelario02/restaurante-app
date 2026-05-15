@@ -6,7 +6,7 @@ import Login from "./paginas/Login";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
+import { obtenerDatosUsuario, obtenerConfigRestaurante } from "./servicios/usuariosServicio";
 
 const audioNotificacion = new Audio("/notificacion.mp3");
 
