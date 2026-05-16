@@ -64,7 +64,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
   // --- EFECTOS ---
 
-  // 1. Cargar Configuración y Productos (Coherencia con Servicios)
+  // 1. Cargar Configuración y Productos
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
@@ -114,7 +114,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return () => clearInterval(intervalo);
   }, [datosPedidoRealtime?.estado, tiempoRestante]);
 
-  // Función auxiliar para mostrar el formato MM:SS
+  // Función para mostrar el tiempo
   const formatearTiempo = (segundos) => {
     if (segundos <= 0) return "¡Listo!";
     const m = Math.floor(segundos / 60);

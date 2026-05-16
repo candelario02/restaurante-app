@@ -22,7 +22,7 @@ function App() {
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const [configuracion, setConfiguracion] = useState(null);
 
-  // 🔥 Modifica la inicialización para ser estricto con la URL
+  // inicialización para ser estricto con la URL
   const [restauranteId, setRestauranteId] = useState(() => {
     const pathParts = window.location.pathname.split("/");
     const idDesdeUrl = pathParts[1];
@@ -53,7 +53,7 @@ function App() {
     setRol("cliente");
     setSeccion("menu");
   };
-  // 🔥 Sincronizar restauranteId con la URL cuando cambia (navegación manual)
+  //  Sincronizar restauranteId con la URL cuando cambia (navegación manual)
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
@@ -98,7 +98,7 @@ function App() {
     return () => unsub();
   }, [restauranteId]);
 
-  // Notificaciones (sin cambios)
+  // Notificaciones 
   useEffect(() => {
     if (!restauranteId || !isAdmin) {
       setPedidosPendientes(0);
@@ -124,7 +124,7 @@ function App() {
     return () => unsub();
   }, [restauranteId, isAdmin]);
 
-  // Audio (sin cambios)
+  // Audio 
   useEffect(() => {
     const desbloquear = () => {
       audioNotificacion
