@@ -369,7 +369,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const obtenerEstadisticasCaja = (listaPedidos, periodo) => {
     const ahora = new Date();
     const filtrados = listaPedidos.filter((p) => {
-      if (p.estado !== "entregado" || !p.fecha?.toDate) return false;
+      const estadosValidos = ["entregado", "finalizado"];
+      if (!estadosValidos.includes(p.estado) || !p.fecha?.toDate) return false;
       const fechaP = p.fecha.toDate();
 
       if (periodo === "dia")
