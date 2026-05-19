@@ -265,34 +265,70 @@ body {
     transform: translateY(0) scale(1);
   }
 }
-
 /* =============================================
-   8. RESPONSIVE
+   8. RESPONSIVE (Optimizado para Todo el Sistema)
    ============================================= */
 @media (max-width: 768px) {
+  .top-bar {
+    height: auto !important; 
+    padding: 12px 0;
+  }
+
   .top-bar-container {
+    flex-direction: column; 
+    align-items: stretch;
+    gap: 14px; 
     padding: 0 15px;
+    width: 100%;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
   }
 
   .brand span {
     font-size: 1rem;
   }
 
-  .btn-nav-admin,
-  .btn-nav-salir-rojo {
-    padding: 6px 12px;
-    font-size: 0.8rem;
+  .nav-admin-tabs-horizontal {
+    margin-left: 0;
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .btn-nav-tab {
     padding: 6px 12px;
     font-size: 0.75rem;
     height: 34px;
+    white-space: nowrap; 
   }
 
-  .nav-admin-tabs-horizontal {
-    gap: 4px;
-    margin-left: 10px;
+  .nav-actions {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px; 
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-nav-admin,
+  .btn-nav-salir-rojo,
+  .nav-actions .btn-nav-tab { 
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    flex: 1; 
+    min-width: 105px;
+    height: 38px;
+    justify-content: center;
+    text-align: center;
   }
 
   .badge-notificacion {
@@ -301,21 +337,6 @@ body {
     width: 18px;
     height: 18px;
     font-size: 10px;
-  }
-  .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .nav-admin-tabs-horizontal {
-    margin-left: 0;
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 5px;
-    -webkit-overflow-scrolling: touch;
   }
 
   .admin-acciones-mix {
