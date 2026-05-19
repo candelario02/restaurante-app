@@ -61,7 +61,6 @@ body {
   display: flex;
   align-items: center;
   gap: 20px;
-  width: 100%;
 }
 
 .brand-name {
@@ -152,8 +151,9 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; 
 }
 
 .btn-nav-admin {

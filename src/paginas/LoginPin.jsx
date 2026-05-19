@@ -15,6 +15,38 @@ function LoginPin({ restauranteId, onConfirmar }) {
     }
   }, [pin]);
 
+  // ⌨️ ESCUCHADOR DE TECLADO FÍSICO DE PC
+  useEffect(() => {
+    const manejarTecladoFisico = (e) => {
+      if (verificando) return;
+
+      // Si presiona un número (0-9) ya sea del teclado superior o del pad numérico
+      if (/^[0-9]$/.test(e.key)) {
+        setError(null);
+        if (pin.length < 4) {
+          setPin((prev) => prev + e.key);
+        }
+      }
+
+      // Si presiona retroceso (Backspace) o la tecla Suprimir (Delete), actúa como el botón "C"
+      if (
+        e.key === "Backspace" ||
+        e.key === "Delete" ||
+        e.key.toLowerCase() === "c"
+      ) {
+        setError(null);
+        setPin("");
+      }
+    };
+
+    window.addEventListener("keydown", manejarTecladoFisico);
+
+    // Limpieza del evento al desmontar el componente para evitar fugas de memoria
+    return () => {
+      window.removeEventListener("keydown", manejarTecladoFisico);
+    };
+  }, [pin, verificando]);
+
   const validarPin = async (pinAValidar) => {
     setVerificando(true);
     setError(null);
