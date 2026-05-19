@@ -22,17 +22,18 @@ export const registrarUsuario = async (
   restauranteId,
   pin,
 ) => {
-  if (!restauranteId) throw new Error("Falta restauranteId para registrar");
+  if (!restaurantesId || !restauranteId) {
+    if (!restauranteId) throw new Error("Falta restauranteId para registrar");
+  }
+
   const emailLimpio = email.toLowerCase().trim();
 
-  // Usamos authAdmin para no cerrar la sesión del administrador actual
   const userCredential = await createUserWithEmailAndPassword(
     authAdmin,
     emailLimpio,
     password,
   );
 
-  // Guardamos en la ruta profesional: restaurantes > ID > usuarios_admin > EMAIL
   await setDoc(
     doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
     {
@@ -40,7 +41,7 @@ export const registrarUsuario = async (
       rol: rol,
       restauranteId: restauranteId,
       pin: pin,
-      password: userPass,
+      password: password,
       fechaRegistro: new Date(),
     },
   );
@@ -48,7 +49,6 @@ export const registrarUsuario = async (
   await signOut(authAdmin);
   return userCredential.user;
 };
-
 // 2. LOGIN (Optimizado para validar el PIN del usuario correcto)
 export const loginUsuario = async (email, password, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId para login");
