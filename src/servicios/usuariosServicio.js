@@ -22,9 +22,8 @@ export const registrarUsuario = async (
   restauranteId,
   pin,
 ) => {
-  if (!restaurantesId || !restauranteId) {
-    if (!restauranteId) throw new Error("Falta restauranteId para registrar");
-  }
+  
+  if (!restauranteId) throw new Error("Falta restauranteId para registrar");
 
   const emailLimpio = email.toLowerCase().trim();
 
