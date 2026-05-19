@@ -3,6 +3,7 @@ import "./estilos/app.css";
 import MenuCliente from "./paginas/MenuCliente";
 import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
+import LoginPin from "./paginas/LoginPin";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
