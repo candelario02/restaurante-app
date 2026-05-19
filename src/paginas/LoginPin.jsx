@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { auth } from "../firebase/config"; 
+import { auth } from "../firebase/config";
 import { db } from "../firebase/config";
 import "../estilos/loginPin.css";
 
@@ -41,7 +41,7 @@ function LoginPin({ restauranteId, onConfirmar }) {
 
         if (datosEmpleado.pin === pinAValidar) {
           setPin("");
-          onConfirmar(datosEmpleado); 
+          onConfirmar(datosEmpleado);
         } else {
           setError("PIN incorrecto. Intente nuevamente.");
           setPin("");
@@ -68,14 +68,28 @@ function LoginPin({ restauranteId, onConfirmar }) {
       setPin((prev) => prev + valor);
     }
   };
-
+  const nombreParaMostrar = user?.email
+    ? user.email.split("@")[0].charAt(0).toUpperCase() +
+      user.email.split("@")[0].slice(1)
+    : "Operador";
   return (
     <div className="pin-screen-container">
       <div className="pin-box">
-        <h2 className="pin-title">🔒 Control de Operador</h2>
-        <p className="pin-subtitle">Ingrese su PIN de 4 dígitos para acceder</p>
+        {/* Opción 1: Título 100% dinámico y empático */}
+        <h2 className="pin-title">
+          {verificando ? "✨ Procesando..." : `👋 ¡Hola, ${nombreParaMostrar}!`}
+        </h2>
 
-        {/* Visualizador de esferas/puntos de contraseña */}
+        {/* Opción 2: Subtítulo dinámico con instrucciones en tiempo real */}
+        <p className="pin-subtitle">
+          {pin.length === 4
+            ? "🔒 Validando tu código de seguridad..."
+            : pin.length > 0
+              ? `Ingresando dígitos... (${pin.length} de 4)`
+              : "Por favor, introduce tu PIN de 4 dígitos para continuar"}
+        </p>
+
+        {/* Visualizador de esferas/puntos de contraseña - IDÉNTICO SIN CAMBIAR ESTILOS */}
         <div className="pin-display">
           {[...Array(4)].map((_, i) => (
             <div
@@ -85,12 +99,24 @@ function LoginPin({ restauranteId, onConfirmar }) {
           ))}
         </div>
 
-        {error && <p className="pin-error-text">{error}</p>}
-        {verificando && (
-          <p className="pin-loading-text">Verificando credenciales...</p>
+        {/* Opción 3: Mensajes informativos de error y éxito de manera profesional */}
+        {error && (
+          <p className="pin-error-text" style={{ fontWeight: "600" }}>
+            ❌ PIN incorrecto para la cuenta {nombreParaMostrar}. Inténtalo de
+            nuevo.
+          </p>
         )}
 
-        {/* Teclado Numérico Táctil */}
+        {verificando && (
+          <p
+            className="pin-loading-text"
+            style={{ color: "#6366f1", fontWeight: "600" }}
+          >
+            ⚡ Verificando credenciales en el sistema...
+          </p>
+        )}
+
+        {/* Teclado Numérico Táctil - SE MANTIENE INTACTO PARA NO ROMPER LA INTERFAZ */}
         <div className="pin-keyboard">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button

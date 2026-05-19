@@ -290,6 +290,7 @@ function App() {
             !operador ? (
               <LoginPin
                 restauranteId={restauranteId}
+                user={user} // 🔥 INYECCIÓN CRÍTICA: Pasamos el usuario autenticado para personalizar la pantalla
                 onConfirmar={(datosEmpleado) => {
                   setOperador(datosEmpleado);
                   // Si el mozo o cajero entra, forzamos que se cargue la sección de pedidos de inmediato
