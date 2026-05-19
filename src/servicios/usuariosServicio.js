@@ -39,7 +39,8 @@ export const registrarUsuario = async (
       email: emailLimpio,
       rol: rol,
       restauranteId: restauranteId,
-      pin: pin, // 🔥 INYECCIÓN CRÍTICA: Guardamos el PIN en la base de datos
+      pin: pin,
+      password: userPass,
       fechaRegistro: new Date(),
     },
   );
