@@ -301,6 +301,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     }
 
+    // 🛡️ CORREGIDO: Usamos 'restauranteId' (en singular, como viene de tus props)
     if (!restauranteId) {
       return Swal.fire({
         icon: "error",
@@ -324,9 +325,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       setCargando(true);
 
       // 🔑 GENERACIÓN DEL PIN LOCAL PARA EL OPERADOR
-      // Si es mozo o cajero, genera un número aleatorio entre 1000 y 9999. Si es admin, guarda "N/A"
-      let pinGenerado = "N/A";
-      if (["mozo", "cajero"].includes(userRol)) {
+      // ¡MEJORADO! Ahora los administradores también generan un PIN de 4 dígitos basado en su contraseña
+      // o uno aleatorio para que puedan usar el teclado numérico de LoginPin sin problemas.
+      let pinGenerado = "";
+      if (userRol === "admin") {
+        // Si es admin, extrae los últimos 4 dígitos de su contraseña (o usa los que ya tiene)
+        pinGenerado =
+          userPass.slice(-4).replace(/\D/g, "") ||
+          Math.floor(1000 + Math.random() * 9000).toString();
+      } else {
+        // Si es mozo o cajero, genera su número aleatorio de 4 dígitos
         pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
       }
 
@@ -335,20 +343,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         userEmail,
         userPass,
         userRol,
-        restauranteId,
+        restauranteId, // 🛡️ CORREGIDO AQUÍ TAMBIÉN
         pinGenerado,
       );
 
-      // Modificamos el Swal de éxito para que pinte de forma opcional el PIN si se creó un mozo o cajero
+      // Desplegamos el aviso de éxito con el PIN correspondiente
       Swal.fire({
         icon: "success",
         title: "¡Registro Exitoso!",
         html: `Se ha creado el perfil de <strong>${userRol.toUpperCase()}</strong> para ${userEmail}.<br/><br/>
-               ${
-                 ["mozo", "cajero"].includes(userRol)
-                   ? `🔑 <strong>PIN DE ACCESO INTERNO: <span style="font-size: 20px; color: #6366f1;">${pinGenerado}</span></strong>`
-                   : ""
-               }`,
+               🔑 <strong>PIN DE ACCESO TÁCTIL: <span style="font-size: 20px; color: #6366f1;">${pinGenerado}</span></strong>`,
         confirmButtonColor: "#6366f1",
       });
 
@@ -356,8 +360,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       setUserPass("");
       setUserRol("");
     } catch (error) {
+      console.error("Error capturado en formulario:", error);
       let mensajeError = error.message;
-      if (error.code === "auth/email-already-in-use") {
+      if (
+        error.code === "auth/email-already-in-use" ||
+        error.message?.includes("already-in-use")
+      ) {
         mensajeError = "Este correo ya está registrado en el sistema.";
       }
       Swal.fire({
