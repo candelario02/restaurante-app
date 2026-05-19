@@ -14,8 +14,14 @@ import {
   signOut,
 } from "firebase/auth";
 
-// 1. REGISTRO (Optimizado)
-export const registrarUsuario = async (email, password, rol, restauranteId) => {
+// 1. REGISTRO (Optimizado con PIN)
+export const registrarUsuario = async (
+  email,
+  password,
+  rol,
+  restauranteId,
+  pin,
+) => {
   if (!restauranteId) throw new Error("Falta restauranteId para registrar");
   const emailLimpio = email.toLowerCase().trim();
 
@@ -33,6 +39,7 @@ export const registrarUsuario = async (email, password, rol, restauranteId) => {
       email: emailLimpio,
       rol: rol,
       restauranteId: restauranteId,
+      pin: pin, // 🔥 INYECCIÓN CRÍTICA: Guardamos el PIN en la base de datos
       fechaRegistro: new Date(),
     },
   );
@@ -127,4 +134,3 @@ export const eliminarUsuario = async (email, restauranteId) => {
 export const logoutUsuario = async () => {
   await signOut(auth);
 };
-

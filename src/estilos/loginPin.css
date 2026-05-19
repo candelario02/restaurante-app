@@ -1,0 +1,117 @@
+.pin-screen-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.pin-box {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+
+.pin-title {
+  margin: 0 0 5px 0;
+  font-size: 20px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.pin-subtitle {
+  margin: 0 0 25px 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* Esferas de carga del código */
+.pin-display {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.pin-dot.filled {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  transform: scale(1.1);
+}
+
+.pin-dot.error {
+  border-color: #ef4444;
+  background-color: #ffeeef;
+}
+
+.pin-error-text {
+  color: #ef4444;
+  font-size: 13px;
+  margin: 0 0 15px 0;
+  font-weight: 500;
+}
+
+.pin-loading-text {
+  color: #3b82f6;
+  font-size: 13px;
+  margin: 0 0 15px 0;
+}
+
+/* Rejilla del Teclado */
+.pin-keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.btn-pin {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-pin:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+}
+
+.btn-pin.btn-clear {
+  color: #ef4444;
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+
+.btn-pin.btn-clear:active {
+  background: #fecaca;
+}
+
+.btn-pin-placeholder {
+  width: 65px;
+  height: 65px;
+}

@@ -321,14 +321,34 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
     try {
       setCargando(true);
-      await registrarUsuario(userEmail, userPass, userRol, restauranteId);
 
+      // 🔑 GENERACIÓN DEL PIN LOCAL PARA EL OPERADOR
+      // Si es mozo o cajero, genera un número aleatorio entre 1000 y 9999. Si es admin, guarda "N/A"
+      let pinGenerado = "N/A";
+      if (["mozo", "cajero"].includes(userRol)) {
+        pinGenerado = Math.floor(1000 + Math.random() * 9000).toString();
+      }
+
+      // 🔥 Se añade 'pinGenerado' como quinto parámetro al servicio existente
+      await registrarUsuario(
+        userEmail,
+        userPass,
+        userRol,
+        restauranteId,
+        pinGenerado,
+      );
+
+      // Modificamos el Swal de éxito para que pinte de forma opcional el PIN si se creó un mozo o cajero
       Swal.fire({
         icon: "success",
         title: "¡Registro Exitoso!",
-        text: `Se ha creado el perfil de ${userRol.toUpperCase()} para ${userEmail}.`,
+        html: `Se ha creado el perfil de <strong>${userRol.toUpperCase()}</strong> para ${userEmail}.<br/><br/>
+               ${
+                 ["mozo", "cajero"].includes(userRol)
+                   ? `🔑 <strong>PIN DE ACCESO INTERNO: <span style="font-size: 20px; color: #6366f1;">${pinGenerado}</span></strong>`
+                   : ""
+               }`,
         confirmButtonColor: "#6366f1",
-        timer: 2000,
       });
 
       setUserEmail("");

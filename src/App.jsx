@@ -21,6 +21,7 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const [configuracion, setConfiguracion] = useState(null);
+  const [operador, setOperador] = useState(null); // { email: "...", rol: "mozo", pin: "..." }
 
   // inicialización para ser estricto con la URL
   const [restauranteId, setRestauranteId] = useState(() => {
@@ -274,13 +275,31 @@ function App() {
       <main className="main-content">
         {restauranteId ? (
           isAdmin ? (
-            <Admin
-              seccion={seccion}
-              setSeccion={setSeccion}
-              restauranteId={restauranteId}
-              rolUsuario={rol}
-            />
+            // 🚨 CAPA DE SEGURIDAD PROFESIONAL: Si no hay un operador físico en pantalla, bloqueamos con el teclado PIN
+            !operador ? (
+              <LoginPin
+                restauranteId={restauranteId}
+                onConfirmar={(datosEmpleado) => {
+                  setOperador(datosEmpleado);
+                  // Si el mozo o cajero entra, forzamos que se cargue la sección de pedidos de inmediato
+                  if (["mozo", "cajero"].includes(datosEmpleado.rol)) {
+                    setSeccion("pedidos");
+                  }
+                }}
+              />
+            ) : (
+              // Si ya hay un operador validado por PIN, renderizamos el panel administrativo normal
+              <Admin
+                seccion={seccion}
+                setSeccion={setSeccion}
+                restauranteId={restauranteId}
+                rolUsuario={operador.rol} // 🔥 AQUÍ MANDAMOS EL ROL DEL PIN, NO EL DE FIREBASE
+                nombreOperador={operador.email.split("@")[0]} // Para saber quién está operando
+                onCambiarUsuario={() => setOperador(null)} // Función callback para cerrar sesión de pantalla
+              />
+            )
           ) : (
+            // Si no es admin (es decir, la vista libre del cliente), carga el menú público directo
             <MenuCliente
               restauranteId={restauranteId}
               logoRestaurante={configuracion?.logOut}
