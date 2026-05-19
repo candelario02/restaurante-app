@@ -49,6 +49,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [cargando, setCargando] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [userPass, setUserPass] = useState("");
+  const [verPassword, setVerPassword] = useState({});
   const [userRol, setUserRol] = useState("");
   const [filtroCaja, setFiltroCaja] = useState("dia");
   const [filtroCategoria, setFiltroCategoria] = useState("");
@@ -882,7 +883,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </td>
                       <td>
                         <button
-                          className="btn-ojito-detalle"
+                          className="btn-ojito-detalleydatos"
                           onClick={() => setPedidoDetalle(p)}
                         >
                           👁️ Ver detalle
@@ -971,101 +972,166 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         </div>
       )}
       {/* SECCIÓN USUARIOS */}
-      {seccion === "usuarios" && (
-        <div className="admin-section">
-          <h2 className="titulo-seccion">👤 Gestión de Personal</h2>
-          <form onSubmit={registrarAdmin} className="form-admin">
-            <input
-              className="input-pro"
-              type="email"
-              required
-              value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              placeholder="Correo electrónico"
-            />
-            <input
-              className="input-pro"
-              type="password"
-              required
-              minLength={6}
-              value={userPass}
-              onChange={(e) => setUserPass(e.target.value)}
-              placeholder="Contraseña (mín. 6 caracteres)"
-            />
-            <select
-              className="input-pro"
-              value={userRol}
-              onChange={(e) => setUserRol(e.target.value)}
-            >
-              <option value="" disabled>
-                Seleccionar Rol
-              </option>
-              <option value="mozo">Mozo (Solo Pedidos)</option>
-              <option value="cajero">Cajero (Pedidos y Pagos)</option>
-              <option value="admin">Administrador (Control Total)</option>
-            </select>
+{seccion === "usuarios" && (
+  <div className="admin-section">
+    <h2 className="titulo-seccion">👤 Gestión de Personal</h2>
+    <form onSubmit={registrarAdmin} className="form-admin">
+      <input
+        className="input-pro"
+        type="email"
+        required
+        value={userEmail}
+        onChange={(e) => setUserEmail(e.target.value)}
+        placeholder="Correo electrónico"
+      />
+      <input
+        className="input-pro"
+        type="password"
+        required
+        minLength={6}
+        value={userPass}
+        onChange={(e) => setUserPass(e.target.value)}
+        placeholder="Contraseña (mín. 6 caracteres)"
+      />
+      <select
+        className="input-pro"
+        value={userRol}
+        onChange={(e) => setUserRol(e.target.value)}
+      >
+        <option value="" disabled>
+          Seleccionar Rol
+        </option>
+        <option value="mozo">Mozo (Solo Pedidos)</option>
+        <option value="cajero">Cajero (Pedidos y Pagos)</option>
+        <option value="admin">Administrador (Control Total)</option>
+      </select>
 
-            <button
-              type="submit"
-              disabled={cargando || userPass.length < 6 || !userRol}
-              className="btn-primary"
+      <button
+        type="submit"
+        disabled={cargando || userPass.length < 6 || !userRol}
+        className="btn-primary"
+        style={{
+          width: "100%",
+          marginTop: "10px",
+          opacity: cargando || userPass.length < 6 ? 0.6 : 1,
+          cursor: cargando || userPass.length < 6 ? "not-allowed" : "pointer",
+        }}
+      >
+        {cargando
+          ? "Procesando..."
+          : `Registrar Nuevo ${userRol.charAt(0).toUpperCase() + userRol.slice(1)}`}
+      </button>
+    </form>
+
+    <div className="grid-admin" style={{ marginTop: "30px" }}>
+      {usuarios.length === 0 ? (
+        <p className="text-center">Cargando personal o lista vacía...</p>
+      ) : (
+        usuarios.map((u) => {
+          // 🛡️ CONTROL ANTI-AUTODESTRUCCIÓN: Compara con el operador en sesión actual
+          const esUsuarioActual = u.email.toLowerCase().trim() === (operador?.email || "").toLowerCase().trim();
+
+          return (
+            <div
+              key={u.id}
+              className="card-admin"
               style={{
-                width: "100%",
-                marginTop: "10px",
-                opacity: cargando || userPass.length < 6 ? 0.6 : 1,
-                cursor:
-                  cargando || userPass.length < 6 ? "not-allowed" : "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                padding: "16px",
               }}
             >
-              {cargando
-                ? "Procesando..."
-                : `Registrar Nuevo ${userRol.charAt(0).toUpperCase() + userRol.slice(1)}`}
-            </button>
-          </form>
+              <div style={{ flex: 1, marginRight: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <p style={{ margin: 0, fontWeight: "600" }}>
+                    <strong>Email:</strong> {u.email}
+                  </p>
+                  {esUsuarioActual && (
+                    <span style={{ 
+                      fontSize: "10px", 
+                      background: "#e0f2fe", 
+                      color: "#0369a1", 
+                      padding: "2px 6px", 
+                      borderRadius: "4px",
+                      fontWeight: "700"
+                    }}>
+                      TÚ
+                    </span>
+                  )}
+                </div>
+                
+                <div style={{ marginBottom: "10px" }}>
+                  <span className={`badge-rol ${u.rol}`}>{u.rol}</span>
+                </div>
 
-          <div className="grid-admin" style={{ marginTop: "30px" }}>
-            {usuarios.length === 0 ? (
-              <p className="text-center">Cargando personal o lista vacía...</p>
-            ) : (
-              usuarios.map((u) => (
-                <div
-                  key={u.id}
-                  className="card-admin"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <p style={{ margin: 0 }}>
-                      <strong>Email:</strong> {u.email}
-                    </p>
-                    <span className={`badge-rol ${u.rol}`}>{u.rol}</span>
+                {/* Bloque interno de datos de credenciales */}
+                <div style={{ 
+                  background: "#f8fafc", 
+                  padding: "10px", 
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  border: "1px solid #e2e8f0"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                    <span style={{ color: "#64748b" }}>🔑 Clave Web:</span>
+                    <strong style={{ fontFamily: "monospace" }}>
+                      {verPassword[u.email] ? (u.password || "******") : "••••••"}
+                    </strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#64748b" }}>🔒 PIN Táctil:</span>
+                    <strong style={{ fontFamily: "monospace", color: "#4f46e5" }}>
+                      {verPassword[u.email] ? (u.pin || "••••") : "••••"}
+                    </strong>
                   </div>
 
+                  {/* Tu botón con la clase CSS única */}
                   <button
-                    onClick={() => confirmarEliminarUser(u.email)}
-                    className="btn-delete-icon"
-                    title="Eliminar usuario"
-                    disabled={cargando}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: cargando ? "not-allowed" : "pointer",
-                    }}
+                    type="button"
+                    className="btn-ojito-detalleydatos"
+                    onClick={() => setVerPassword(prev => ({ ...prev, [u.email]: !prev[u.email] }))}
                   >
-                    <Trash2
-                      size={20}
-                      color={cargando ? "#9ca3af" : "#ef4444"}
-                    />
+                    {verPassword[u.email] ? (
+                      <>
+                        <Trash2 size={14} style={{ display: 'none' }} /> {/* Solo referencia */}
+                        <span>👁️ Ocultar datos</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>👁️ Ver credenciales</span>
+                      </>
+                    )}
                   </button>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
+              </div>
+
+              {/* Tacho de eliminación protegido */}
+              <button
+                onClick={() => !esUsuarioActual && confirmarEliminarUser(u.email)}
+                className="btn-delete-icon"
+                title={esUsuarioActual ? "No puedes eliminarte a ti mismo" : "Eliminar usuario"}
+                disabled={cargando || esUsuarioActual}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: (cargando || esUsuarioActual) ? "not-allowed" : "pointer",
+                  opacity: esUsuarioActual ? 0.25 : 1,
+                  padding: "4px"
+                }}
+              >
+                <Trash2
+                  size={20}
+                  color={(cargando || esUsuarioActual) ? "#9ca3af" : "#ef4444"}
+                />
+              </button>
+            </div>
+          );
+        })
       )}
+    </div>
+  </div>
+)}
     </div>
   );
 };
