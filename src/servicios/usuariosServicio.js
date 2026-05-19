@@ -1,12 +1,13 @@
 import { auth, authAdmin, db } from "../firebase/config";
+
 import {
+  collection,
   doc,
   setDoc,
   getDoc,
-  collection,
+  getDocs,
   query,
-  onSnapshot,
-  deleteDoc,
+  where,
 } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
@@ -14,7 +15,6 @@ import {
   signOut,
 } from "firebase/auth";
 
-// 1. REGISTRO (Optimizado con PIN)
 export const registrarUsuario = async (
   email,
   password,
@@ -22,33 +22,65 @@ export const registrarUsuario = async (
   restauranteId,
   pin,
 ) => {
-  
   if (!restauranteId) throw new Error("Falta restauranteId para registrar");
 
   const emailLimpio = email.toLowerCase().trim();
 
-  const userCredential = await createUserWithEmailAndPassword(
-    authAdmin,
-    emailLimpio,
-    password,
-  );
+  // SI ES ADMIN: Sigue creando su cuenta en Google Firebase Auth
+  if (["admin", "superadmin"].includes(rol)) {
+    const userCredential = await createUserWithEmailAndPassword(
+      authAdmin,
+      emailLimpio,
+      password,
+    );
 
-  await setDoc(
-    doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
-    {
+    await setDoc(
+      doc(db, "restaurantes", restauranteId, "usuarios_admin", emailLimpio),
+      {
+        email: emailLimpio,
+        rol: rol,
+        restauranteId: restauranteId,
+        pin: pin,
+        password: password,
+        fechaRegistro: new Date(),
+      },
+    );
+
+    await signOut(authAdmin);
+    return userCredential.user;
+  }
+
+  // SI ES MOZO O CAJERO: Se guarda directo en Firestore (No se registra en Google Auth)
+  else {
+    // Validación de seguridad para que no dupliquen correos en la base de datos interna
+    const docRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "usuarios_admin",
+      emailLimpio,
+    );
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const err = new Error("Este correo ya está registrado en el sistema.");
+      err.code = "auth/email-already-in-use";
+      throw err;
+    }
+
+    await setDoc(docRef, {
       email: emailLimpio,
       rol: rol,
       restauranteId: restauranteId,
       pin: pin,
       password: password,
       fechaRegistro: new Date(),
-    },
-  );
+    });
 
-  await signOut(authAdmin);
-  return userCredential.user;
+    return { email: emailLimpio, rol: rol }; // Retorna un objeto simulado para no romper el flujo
+  }
 };
-// 2. LOGIN (Optimizado para validar el PIN del usuario correcto)
+
+// 2. LOGIN (Mantiene la verificación de la cuenta del Administrador)
 export const loginUsuario = async (email, password, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId para login");
 

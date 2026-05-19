@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { auth } from "../firebase/config";
 import { db } from "../firebase/config";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import "../estilos/loginPin.css";
 
 function LoginPin({ restauranteId, user, onConfirmar }) {
@@ -19,39 +20,29 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
     setVerificando(true);
     setError(null);
     try {
-      const usuarioActivo = auth.currentUser;
-      if (!usuarioActivo) {
-        throw new Error("No hay ninguna sesión activa en este navegador.");
-      }
-
-      const emailLimpio = usuarioActivo.email.toLowerCase().trim();
-
-      const usuarioDocRef = doc(
+      // 🔍 Buscamos en la colección de usuarios de este restaurante a quién le pertenece este PIN
+      const usuariosRef = collection(
         db,
         "restaurantes",
         restauranteId,
         "usuarios_admin",
-        emailLimpio,
       );
+      const q = query(usuariosRef, where("pin", "==", pinAValidar));
+      const querySnapshot = await getDocs(q);
 
-      const docSnap = await getDoc(usuarioDocRef);
+      if (!querySnapshot.empty) {
+        // ¡Encontrado! Tomamos el primer usuario que coincida con ese PIN
+        const datosEmpleado = querySnapshot.docs[0].data();
 
-      if (docSnap.exists()) {
-        const datosEmpleado = docSnap.data();
-
-        if (datosEmpleado.pin === pinAValidar) {
-          setPin("");
-          onConfirmar(datosEmpleado);
-        } else {
-          setError("PIN incorrecto. Intente nuevamente.");
-          setPin("");
-        }
+        setPin("");
+        onConfirmar(datosEmpleado); // Enviamos los datos del mozo o cajero activo a App.jsx
       } else {
-        setError("No se encontraron credenciales de operador válidas.");
+        // Si nadie tiene ese PIN
+        setError("PIN incorrecto. Intente nuevamente.");
         setPin("");
       }
     } catch (err) {
-      console.error("Error al verificar PIN:", err);
+      console.error("Error al verificar PIN global:", err);
       setError("Error de autenticación o permisos insuficientes.");
       setPin("");
     } finally {
