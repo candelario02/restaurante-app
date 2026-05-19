@@ -48,16 +48,18 @@ export const registrarUsuario = async (
   return userCredential.user;
 };
 
-// 2. LOGIN (ahora recibe restauranteId)
+// 2. LOGIN (Optimizado para validar el PIN del usuario correcto)
 export const loginUsuario = async (email, password, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId para login");
+
   const userCredential = await signInWithEmailAndPassword(
     auth,
     email.trim(),
     password,
   );
+
   const userEmail = userCredential.user.email.toLowerCase().trim();
-  // Buscar el rol dentro del restaurante específico (el de la URL)
+
   const docRef = doc(
     db,
     "restaurantes",
@@ -66,15 +68,19 @@ export const loginUsuario = async (email, password, restauranteId) => {
     userEmail,
   );
   const docSnap = await getDoc(docRef);
+
   if (!docSnap.exists()) {
     await signOut(auth);
     throw new Error("USUARIO_SIN_PERFIL_EN_ESTE_RESTAURANTE");
   }
+
   const data = docSnap.data();
+
   return {
     user: userCredential.user,
     restauranteId: restauranteId,
     rol: data.rol,
+    pinCorrecto: data.pin,
   };
 };
 

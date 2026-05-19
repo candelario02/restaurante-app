@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase/config"; // Ajusta la ruta según tu estructura
+import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../firebase/config"; 
+import { db } from "../firebase/config";
 import "../estilos/loginPin.css";
 
 function LoginPin({ restauranteId, onConfirmar }) {
@@ -8,72 +9,50 @@ function LoginPin({ restauranteId, onConfirmar }) {
   const [error, setError] = useState(null);
   const [verificando, setVerificando] = useState(false);
 
-  // Cada vez que el PIN llegue a 4 dígitos, lo validamos automáticamente
   useEffect(() => {
     if (pin.length === 4) {
       validarPin(pin);
     }
   }, [pin]);
 
-  // ⌨️ ESCUCHADOR DE TECLADO FÍSICO DE PC
-  useEffect(() => {
-    const manejarTecladoFisico = (e) => {
-      if (verificando) return;
-
-      // Si presiona un número (0-9) ya sea del teclado superior o del pad numérico
-      if (/^[0-9]$/.test(e.key)) {
-        setError(null);
-        if (pin.length < 4) {
-          setPin((prev) => prev + e.key);
-        }
-      }
-
-      // Si presiona retroceso (Backspace) o la tecla Suprimir (Delete), actúa como el botón "C"
-      if (
-        e.key === "Backspace" ||
-        e.key === "Delete" ||
-        e.key.toLowerCase() === "c"
-      ) {
-        setError(null);
-        setPin("");
-      }
-    };
-
-    window.addEventListener("keydown", manejarTecladoFisico);
-
-    // Limpieza del evento al desmontar el componente para evitar fugas de memoria
-    return () => {
-      window.removeEventListener("keydown", manejarTecladoFisico);
-    };
-  }, [pin, verificando]);
-
   const validarPin = async (pinAValidar) => {
     setVerificando(true);
     setError(null);
     try {
-      // 🕵️‍♂️ CORRECCIÓN PROFESIONAL: Apuntamos exactamente a tu subcolección de usuarios_admin
-      const usuariosRef = collection(
+      const usuarioActivo = auth.currentUser;
+      if (!usuarioActivo) {
+        throw new Error("No hay ninguna sesión activa en este navegador.");
+      }
+
+      const emailLimpio = usuarioActivo.email.toLowerCase().trim();
+
+      const usuarioDocRef = doc(
         db,
         "restaurantes",
         restauranteId,
         "usuarios_admin",
+        emailLimpio,
       );
-      const q = query(usuariosRef, where("pin", "==", pinAValidar));
 
-      const querySnapshot = await getDocs(q);
+      const docSnap = await getDoc(usuarioDocRef);
 
-      if (!querySnapshot.empty) {
-        // Encontrado con éxito
-        const datosEmpleado = querySnapshot.docs[0].data();
-        setPin("");
-        onConfirmar(datosEmpleado); // Pasa los datos (email, rol, pin) a App.jsx
+      if (docSnap.exists()) {
+        const datosEmpleado = docSnap.data();
+
+        if (datosEmpleado.pin === pinAValidar) {
+          setPin("");
+          onConfirmar(datosEmpleado); 
+        } else {
+          setError("PIN incorrecto. Intente nuevamente.");
+          setPin("");
+        }
       } else {
-        setError("PIN incorrecto. Intente nuevamente.");
+        setError("No se encontraron credenciales de operador válidas.");
         setPin("");
       }
     } catch (err) {
       console.error("Error al verificar PIN:", err);
-      setError("Error de conexión con el servidor.");
+      setError("Error de autenticación o permisos insuficientes.");
       setPin("");
     } finally {
       setVerificando(false);
