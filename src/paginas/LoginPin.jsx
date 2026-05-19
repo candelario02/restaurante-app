@@ -4,7 +4,7 @@ import { auth } from "../firebase/config";
 import { db } from "../firebase/config";
 import "../estilos/loginPin.css";
 
-function LoginPin({ restauranteId, onConfirmar }) {
+function LoginPin({ restauranteId, user, onConfirmar }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(null);
   const [verificando, setVerificando] = useState(false);
