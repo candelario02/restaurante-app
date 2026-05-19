@@ -211,9 +211,10 @@ function App() {
                 </span>
               )}
             </div>
-            {user && restauranteId && isAdmin && (
+            {user && restauranteId && isAdmin && operador && (
               <div className="nav-admin-tabs-horizontal">
-                {(rol === "admin" || rol === "superadmin") && (
+                {(operador.rol === "admin" ||
+                  operador.rol === "superadmin") && (
                   <>
                     <button
                       className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
