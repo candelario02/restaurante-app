@@ -5,16 +5,12 @@ import {
   doc,
   setDoc,
   getDoc,
-  getDocs,
   query,
-  where,
+  onSnapshot,
 } from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
 
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+//registro usarios
 export const registrarUsuario = async (
   email,
   password,
