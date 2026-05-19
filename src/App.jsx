@@ -22,7 +22,10 @@ function App() {
   const [seccion, setSeccion] = useState("menu");
   const [pedidosPendientes, setPedidosPendientes] = useState(0);
   const [configuracion, setConfiguracion] = useState(null);
-  const [operador, setOperador] = useState(null); // { email: "...", rol: "mozo", pin: "..." }
+  const [operador, setOperador] = useState(() => {
+    const operadorGuardado = sessionStorage.getItem("operador_sesion_activa");
+    return operadorGuardado ? JSON.parse(operadorGuardado) : null;
+  });
 
   // inicialización para ser estricto con la URL
   const [restauranteId, setRestauranteId] = useState(() => {
@@ -46,11 +49,13 @@ function App() {
     const idActual = restauranteId;
     await signOut(auth);
     localStorage.clear();
+    sessionStorage.removeItem("operador_sesion_activa");
     if (idActual) {
       localStorage.setItem("restauranteId", idActual);
       setRestauranteId(idActual);
     }
     setUser(null);
+    setOperador(null);
     setIsAdmin(false);
     setRol("cliente");
     setSeccion("menu");
@@ -79,7 +84,7 @@ function App() {
         window.history.replaceState(null, "", `/${ultimoIdGuardado}`);
       }
     }
-  }, [restauranteId]); // se mantiene la dependencia para evitar bucles infinitos
+  }, [restauranteId]);
 
   // Autenticación (espera a que restauranteId tenga valor, si es null no hace nada)
   useEffect(() => {
@@ -187,6 +192,18 @@ function App() {
     };
     cargarConfig();
   }, [restauranteId]);
+
+  // 🔥 Sincroniza automáticamente el operador con sessionStorage cada vez que cambia
+  useEffect(() => {
+    if (operador) {
+      sessionStorage.setItem(
+        "operador_sesion_activa",
+        JSON.stringify(operador),
+      );
+    } else {
+      sessionStorage.removeItem("operador_sesion_activa");
+    }
+  }, [operador]);
 
   if (cargando) {
     return <div className="loading-screen">Sincronizando sesión segura...</div>;
