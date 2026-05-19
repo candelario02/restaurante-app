@@ -53,18 +53,31 @@ function App() {
     setRol("cliente");
     setSeccion("menu");
   };
-  //  Sincronizar restauranteId con la URL cuando cambia (navegación manual)
+  // 🔥 Sincronizar restauranteId con la URL cuando cambia (navegación manual y soporte PWA)
   useEffect(() => {
     const ruta = window.location.pathname;
     const idDesdeUrl = ruta.split("/")[1];
     const reservados = ["login", "admin", "dashboard", ""];
+
+    // CASO 1: Si hay un ID válido en la URL, sincronizamos normalmente
     if (idDesdeUrl && !reservados.includes(idDesdeUrl)) {
       if (restauranteId !== idDesdeUrl) {
         setRestauranteId(idDesdeUrl);
         localStorage.setItem("restauranteId", idDesdeUrl);
       }
     }
-  }, [restauranteId]); // dependencia para evitar bucles
+    // CASO 2: Si está en la raíz "/" (pasaría al abrir la PWA desde el icono del celular)
+    else if (!idDesdeUrl || idDesdeUrl === "") {
+      const ultimoIdGuardado = localStorage.getItem("restauranteId");
+
+      // Si encontramos el último restaurante visitado en este celular, lo restauramos
+      if (ultimoIdGuardado && restauranteId !== ultimoIdGuardado) {
+        setRestauranteId(ultimoIdGuardado);
+        // Reemplazamos la URL visualmente sin recargar la página para que no se quede en la raíz
+        window.history.replaceState(null, "", `/${ultimoIdGuardado}`);
+      }
+    }
+  }, [restauranteId]); // se mantiene la dependencia para evitar bucles infinitos
 
   // Autenticación (espera a que restauranteId tenga valor, si es null no hace nada)
   useEffect(() => {
@@ -98,7 +111,7 @@ function App() {
     return () => unsub();
   }, [restauranteId]);
 
-  // Notificaciones 
+  // Notificaciones
   useEffect(() => {
     if (!restauranteId || !isAdmin) {
       setPedidosPendientes(0);
@@ -124,7 +137,7 @@ function App() {
     return () => unsub();
   }, [restauranteId, isAdmin]);
 
-  // Audio 
+  // Audio
   useEffect(() => {
     const desbloquear = () => {
       audioNotificacion
