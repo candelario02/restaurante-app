@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { auth } from "../firebase/config";
-import { db } from "../firebase/config";
+import { auth, db } from "../firebase/config";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import "../estilos/loginPin.css";
 
@@ -20,24 +18,26 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
     setVerificando(true);
     setError(null);
     try {
-      // 🔍 Buscamos en la colección de usuarios de este restaurante a quién le pertenece este PIN
+      // 🔍 Buscamos en la subcolección de este restaurante al usuario con este PIN
       const usuariosRef = collection(
         db,
         "restaurantes",
         restauranteId,
         "usuarios_admin",
       );
+
+      // NOTA: Asegúrate de que en Firestore el campo esté guardado tal cual se envíe ('pin')
       const q = query(usuariosRef, where("pin", "==", pinAValidar));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        // ¡Encontrado! Tomamos el primer usuario que coincida con ese PIN
+        // ¡Encontrado! Tomamos el primer usuario que coincida
         const datosEmpleado = querySnapshot.docs[0].data();
 
         setPin("");
-        onConfirmar(datosEmpleado); // Enviamos los datos del mozo o cajero activo a App.jsx
+        // 🚀 Enviamos los datos completos del mozo o cajero a App.jsx
+        onConfirmar(datosEmpleado);
       } else {
-        // Si nadie tiene ese PIN
         setError("PIN incorrecto. Intente nuevamente.");
         setPin("");
       }
@@ -59,19 +59,19 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
       setPin((prev) => prev + valor);
     }
   };
+
   const nombreParaMostrar = user?.email
     ? user.email.split("@")[0].charAt(0).toUpperCase() +
       user.email.split("@")[0].slice(1)
     : "Operador";
+
   return (
     <div className="pin-screen-container">
       <div className="pin-box">
-        {/* Opción 1: Título 100% dinámico y empático */}
         <h2 className="pin-title">
           {verificando ? "✨ Procesando..." : `👋 ¡Hola, ${nombreParaMostrar}!`}
         </h2>
 
-        {/* Opción 2: Subtítulo dinámico con instrucciones en tiempo real */}
         <p className="pin-subtitle">
           {pin.length === 4
             ? "🔒 Validando tu código de seguridad..."
@@ -80,7 +80,6 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
               : "Por favor, introduce tu PIN de 4 dígitos para continuar"}
         </p>
 
-        {/* Visualizador de esferas/puntos de contraseña - IDÉNTICO SIN CAMBIAR ESTILOS */}
         <div className="pin-display">
           {[...Array(4)].map((_, i) => (
             <div
@@ -90,11 +89,9 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
           ))}
         </div>
 
-        {/* Opción 3: Mensajes informativos de error y éxito de manera profesional */}
         {error && (
           <p className="pin-error-text" style={{ fontWeight: "600" }}>
-            ❌ PIN incorrecto para la cuenta {nombreParaMostrar}. Inténtalo de
-            nuevo.
+            ❌ {error}
           </p>
         )}
 
@@ -107,7 +104,6 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
           </p>
         )}
 
-        {/* Teclado Numérico Táctil - SE MANTIENE INTACTO PARA NO ROMPER LA INTERFAZ */}
         <div className="pin-keyboard">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button

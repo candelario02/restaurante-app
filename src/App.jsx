@@ -224,7 +224,12 @@ function App() {
               </span>
               {user && (
                 <span className="user-welcome">
-                  👋 Hola, <strong>{user.email.split("@")[0]}</strong>
+                  👋 Hola,{" "}
+                  <strong>
+                    {operador?.nombre ||
+                      operador?.email?.split("@")[0] ||
+                      user.email.split("@")[0]}
+                  </strong>
                 </span>
               )}
             </div>
