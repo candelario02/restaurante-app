@@ -181,12 +181,46 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       0,
     );
   }, [carrito]);
-  // Funcion para mostrar productos
+  // Funcion para mostrar productos (Actualizada para el Menú del Día)
   const productosParaMostrar = useMemo(() => {
-    return productos.filter(
-      (p) => p.categoria === categoriaActual && p.disponible !== false,
-    );
-  }, [productos, categoriaActual]);
+    // Si no estamos en la categoría del menú, se comporta exactamente igual que antes
+    if (categoriaActual !== "Menú del Día") {
+      return productos.filter(
+        (p) => p.categoria === categoriaActual && p.disponible !== false,
+      );
+    }
+
+    // 🌟 SI ES MENÚ DEL DÍA: Mostramos los platos del restaurante según lo que falte seleccionar
+    return productos.filter((p) => {
+      if (p.disponible === false) return false;
+
+      // Evitamos mostrar el propio producto contenedor base del menú en la lista de abajo
+      if (p.categoria === "Menú del Día") return false;
+
+      // 1. Si falta el Segundo, mostramos solo los platos de la categoría "Comidas"
+      if (!segundoSeleccionado) {
+        return p.categoria === "Comidas";
+      }
+
+      // 2. Si ya eligió Segundo pero falta Entrada, mostramos solo la categoría "Entradas"
+      if (!entradaSeleccionada) {
+        return p.categoria === "Entradas";
+      }
+
+      // 3. Si ya eligió Segundo y Entrada pero falta Bebida, mostramos solo la categoría "Bebidas"
+      if (!bebidaSeleccionada) {
+        return p.categoria === "Bebidas";
+      }
+
+      return false;
+    });
+  }, [
+    productos,
+    categoriaActual,
+    segundoSeleccionado,
+    entradaSeleccionada,
+    bebidaSeleccionada,
+  ]);
 
   if (!restauranteId || cargando)
     return (
