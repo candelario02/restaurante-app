@@ -705,10 +705,15 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             </p>
           )}
 
-          {/* 🌟 CAMBIO 1: El panel superior se queda FIJO si es Menú del Día, sin importar si abajo hay 0 platos */}
+          {/* 🌟 El panel superior se queda FIJO si es Menú del Día, sin importar si abajo hay 0 platos */}
           {categoriaActual === "Menú del Día" && (
             <div className="seccion-armar-menu">
-              <h4>📋 Tu Menú Actual:</h4>
+              {/* 🌟 PRECIO DINÁMICO: Integrado de manera limpia e intuitiva en la cabecera */}
+              <div className="cabecera-armar-menu">
+                <h4>📋 Tu Menú Actual</h4>
+                <span className="badge-precio-menu">S/ {menuDiaPrecio}</span>
+              </div>
+
               <ul className="lista-resumen-menu">
                 <li>
                   <strong>• Entrada:</strong>{" "}
@@ -747,7 +752,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   const itemMenu = {
                     id: `menu_${Date.now()}`,
                     nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
-                    precio: menuDiaPrecio, 
+                    precio: menuDiaPrecio,
                     cantidad: 1,
                     isMenuCompleto: true,
                     detalles: {

@@ -56,11 +56,29 @@
   cursor: pointer;
 }
 
-/* Espaciador para alinear título (usado en JSX) */
+/* Espaciador para alinear título para el precio menu */
 .header-categoria-spacer {
   width: 80px;
 }
+.cabecera-armar-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
 
+.cabecera-armar-menu h4 {
+  margin: 0;
+}
+
+.badge-precio-menu {
+  background-color: #22c55e;
+  color: white;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+}
 /* =============================================
    3. VISTA PRINCIPAL (CATEGORÍAS)
    ============================================= */
@@ -210,14 +228,6 @@
   width: 100%;
 }
 
-/* En pantallas más grandes (Tablets/PC), vuelve a su comportamiento auto-rellenable */
-@media (min-width: 480px) {
-  .productos-grid-dos-columnas {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 15px;
-    padding: 20px;
-  }
-}
 
 /* Ajustes específicos para las tarjetas dentro de las 2 columnas en celulares */
 @media (max-width: 480px) {
@@ -888,9 +898,37 @@
 }
 
 /* =============================================
-   11. RESPONSIVE
+   11. RESPONSIVE (TODO LO DE CELULARES UNIFICADO)
    ============================================= */
 @media (max-width: 480px) {
+  
+  /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
+  /* Forzamos a que la grilla ocupe el 100% reduciendo márgenes y paddings laterales */
+  .productos-grid-dos-columnas {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px 4px !important; /* Espaciado mínimo a los lados para estirar las tarjetas */
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Pegamos la sección de armar menú más arriba y eliminamos el aire lateral */
+  .seccion-armar-menu {
+    margin-top: 4px !important;
+    margin-bottom: 10px !important;
+    padding: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* El título de la categoría más compacto y pegado */
+  .categoria-titulo {
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
   .categorias-grid-principal {
     gap: 15px;
   }
@@ -898,5 +936,62 @@
     width: 90px;
     height: 90px;
     padding: 20px;
+  }
+
+  /* ─── 3. TARJETAS DE PRODUCTOS (TU DISEÑO ORIGINAL) ─── */
+  .productos-grid-dos-columnas .producto-card img {
+    height: 110px; 
+  }
+
+  .productos-grid-dos-columnas .producto-info {
+    padding: 8px; 
+  }
+
+  .productos-grid-dos-columnas .producto-info h3 {
+    font-size: 0.9rem; 
+    margin-bottom: 4px;
+  }
+
+  .productos-grid-dos-columnas .descripcion-corta {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .productos-grid-dos-columnas .precio {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .productos-grid-dos-columnas .btn-agregar {
+    padding: 8px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+
+  /* ─── 4. NUEVOS ESTILOS PARA EL PRECIO DEL MENÚ ─── */
+  .cabecera-armar-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .cabecera-armar-menu h4 {
+    margin: 0;
+  }
+
+  .badge-precio-menu {
+    background-color: #22c55e;
+    color: white;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 1.1rem;
   }
 }
