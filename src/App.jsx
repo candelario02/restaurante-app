@@ -328,9 +328,18 @@ function App() {
                 user={user} // 🔥 INYECCIÓN CRÍTICA: Pasamos el usuario autenticado para personalizar la pantalla
                 onConfirmar={(datosEmpleado) => {
                   setOperador(datosEmpleado);
-                  // Si el mozo o cajero entra, forzamos que se cargue la sección de pedidos de inmediato
-                  if (["mozo", "cajero"].includes(datosEmpleado.rol)) {
+
+                  {
+                    /* 🚀 SOLUCIÓN: Redirección automática según el rol que ponga el PIN */
+                  }
+                  if (datosEmpleado.rol === "mozo") {
                     setSeccion("pedidos");
+                  } else if (datosEmpleado.rol === "cajero") {
+                    setSeccion("caja");
+                  } else if (
+                    ["admin", "superadmin"].includes(datosEmpleado.rol)
+                  ) {
+                    setSeccion("menu"); // O la sección que prefieras que abra el admin por defecto
                   }
                 }}
               />
