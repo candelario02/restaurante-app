@@ -1027,12 +1027,11 @@
   /* Liberar las categorías para que no se queden en 500px */
   .categorias-grid-principal {
     max-width: 1100px !important;
-    grid-template-columns: repeat(4, 1fr) !important; /* Más columnas para PC */
+    grid-template-columns: repeat(4, 1fr) !important;
   }
 
-  /* Unificar el menú y la grilla */
+  /* Unificar menú, grilla y la caja de seguimiento */
   .seccion-armar-menu,
-  .seguimiento-box,
   .header-categoria,
   .productos-grid-dos-columnas {
     max-width: 1100px !important;
@@ -1040,6 +1039,13 @@
     margin-right: auto !important;
     width: 96% !important;
     box-sizing: border-box;
+  }
+
+  /* AMPLIACIÓN ESPECÍFICA PARA SEGUIMIENTO */
+  .seguimiento-box.tarjeta-def-oscura {
+    max-width: 1100px !important; /* Ahora ocupa lo mismo que el resto */
+    width: 96% !important;
+    margin: -30px auto 20px auto !important;
   }
 
   /* Grilla de 3 productos fija en PC */
