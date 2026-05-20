@@ -152,39 +152,65 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: nowrap; 
+  gap: 12px; /* Un poco más de aire entre botones */
+  flex-wrap: nowrap;
 }
 
+/* 🔵 BOTONES GENERALES (Cambiar Operador / Vista Cliente) */
 .btn-nav-admin {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: var(--primary-light, #e0e7ff);
+  color: var(--primary, #4f46e5);
   padding: 8px 16px;
   border-radius: 10px;
   font-weight: 700;
   font-size: 0.9rem;
   border: none;
   cursor: pointer;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  /* 🌟 Sombra idéntica a tus tabs principales */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
+.btn-nav-admin:hover {
+  background: #2563eb; /* Color azul al pasar el mouse */
+  color: white; /* Texto blanco para contraste */
+  transform: translateY(-1px); /* Efecto leve de elevación */
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.08);
+}
+
+/* 🔴 BOTÓN SALIR (Mismo sombreado, pero mantiene su esencia de alerta en hover si deseas) */
 .btn-nav-salir-rojo {
   background: #fef2f2;
-  color: var(--danger);
-  border: 1.5px solid var(--danger);
+  color: var(--danger, #ef4444);
   padding: 8px 20px;
   border-radius: 10px;
   font-weight: 700;
+  font-size: 0.9rem;
+  border: none; /* Quitamos el borde tosco para que la sombra actúe limpia */
   cursor: pointer;
-  transition: 0.3s;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease-in-out;
+  /* 🌟 Misma sombra exacta */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
+/* Nota: Si quieres que Salir TAMBIÉN se vuelva azul en hover, cambia 'var(--danger)' por '#2563eb' abajo */
 .btn-nav-salir-rojo:hover {
-  background: var(--danger);
+  background: #2563eb; /* Cambiado a azul según lo solicitado */
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.08);
 }
 
 /* =============================================
@@ -270,14 +296,14 @@ body {
    ============================================= */
 @media (max-width: 768px) {
   .top-bar {
-    height: auto !important; 
+    height: auto !important;
     padding: 12px 0;
   }
 
   .top-bar-container {
-    flex-direction: column; 
+    flex-direction: column;
     align-items: stretch;
-    gap: 14px; 
+    gap: 14px;
     padding: 0 15px;
     width: 100%;
   }
@@ -308,23 +334,23 @@ body {
     padding: 6px 12px;
     font-size: 0.75rem;
     height: 34px;
-    white-space: nowrap; 
+    white-space: nowrap;
   }
 
   .nav-actions {
     display: flex;
-    flex-wrap: wrap; 
-    gap: 10px; 
+    flex-wrap: wrap;
+    gap: 10px;
     width: 100%;
     justify-content: space-between;
   }
 
   .btn-nav-admin,
   .btn-nav-salir-rojo,
-  .nav-actions .btn-nav-tab { 
+  .nav-actions .btn-nav-tab {
     padding: 8px 12px;
     font-size: 0.8rem;
-    flex: 1; 
+    flex: 1;
     min-width: 105px;
     height: 38px;
     justify-content: center;
