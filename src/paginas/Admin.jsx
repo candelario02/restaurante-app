@@ -35,6 +35,7 @@ import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
+import { doc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 // 🔐 MATRIZ DE PERMISOS CENTRALIZADA PARA EL REGISTRO de usarios
 export const PERMISOS_ROLES = {
   mozo: {
