@@ -36,7 +36,7 @@ import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
 // 🔐 MATRIZ DE PERMISOS CENTRALIZADA PARA EL REGISTRO
-const PERMISOS_ROLES = {
+export const PERMISOS_ROLES = {
   mozo: {
     verPedidos: true,
     verCaja: false,

@@ -10,6 +10,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 //para obtener datos de ussuarios y restaurante
 import { obtenerDatosUsuario } from "./servicios/usuariosServicio";
 import { obtenerConfigRestaurante } from "./servicios/productosServicio";
+import { PERMISOS_ROLES } from "./paginas/Admin"; // Ajusta la ruta si es necesario
 const audioNotificacion = new Audio("/notificacion.mp3");
 
 function App() {
