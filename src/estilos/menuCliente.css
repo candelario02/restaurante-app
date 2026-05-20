@@ -1010,24 +1010,31 @@
   }
 }
 /* =============================================
-   12. CONTROL MAESTRO PARA ESCRITORIO (PC)
+   12. CONTROL TOTAL Y ÚNICO PARA ESCRITORIO
    ============================================= */
 @media (min-width: 1024px) {
   
-  /* 1. Reset y centrado del contenedor padre principal */
+  /* Resetear restricciones de ancho en contenedores */
   .main-content, 
-  .admin-container {
+  .admin-container,
+  .view-principal {
     max-width: 1140px !important;
     margin: 0 auto !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 20px 0 !important;
     width: 100% !important;
   }
 
-  /* 2. Unificación de los bloques de contenido (Menú y Resumen) */
+  /* Liberar las categorías para que no se queden en 500px */
+  .categorias-grid-principal {
+    max-width: 1100px !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* Más columnas para PC */
+  }
+
+  /* Unificar el menú y la grilla */
   .seccion-armar-menu,
   .seguimiento-box,
-  .header-categoria {
+  .header-categoria,
+  .productos-grid-dos-columnas {
     max-width: 1100px !important;
     margin-left: auto !important;
     margin-right: auto !important;
@@ -1035,21 +1042,11 @@
     box-sizing: border-box;
   }
 
-  /* 3. Configuración estricta de la grilla para que sea un bloque perfecto de 3 columnas */
+  /* Grilla de 3 productos fija en PC */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
-    max-width: 1100px !important;
-    margin: 0 auto !important;
     padding: 20px 0 !important;
-    width: 96% !important;
-  }
-
-  /* 4. Estilos visuales de cabecera en PC */
-  .header-categoria {
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
   }
 }
