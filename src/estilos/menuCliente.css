@@ -899,23 +899,36 @@
    11. RESPONSIVE (TODO LO DE CELULARES UNIFICADO)
    ============================================= */
 @media (max-width: 480px) {
+
+  /* ─── 0. LIBERACIÓN DE BORDES DE LA PANTALLA ─── */
+  /* Forzamos a que el cuerpo y el contenedor principal eliminen cualquier aire lateral oculto */
+  body, html, #root, .admin-container {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+    overflow-x: hidden;
+  }
+  
   /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
-  /* Forzamos a que la grilla ocupe el 100% reduciendo márgenes y paddings laterales */
+  /* Forzamos a que la grilla ocupe el 100% real reduciendo el padding lateral al mínimo */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
-    padding: 8px 4px !important; /* Espaciado mínimo a los lados para estirar las tarjetas */
+    padding: 8px 6px !important; /* Espaciado mínimo a los lados para estirar las tarjetas */
     width: 100% !important;
     box-sizing: border-box;
   }
 
-  /* Pegamos la sección de armar menú más arriba y eliminamos el aire lateral */
+  /* Reducimos el espacio que ocupa el panel gris para que no asfixie a las tarjetas */
   .seccion-armar-menu {
     margin-top: 4px !important;
     margin-bottom: 10px !important;
     padding: 12px !important;
-    width: 100% !important;
+    width: auto !important; /* Permite que respire respecto a los bordes absolutos */
+    margin-left: 6px !important;
+    margin-right: 6px !important;
     box-sizing: border-box;
   }
 
@@ -923,6 +936,7 @@
   .categoria-titulo {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
+    padding-left: 8px !important; /* Alineado con las tarjetas */
   }
 
   /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
