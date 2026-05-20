@@ -900,9 +900,9 @@
    ============================================= */
 @media (max-width: 480px) {
 
-  /* ─── 0. LIBERACIÓN DE BORDES DE LA PANTALLA ─── */
-  /* Forzamos a que TODOS los contenedores padres suelten el aire lateral en celulares */
-  body, html, #root, .admin-container, .view-principal {
+  /* ─── 0. LIBERACIÓN DE BORDES ABSOLUTA ─── */
+  /* Forzamos a que la vista principal del cliente suelte cualquier max-width o padding lateral */
+  body, html, #root, .view-principal, .admin-container {
     padding-left: 0px !important;
     padding-right: 0px !important;
     margin-left: 0px !important;
@@ -912,14 +912,20 @@
     overflow-x: hidden;
     box-sizing: border-box;
   }
+
+  /* Anulamos paddings adicionales que puedan tener los contenedores directos en el cliente */
+  .view-principal > * {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
   
-  /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
-  /* Al estar libre el contenedor padre, la grilla ahora sí se pegará a los extremos izquierdo y derecho */
+  /* ─── 1. CONTROL DE ANCHO COMPLETO (TARJETAS) ─── */
+  /* Reducimos el padding de la grilla a solo 4px para exprimir el ancho del teléfono */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
-    padding: 8px 6px !important; /* Espaciado mínimo a los lados para estirar las tarjetas al máximo */
+    padding: 8px 4px !important; 
     width: 100% !important;
     box-sizing: border-box;
   }
@@ -929,9 +935,9 @@
     margin-top: 4px !important;
     margin-bottom: 10px !important;
     padding: 12px !important;
-    width: auto !important; /* Permite que respire respecto a los bordes absolutos */
-    margin-left: 6px !important;
-    margin-right: 6px !important;
+    width: auto !important; 
+    margin-left: 4px !important;
+    margin-right: 4px !important;
     box-sizing: border-box;
   }
 
@@ -939,7 +945,7 @@
   .categoria-titulo {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
-    padding-left: 8px !important; /* Alineado perfectamente con las tarjetas */
+    padding-left: 6px !important; 
   }
 
   /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
