@@ -196,6 +196,60 @@
   cursor: not-allowed;
 }
 
+.productos-grid-dos-columnas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas perfectas en celular */
+  gap: 12px;
+  padding: 10px;
+  width: 100%;
+}
+
+/* En pantallas más grandes (Tablets/PC), vuelve a su comportamiento auto-rellenable */
+@media (min-width: 480px) {
+  .productos-grid-dos-columnas {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    padding: 20px;
+  }
+}
+
+/* Ajustes específicos para las tarjetas dentro de las 2 columnas en celulares */
+@media (max-width: 480px) {
+  .productos-grid-dos-columnas .producto-card img {
+    height: 110px; /* Reducimos ligeramente la altura de la foto en celular para dar aire al texto */
+  }
+
+  .productos-grid-dos-columnas .producto-info {
+    padding: 8px; /* Menos espacio interno para aprovechar la pantalla */
+  }
+
+  .productos-grid-dos-columnas .producto-info h3 {
+    font-size: 0.9rem; /* Letra del título un pelín más compacta */
+    margin-bottom: 4px;
+  }
+
+  .productos-grid-dos-columnas .descripcion-corta {
+    font-size: 0.75rem; /* Descripción compacta estilo Roky's */
+    color: #666;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Corta el texto a 2 líneas máximo con puntos suspensivos si es muy largo */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .productos-grid-dos-columnas .precio {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .productos-grid-dos-columnas .btn-agregar {
+    padding: 8px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+}
+
 /* =============================================
    5. CARRITO (MODAL, ITEMS, BOTONES)
    ============================================= */

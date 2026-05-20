@@ -359,10 +359,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     };
     return etapas[estado] || 1;
   };
-console.log("DEBUG LOGO:", {
-  recibido: logoRestaurante,
-  tipo: typeof logoRestaurante
-});
+  console.log("DEBUG LOGO:", {
+    recibido: logoRestaurante,
+    tipo: typeof logoRestaurante,
+  });
   return (
     <div className="admin-container">
       {/* Mensaje de aviso) */}
@@ -528,7 +528,7 @@ console.log("DEBUG LOGO:", {
           <img
             src={
               logoRestaurante
-                ? `/${logoRestaurante.trim()}` 
+                ? `/${logoRestaurante.trim()}`
                 : "/logo_resturante.gif"
             }
             alt="logo restaurante"
@@ -604,7 +604,8 @@ console.log("DEBUG LOGO:", {
               <p>No hay productos disponibles en esta categoría por ahora.</p>
             </div>
           ) : (
-            <div className="productos-grid">
+            /* ✨ CAMBIAMOS LA CLASE AQUÍ PARA LAS 2 COLUMNAS EN CELULAR */
+            <div className="productos-grid-dos-columnas">
               {productosParaMostrar.map((p) => (
                 <div key={p.id} className="producto-card">
                   <div className="producto-imagen-wrapper">

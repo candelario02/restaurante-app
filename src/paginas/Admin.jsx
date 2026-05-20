@@ -82,6 +82,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [busqueda, setBusqueda] = useState("");
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
   const [publicIdExistente, setPublicIdExistente] = useState(null);
+  const [descripcion, setDescripcion] = useState("");
 
   const fileInputRef = useRef(null);
 
@@ -182,6 +183,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       const datos = {
         nombre: nombre.trim(),
         precio: Number(precio),
+        descripcion: descripcion.trim(),
         categoria,
         imagenUrl: urlFinal || "",
         cloudinaryId: nuevoPublicId,
@@ -210,6 +212,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       // Limpieza de estados tras éxito
       setNombre("");
       setPrecio("");
+      setDescripcion("");
       setArchivo(null);
       setImgPreview("");
       setEditandoId(null);
@@ -231,6 +234,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setEditandoId(null);
     setNombre("");
     setPrecio("");
+    setDescripcion("");
     setCategoria("Comidas");
     setArchivo(null);
     setImgPreview(null);
@@ -259,6 +263,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setCategoria(p.categoria);
     setImgPreview(p.imagenUrl);
     setPublicIdExistente(p.cloudinaryId || null);
+    setDescripcion(p.descripcion || "");
   };
   // 1. Funcion de borrar
   const manejarEliminar = (id, publicIdCloudinary) => {
@@ -565,6 +570,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafetería</option>
             </select>
+            <textarea
+              className="textarea-pro"
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="Descripción del producto o detalles del combo (Ej: Entrada + Segundo + Bebida)..."
+              rows={3}
+            />
 
             <div className="upload-box">
               <input

@@ -285,6 +285,39 @@
   flex-shrink: 0;
 }
 
+.textarea-pro {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.textarea-pro:focus {
+  border-color: #6366f1;
+}
+
+
+.info-plato-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.txt-descripcion-tabla {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 400;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* =============================================
    3. SECCIÓN PEDIDOS
    ============================================= */
