@@ -676,175 +676,177 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             </p>
           )}
 
-          {productosParaMostrar.length === 0 ? (
-            <div className="no-data">
-              <p>No hay productos disponibles en esta categoría por ahora.</p>
+          {/* 🌟 CAMBIO 1: El panel superior se queda FIJO si es Menú del Día, sin importar si abajo hay 0 platos */}
+          {categoriaActual === "Menú del Día" && (
+            <div className="seccion-armar-menu">
+              <h4>📋 Tu Menú Actual:</h4>
+              <ul className="lista-resumen-menu">
+                <li>
+                  <strong>• Entrada:</strong>{" "}
+                  {entradaSeleccionada ? (
+                    entradaSeleccionada.nombre
+                  ) : (
+                    <span className="texto-vacio">
+                      No seleccionada (Ninguna)
+                    </span>
+                  )}
+                </li>
+                <li>
+                  <strong>• Segundo:</strong>{" "}
+                  {segundoSeleccionado ? (
+                    segundoSeleccionado.nombre
+                  ) : (
+                    <span className="texto-requerido">Requerido *</span>
+                  )}
+                </li>
+                <li>
+                  <strong>• Bebida:</strong>{" "}
+                  {bebidaSeleccionada ? (
+                    bebidaSeleccionada.nombre
+                  ) : (
+                    <span className="texto-cortesia">
+                      Agua de cortesía (Gratis)
+                    </span>
+                  )}
+                </li>
+              </ul>
+
+              <button
+                className="btn-agregar"
+                disabled={!segundoSeleccionado}
+                onClick={() => {
+                  const itemMenu = {
+                    id: `menu_${Date.now()}`,
+                    nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
+                    precio: 15, // Precio fijo cerrado del menú completo
+                    cantidad: 1,
+                    isMenuCompleto: true,
+                    detalles: {
+                      entrada: entradaSeleccionada
+                        ? entradaSeleccionada.nombre
+                        : "Ninguna",
+                      segundo: segundoSeleccionado.nombre,
+                      bebida: bebidaSeleccionada
+                        ? bebidaSeleccionada.nombre
+                        : "Agua de cortesía",
+                    },
+                  };
+
+                  agregarAlCarrito(itemMenu);
+
+                  setEntradaSeleccionada(null);
+                  setSegundoSeleccionado(null);
+                  setBebidaSeleccionada(null);
+                }}
+              >
+                {segundoSeleccionado
+                  ? "➕ Agregar Menú al Carrito"
+                  : "⚠️ Selecciona un Segundo para añadir"}
+              </button>
             </div>
+          )}
+
+          {/* 🌟 CAMBIO 2: Evaluamos la grilla por separado para que el aviso no rompa el panel de arriba */}
+          {productosParaMostrar.length === 0 ? (
+            categoriaActual !== "Menú del Día" && (
+              <div className="no-data">
+                <p>No hay productos disponibles en esta categoría por ahora.</p>
+              </div>
+            )
           ) : (
-            <>
-              {/* Panel de pre-selección interactiva para el Menú del Día */}
-              {categoriaActual === "Menú del Día" && (
-                <div className="seccion-armar-menu">
-                  <h4>📋 Tu Menú Actual:</h4>
-                  <ul className="lista-resumen-menu">
-                    <li>
-                      <strong>• Entrada:</strong>{" "}
-                      {entradaSeleccionada ? (
-                        entradaSeleccionada.nombre
-                      ) : (
-                        <span className="texto-vacio">
-                          No seleccionada (Ninguna)
-                        </span>
-                      )}
-                    </li>
-                    <li>
-                      <strong>• Segundo:</strong>{" "}
-                      {segundoSeleccionado ? (
-                        segundoSeleccionado.nombre
-                      ) : (
-                        <span className="texto-requerido">Requerido *</span>
-                      )}
-                    </li>
-                    <li>
-                      <strong>• Bebida:</strong>{" "}
-                      {bebidaSeleccionada ? (
-                        bebidaSeleccionada.nombre
-                      ) : (
-                        <span className="texto-cortesia">
-                          Agua de cortesía (Gratis)
-                        </span>
-                      )}
-                    </li>
-                  </ul>
+            <div className="productos-grid-dos-columnas">
+              {productosParaMostrar.map((p) => {
+                const esEntradaActiva = entradaSeleccionada?.id === p.id;
+                const esSegundoActivo = segundoSeleccionado?.id === p.id;
+                const esBebidaActiva = bebidaSeleccionada?.id === p.id;
+                const estaSeleccionadoEnMenu =
+                  esEntradaActiva || esSegundoActivo || esBebidaActiva;
 
-                  <button
-                    className="btn-agregar"
-                    disabled={!segundoSeleccionado}
-                    onClick={() => {
-                      const itemMenu = {
-                        id: `menu_${Date.now()}`,
-                        nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
-                        precio: Number(productosParaMostrar[0]?.precio || 15),
-                        cantidad: 1,
-                        isMenuCompleto: true,
-                        detalles: {
-                          entrada: entradaSeleccionada
-                            ? entradaSeleccionada.nombre
-                            : "Ninguna",
-                          segundo: segundoSeleccionado.nombre,
-                          bebida: bebidaSeleccionada
-                            ? bebidaSeleccionada.nombre
-                            : "Agua de cortesía",
-                        },
-                      };
-
-                      agregarAlCarrito(itemMenu);
-
-                      setEntradaSeleccionada(null);
-                      setSegundoSeleccionado(null);
-                      setBebidaSeleccionada(null);
-                    }}
+                return (
+                  <div
+                    key={p.id}
+                    className={`producto-card ${estaSeleccionadoEnMenu ? "card-seleccionada-pro" : ""}`}
                   >
-                    {segundoSeleccionado
-                      ? "➕ Agregar Menú al Carrito"
-                      : "⚠️ Selecciona un Segundo para añadir"}
-                  </button>
-                </div>
-              )}
+                    <div className="producto-imagen-wrapper">
+                      <img
+                        src={p.imagenUrl || "/placeholder-plato.png"}
+                        alt={p.nombre}
+                        loading="lazy"
+                      />
+                    </div>
 
-              <div className="productos-grid-dos-columnas">
-                {productosParaMostrar.map((p) => {
-                  const esEntradaActiva = entradaSeleccionada?.id === p.id;
-                  const esSegundoActivo = segundoSeleccionado?.id === p.id;
-                  const esBebidaActiva = bebidaSeleccionada?.id === p.id;
-                  const estaSeleccionadoEnMenu =
-                    esEntradaActiva || esSegundoActivo || esBebidaActiva;
+                    <div className="producto-info">
+                      <h3>{p.nombre}</h3>
+                      {p.descripcion && (
+                        <p className="descripcion-corta">{p.descripcion}</p>
+                      )}
 
-                  return (
-                    <div
-                      key={p.id}
-                      className={`producto-card ${estaSeleccionadoEnMenu ? "card-seleccionada-pro" : ""}`}
-                    >
-                      <div className="producto-imagen-wrapper">
-                        <img
-                          src={p.imagenUrl || "/placeholder-plato.png"}
-                          alt={p.nombre}
-                          loading="lazy"
-                        />
-                      </div>
-
-                      <div className="producto-info">
-                        <h3>{p.nombre}</h3>
-                        {p.descripcion && (
-                          <p className="descripcion-corta">{p.descripcion}</p>
-                        )}
-
+                      {/* 🌟 CAMBIO 3: Ocultamos el precio individual de la carta si estamos armando el Menú del Día */}
+                      {categoriaActual !== "Menú del Día" && (
                         <p className="precio">
                           S/ {Number(p.precio || 0).toFixed(2)}
                         </p>
+                      )}
 
-                        {categoriaActual === "Menú del Día" ? (
-                          <div className="contenedor-botones-pasos">
-                            {p.categoria?.toLowerCase() === "entradas" && (
-                              <button
-                                className="btn-agregar"
-                                onClick={() =>
-                                  setEntradaSeleccionada(
-                                    esEntradaActiva ? null : p,
-                                  )
-                                }
-                              >
-                                {esEntradaActiva ? "✓ Entrada Ok" : "+ Entrada"}
-                              </button>
-                            )}
-                            {(p.categoria?.toLowerCase() === "comidas" ||
-                              !p.categoria) && (
-                              <button
-                                className="btn-agregar"
-                                onClick={() =>
-                                  setSegundoSeleccionado(
-                                    esSegundoActivo ? null : p,
-                                  )
-                                }
-                              >
-                                {esSegundoActivo ? "✓ Segundo Ok" : "+ Segundo"}
-                              </button>
-                            )}
-                            {p.categoria?.toLowerCase() === "bebidas" && (
-                              <button
-                                className="btn-agregar"
-                                onClick={() =>
-                                  setBebidaSeleccionada(
-                                    esBebidaActiva ? null : p,
-                                  )
-                                }
-                              >
-                                {esBebidaActiva ? "✓ Bebida Ok" : "+ Bebida"}
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          <button
-                            className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
-                            onClick={() => agregarAlCarrito(p)}
-                            disabled={!p.disponible}
-                          >
-                            {p.disponible ? (
-                              <>
-                                <Plus size={18} />
-                                <span>Agregar</span>
-                              </>
-                            ) : (
-                              <span>Agotado</span>
-                            )}
-                          </button>
-                        )}
-                      </div>
+                      {categoriaActual === "Menú del Día" ? (
+                        <div className="contenedor-botones-pasos">
+                          {p.categoria?.toLowerCase() === "entradas" && (
+                            <button
+                              className="btn-agregar"
+                              onClick={() =>
+                                setEntradaSeleccionada(
+                                  esEntradaActiva ? null : p,
+                                )
+                              }
+                            >
+                              {esEntradaActiva ? "✓ Entrada Ok" : "+ Entrada"}
+                            </button>
+                          )}
+                          {(p.categoria?.toLowerCase() === "comidas" ||
+                            !p.categoria) && (
+                            <button
+                              className="btn-agregar"
+                              onClick={() =>
+                                setSegundoSeleccionado(
+                                  esSegundoActivo ? null : p,
+                                )
+                              }
+                            >
+                              {esSegundoActivo ? "✓ Segundo Ok" : "+ Segundo"}
+                            </button>
+                          )}
+                          {p.categoria?.toLowerCase() === "bebidas" && (
+                            <button
+                              className="btn-agregar"
+                              onClick={() =>
+                                setBebidaSeleccionada(esBebidaActiva ? null : p)
+                              }
+                            >
+                              {esBebidaActiva ? "✓ Bebida Ok" : "+ Bebida"}
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
+                          onClick={() => agregarAlCarrito(p)}
+                          disabled={!p.disponible}
+                        >
+                          {!p.disponible ? (
+                            <span>Agotado</span>
+                          ) : (
+                            <>
+                              <Plus size={18} />
+                              <span>Agregar</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-            </>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
