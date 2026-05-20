@@ -13,7 +13,28 @@ function LoginPin({ restauranteId, user, onConfirmar }) {
       validarPin(pin);
     }
   }, [pin]);
+  // ⌨️ Escuchador para desbloquear el teclado físico de la PC
+  React.useEffect(() => {
+    const manejarTecladoFisico = (evento) => {
+      if (verificando || pin.length >= 4) return;
 
+      const tecla = evento.key;
+
+      if (/^[0-9]$/.test(tecla)) {
+        controlarClickTeclado(tecla);
+      }
+      else if (tecla === "Backspace" || tecla.toLowerCase() === "c") {
+        controlarClickTeclado("C");
+      }
+    };
+
+    window.addEventListener("keydown", manejarTecladoFisico);
+
+    return () => {
+      window.removeEventListener("keydown", manejarTecladoFisico);
+    };
+  }, [pin, verificando]); 
+  
   const validarPin = async (pinAValidar) => {
     setVerificando(true);
     setError(null);
