@@ -1010,48 +1010,46 @@
   }
 }
 /* =============================================
-   12. CORRECCIÓN PROFESIONAL DE ALINEACIÓN PC
+   12. CONTROL MAESTRO PARA ESCRITORIO (PC)
    ============================================= */
 @media (min-width: 1024px) {
-  /* 1. Liberamos al contenedor padre para que no "comprima" el contenido */
-  .main-content {
-    padding: 20px 0px !important; /* Eliminamos el padding lateral de 20px que desalineaba todo */
-    max-width: 1140px !important; /* Ajustamos para que todo el bloque mantenga la misma línea */
+  
+  /* 1. Reset y centrado del contenedor padre principal */
+  .main-content, 
+  .admin-container {
+    max-width: 1140px !important;
     margin: 0 auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
   }
 
-  /* 2. Estandarizamos los bloques internos para que calcen exactos */
+  /* 2. Unificación de los bloques de contenido (Menú y Resumen) */
   .seccion-armar-menu,
-  .seguimiento-box {
+  .seguimiento-box,
+  .header-categoria {
     max-width: 1100px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 96% !important; /* Un poco de margen natural en pantallas ultra anchas */
+    width: 96% !important;
     box-sizing: border-box;
   }
 
-  /* 3. Ajustamos la grilla para que respete el mismo ancho centrado */
+  /* 3. Configuración estricta de la grilla para que sea un bloque perfecto de 3 columnas */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
-    padding: 20px 0px !important;
     max-width: 1100px !important;
     margin: 0 auto !important;
+    padding: 20px 0 !important;
     width: 96% !important;
   }
-  .admin-container {
-    max-width: 1100px !important;
-    margin: 0 auto !important;
-    padding-left: 0px !important;
-    padding-right: 0px !important;
-  }
 
-  /* Ajuste para que la cabecera del menú no se pegue a los bordes */
+  /* 4. Estilos visuales de cabecera en PC */
   .header-categoria {
     border-radius: var(--radius);
     margin-bottom: 20px;
     border: 1px solid var(--border);
   }
 }
-
