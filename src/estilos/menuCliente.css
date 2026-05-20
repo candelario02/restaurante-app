@@ -1040,4 +1040,18 @@
     margin: 0 auto !important;
     width: 96% !important;
   }
+  .admin-container {
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+
+  /* Ajuste para que la cabecera del menú no se pegue a los bordes */
+  .header-categoria {
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
 }
+
