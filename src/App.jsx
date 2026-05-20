@@ -235,6 +235,7 @@ function App() {
             </div>
             {user && restauranteId && isAdmin && operador && (
               <div className="nav-admin-tabs-horizontal">
+                {/* 👑 ADMINISTRADORES: Ven Menú y Usuarios */}
                 {(operador.rol === "admin" ||
                   operador.rol === "superadmin") && (
                   <>
@@ -252,23 +253,35 @@ function App() {
                     </button>
                   </>
                 )}
-                <button
-                  className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
-                  onClick={() => setSeccion("pedidos")}
-                >
-                  Pedidos{" "}
-                  {pedidosPendientes > 0 && (
-                    <span className="badge-notificacion">
-                      {pedidosPendientes}
-                    </span>
-                  )}
-                </button>
-                <button
-                  className={`btn-nav-tab ${seccion === "caja" ? "active" : ""}`}
-                  onClick={() => setSeccion("caja")}
-                >
-                  Caja
-                </button>
+
+                {/* 📋 MOZOS Y ADMINTRASTADORES: Ven Pedidos */}
+                {(operador.rol === "mozo" ||
+                  operador.rol === "admin" ||
+                  operador.rol === "superadmin") && (
+                  <button
+                    className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
+                    onClick={() => setSeccion("pedidos")}
+                  >
+                    Pedidos{" "}
+                    {pedidosPendientes > 0 && (
+                      <span className="badge-notificacion">
+                        {pedidosPendientes}
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {/* 💰 CAJEROS Y ADMINISTRADORES: Ven Caja */}
+                {(operador.rol === "cajero" ||
+                  operador.rol === "admin" ||
+                  operador.rol === "superadmin") && (
+                  <button
+                    className={`btn-nav-tab ${seccion === "caja" ? "active" : ""}`}
+                    onClick={() => setSeccion("caja")}
+                  >
+                    Caja
+                  </button>
+                )}
               </div>
             )}
           </div>
