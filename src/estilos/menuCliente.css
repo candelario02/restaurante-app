@@ -219,15 +219,13 @@
 
 .productos-grid-dos-columnas {
   display: grid;
-  grid-template-columns: repeat(
-    2,
-    1fr
-  ); /* Fuerza 2 columnas perfectas en celular */
-  gap: 12px;
-  padding: 10px;
+  /* 💻 En PC: Se calculan automáticamente cuántas tarjetas entran (mínimo 220px cada una) */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+  padding: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
-
 
 /* Ajustes específicos para las tarjetas dentro de las 2 columnas en celulares */
 @media (max-width: 480px) {
@@ -901,7 +899,6 @@
    11. RESPONSIVE (TODO LO DE CELULARES UNIFICADO)
    ============================================= */
 @media (max-width: 480px) {
-  
   /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
   /* Forzamos a que la grilla ocupe el 100% reduciendo márgenes y paddings laterales */
   .productos-grid-dos-columnas {
@@ -940,15 +937,15 @@
 
   /* ─── 3. TARJETAS DE PRODUCTOS (TU DISEÑO ORIGINAL) ─── */
   .productos-grid-dos-columnas .producto-card img {
-    height: 110px; 
+    height: 110px;
   }
 
   .productos-grid-dos-columnas .producto-info {
-    padding: 8px; 
+    padding: 8px;
   }
 
   .productos-grid-dos-columnas .producto-info h3 {
-    font-size: 0.9rem; 
+    font-size: 0.9rem;
     margin-bottom: 4px;
   }
 
