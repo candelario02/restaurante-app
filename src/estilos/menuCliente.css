@@ -900,9 +900,9 @@
    ============================================= */
 @media (max-width: 480px) {
 
-  /* ─── 0. LIBERACIÓN DE BORDES ABSOLUTA ─── */
-  /* Forzamos a que la vista principal del cliente suelte cualquier max-width o padding lateral */
-  body, html, #root, .view-principal, .admin-container {
+  /* ─── 0. LIBERACIÓN DE BORDES DE LA PANTALLA ─── */
+  /* Destruimos el padding de 20px de la clase padre (.main-content) y liberamos espacio */
+  body, html, #root, .main-content, .view-principal, .admin-container {
     padding-left: 0px !important;
     padding-right: 0px !important;
     margin-left: 0px !important;
@@ -913,39 +913,33 @@
     box-sizing: border-box;
   }
 
-  /* Anulamos paddings adicionales que puedan tener los contenedores directos en el cliente */
-  .view-principal > * {
-    max-width: 100% !important;
-    box-sizing: border-box;
-  }
-  
-  /* ─── 1. CONTROL DE ANCHO COMPLETO (TARJETAS) ─── */
-  /* Reducimos el padding de la grilla a solo 4px para exprimir el ancho del teléfono */
+  /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
+  /* Ahora que el padre está en 0px, la grilla se pegará de inmediato a los bordes */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
-    padding: 8px 4px !important; 
+    padding: 8px 6px !important; /* Margen mínimo estético para que casi peguen al borde del celular */
     width: 100% !important;
     box-sizing: border-box;
   }
 
-  /* Reducimos el espacio que ocupa el panel gris para que no asfixie a las tarjetas */
+  /* Ajustamos el cuadro gris para que respire un poquito de los bordes absolutos */
   .seccion-armar-menu {
     margin-top: 4px !important;
     margin-bottom: 10px !important;
     padding: 12px !important;
     width: auto !important; 
-    margin-left: 4px !important;
-    margin-right: 4px !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
     box-sizing: border-box;
   }
 
-  /* El título de la categoría más compacto y pegado */
+  /* El título de la categoría alineado milimétricamente con las tarjetas de abajo */
   .categoria-titulo {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
-    padding-left: 6px !important; 
+    padding-left: 8px !important; 
   }
 
   /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
