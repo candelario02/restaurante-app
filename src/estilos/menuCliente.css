@@ -1010,33 +1010,34 @@
   }
 }
 /* =============================================
-   12. AJUSTES EXCLUSIVOS PARA PC (ESCRITORIO)
+   12. CORRECCIÓN PROFESIONAL DE ALINEACIÓN PC
    ============================================= */
 @media (min-width: 1024px) {
-  /* Forzamos a que tanto la sección del menú como la grilla compartan exactamente el mismo ancho centrado */
+  /* 1. Liberamos al contenedor padre para que no "comprima" el contenido */
+  .main-content {
+    padding: 20px 0px !important; /* Eliminamos el padding lateral de 20px que desalineaba todo */
+    max-width: 1140px !important; /* Ajustamos para que todo el bloque mantenga la misma línea */
+    margin: 0 auto !important;
+  }
+
+  /* 2. Estandarizamos los bloques internos para que calcen exactos */
   .seccion-armar-menu,
-  .productos-grid-dos-columnas,
   .seguimiento-box {
-    max-width: 1100px !important; /* El ancho ideal para que no se estire de forma desproporcionada */
+    max-width: 1100px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 100% !important;
+    width: 96% !important; /* Un poco de margen natural en pantallas ultra anchas */
     box-sizing: border-box;
   }
 
-  /* Aseguramos que la grilla de productos mantenga sus 3 columnas bien estructuradas en este espacio */
+  /* 3. Ajustamos la grilla para que respete el mismo ancho centrado */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 20px !important;
-    padding: 20px 0px !important; /* Eliminamos el aire lateral para que pegue con el bloque de arriba */
-  }
-
-  /* Ajuste estético para el cuadro blanco superior en PC */
-  .seccion-armar-menu {
-    padding: 30px !important;
-    background-color: #ffffff !important;
-    border-radius: 16px !important;
-    box-shadow: var(--shadow-md) !important;
+    padding: 20px 0px !important;
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+    width: 96% !important;
   }
 }
