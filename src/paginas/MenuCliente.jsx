@@ -19,6 +19,7 @@ import {
   Coffee,
   Droplet,
   CheckCircle,
+  UtensilsCrossed,
 } from "lucide-react";
 
 // Servicios
@@ -581,6 +582,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               <Utensils size={60} className="icon-entradas" />
               <p>Entradas</p>
             </div>
+            <div
+              className="cat-item"
+              onClick={() => setCategoriaActual("Menú del Día")}
+            >
+              <UtensilsCrossed size={60} className="icon-menudia" />
+              <p>Menú del Día</p>
+            </div>
           </div>
         </div>
       )}
@@ -604,7 +612,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               <p>No hay productos disponibles en esta categoría por ahora.</p>
             </div>
           ) : (
-            /* ✨ CAMBIAMOS LA CLASE AQUÍ PARA LAS 2 COLUMNAS EN CELULAR */
             <div className="productos-grid-dos-columnas">
               {productosParaMostrar.map((p) => (
                 <div key={p.id} className="producto-card">

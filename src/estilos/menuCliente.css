@@ -114,6 +114,9 @@
 .icon-entradas {
   color: #ef476f !important;
 }
+.icon-menudia {
+  color: #4caf50 !important; 
+}
 
 .categorias-grid-principal > div:hover {
   transform: translateY(-8px);

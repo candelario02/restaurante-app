@@ -569,6 +569,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafetería</option>
+              <option value="Menú del Día">Menú del Día</option>
             </select>
             <textarea
               className="textarea-pro"
@@ -637,6 +638,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="Bebidas">Bebidas</option>
                   <option value="Entradas">Entradas</option>
                   <option value="Cafeteria">Cafetería</option>
+                  <option value="Menú del Día">Menú del Día</option>
                 </select>
               </div>
 
