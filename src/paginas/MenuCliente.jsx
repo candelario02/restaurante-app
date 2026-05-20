@@ -65,7 +65,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     useState(false);
   const [estrellas, setEstrellas] = useState(0);
   const [comentario, setComentario] = useState("");
-  const [total, setTotal] = useState(0);
+  //  CALCULO AUTOMÁTICO DEL TOTAL EN TIEMPO REAL
+  const total = useMemo(() => {
+    return carrito.reduce(
+      (acc, item) => acc + Number(item.precio || 0) * item.cantidad,
+      0,
+    );
+  }, [carrito]);
 
   // --- EFECTOS ---
 
@@ -245,11 +251,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }, 10);
 
     setCarrito((prev) => {
-      if (producto.isMenuCompleto) {
-        return [...prev, producto];
-      }
-
+      //Primero verificamos si YA EXISTE en el carrito por su ID único
       const existe = prev.find((item) => item.id === producto.id);
+
       if (existe) {
         return prev.map((item) =>
           item.id === producto.id
@@ -257,6 +261,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             : item,
         );
       }
+
+      // Si no existe y viene de la pantalla principal como Menú del Día nuevo
+      if (producto.isMenuCompleto) {
+        return [...prev, producto];
+      }
+
+      // Si no existe y es un plato a la carta normal
       return [...prev, { ...producto, cantidad: 1 }];
     });
   };
