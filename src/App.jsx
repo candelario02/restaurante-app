@@ -234,57 +234,7 @@ function App() {
                 </span>
               )}
             </div>
-            {user && restauranteId && isAdmin && operador && (
-              <div className="nav-admin-tabs-horizontal">
-                {/* 👑 ADMINISTRADORES: Ven Menú y Usuarios */}
-                {(operador.rol === "admin" ||
-                  operador.rol === "superadmin") && (
-                  <>
-                    <button
-                      className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
-                      onClick={() => setSeccion("menu")}
-                    >
-                      Menú
-                    </button>
-                    <button
-                      className={`btn-nav-tab ${seccion === "usuarios" ? "active" : ""}`}
-                      onClick={() => setSeccion("usuarios")}
-                    >
-                      Usuarios
-                    </button>
-                  </>
-                )}
-
-                {/* 📋 MOZOS Y ADMINTRASTADORES: Ven Pedidos */}
-                {(operador.rol === "mozo" ||
-                  operador.rol === "admin" ||
-                  operador.rol === "superadmin") && (
-                  <button
-                    className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
-                    onClick={() => setSeccion("pedidos")}
-                  >
-                    Pedidos{" "}
-                    {pedidosPendientes > 0 && (
-                      <span className="badge-notificacion">
-                        {pedidosPendientes}
-                      </span>
-                    )}
-                  </button>
-                )}
-
-                {/* 💰 CAJEROS Y ADMINISTRADORES: Ven Caja */}
-                {(operador.rol === "cajero" ||
-                  operador.rol === "admin" ||
-                  operador.rol === "superadmin") && (
-                  <button
-                    className={`btn-nav-tab ${seccion === "caja" ? "active" : ""}`}
-                    onClick={() => setSeccion("caja")}
-                  >
-                    Caja
-                  </button>
-                )}
-              </div>
-            )}
+            {/* 🚀 DEJAMOS SOLO ESTE BLOQUE CENTRALIZADO Y LIMPIO */}
             {user && restauranteId && isAdmin && operador && (
               <div className="nav-admin-tabs-horizontal">
                 {/* 👑 ADMINISTRADORES: Menú y Usuarios */}
@@ -306,7 +256,7 @@ function App() {
                 )}
 
                 {/* 📋 SECCIÓN: Pedidos */}
-                {PERMISOS_ROLES[operador.role || operador.rol]?.verPedidos && (
+                {PERMISOS_ROLES[operador.rol]?.verPedidos && (
                   <button
                     className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
                     onClick={() => setSeccion("pedidos")}
