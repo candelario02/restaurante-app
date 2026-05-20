@@ -901,22 +901,25 @@
 @media (max-width: 480px) {
 
   /* ─── 0. LIBERACIÓN DE BORDES DE LA PANTALLA ─── */
-  /* Forzamos a que el cuerpo y el contenedor principal eliminen cualquier aire lateral oculto */
-  body, html, #root, .admin-container {
+  /* Forzamos a que TODOS los contenedores padres suelten el aire lateral en celulares */
+  body, html, #root, .admin-container, .view-principal {
     padding-left: 0px !important;
     padding-right: 0px !important;
     margin-left: 0px !important;
     margin-right: 0px !important;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden;
+    box-sizing: border-box;
   }
   
   /* ─── 1. CONTROL DE ANCHO COMPLETO (SOLUCIÓN A LAS FOTOS) ─── */
-  /* Forzamos a que la grilla ocupe el 100% real reduciendo el padding lateral al mínimo */
+  /* Al estar libre el contenedor padre, la grilla ahora sí se pegará a los extremos izquierdo y derecho */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
-    padding: 8px 6px !important; /* Espaciado mínimo a los lados para estirar las tarjetas */
+    padding: 8px 6px !important; /* Espaciado mínimo a los lados para estirar las tarjetas al máximo */
     width: 100% !important;
     box-sizing: border-box;
   }
@@ -936,7 +939,7 @@
   .categoria-titulo {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
-    padding-left: 8px !important; /* Alineado con las tarjetas */
+    padding-left: 8px !important; /* Alineado perfectamente con las tarjetas */
   }
 
   /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
