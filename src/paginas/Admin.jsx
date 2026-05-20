@@ -774,10 +774,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                     <div className="items-pedido">
                       {p.items?.map((item, index) => (
-                        <p key={index} className="item-fila">
-                          <span className="cantidad">{item.cantidad}x</span>
-                          <span className="nombre">{item.nombre}</span>
-                        </p>
+                        <div key={index} style={{ marginBottom: "8px" }}>
+                          <p className="item-fila">
+                            <span className="cantidad">{item.cantidad}x</span>
+                            <span className="nombre">{item.nombre}</span>
+                          </p>
+
+                          {/* Muestra el desglose inteligente si es un Menú del Día */}
+                          {item.detalles && (
+                            <span className="detalles-menu-admin">
+                              🍲 E: {item.detalles.entrada} | 🍛 S:{" "}
+                              {item.detalles.segundo} | 🥤 B:{" "}
+                              {item.detalles.bebida}
+                            </span>
+                          )}
+                        </div>
                       ))}
                       <hr />
                       <p className="total-pedido">

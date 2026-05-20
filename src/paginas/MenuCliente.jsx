@@ -49,6 +49,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const [direccion, setDireccion] = useState("");
   const [tipoPedido, setTipoPedido] = useState("mesa");
   const [enviando, setEnviando] = useState(false);
+  // Modificaciones para el Menú del Día Inteligente
+  const [entradaSeleccionada, setEntradaSeleccionada] = useState(null);
+  const [segundoSeleccionado, setSegundoSeleccionado] = useState(null);
+  const [bebidaSeleccionada, setBebidaSeleccionada] = useState(null);
 
   // Seguimiento Realtime
   const [pedidoActivoId, setPedidoActivoId] = useState(
@@ -207,6 +211,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }, 10);
 
     setCarrito((prev) => {
+      if (producto.isMenuCompleto) {
+        return [...prev, producto];
+      }
+
       const existe = prev.find((item) => item.id === producto.id);
       if (existe) {
         return prev.map((item) =>
@@ -248,13 +256,27 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
 
-      const nuevosItems = carrito.map((item) => ({
-        id: item.id,
-        nombre: item.nombre,
-        precio: Number(item.precio),
-        cantidad: item.cantidad,
-        subtotal: Number(item.precio) * item.cantidad,
-      }));
+      // 🌟 MAPEO ACTUALIZADO CON CONDICIONAL INTELIGENTE PARA MENÚS
+      const nuevosItems = carrito.map((item) => {
+        const baseItem = {
+          id: item.id,
+          nombre: item.nombre,
+          precio: Number(item.precio),
+          cantidad: item.cantidad,
+          subtotal: Number(item.precio) * item.cantidad,
+        };
+
+        // Si el producto viene de la interfaz del menú del día, inyectamos los detalles elegidos
+        if (item.isMenuCompleto) {
+          baseItem.detalles = {
+            entrada: item.detalles?.entrada || "Ninguna",
+            segundo: item.detalles?.segundo || "",
+            bebida: item.detalles?.bebida || "Agua de cortesía",
+          };
+        }
+
+        return baseItem;
+      });
 
       const totalCalculado = nuevosItems.reduce(
         (acc, curr) => acc + curr.subtotal,
@@ -599,7 +621,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           <div className="header-categoria">
             <button
               className="btn-volver-minimal"
-              onClick={() => setCategoriaActual(null)}
+              onClick={() => {
+                setCategoriaActual(null);
+                setEntradaSeleccionada(null);
+                setSegundoSeleccionado(null);
+                setBebidaSeleccionada(null);
+              }}
             >
               <ArrowLeft size={18} /> Volver
             </button>
@@ -607,50 +634,183 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             <div className="header-categoria-spacer"></div>
           </div>
 
+          {/* Instrucción fija solo para la categoría Menú del Día */}
+          {categoriaActual === "Menú del Día" && (
+            <p className="descripcion-corta">
+              Seleccione su Segundo + Entrada + Bebida (Si no selecciona bebida,
+              incluye agua de cortesía gratis)
+            </p>
+          )}
+
           {productosParaMostrar.length === 0 ? (
             <div className="no-data">
               <p>No hay productos disponibles en esta categoría por ahora.</p>
             </div>
           ) : (
-            <div className="productos-grid-dos-columnas">
-              {productosParaMostrar.map((p) => (
-                <div key={p.id} className="producto-card">
-                  <div className="producto-imagen-wrapper">
-                    <img
-                      src={p.imagenUrl || "/placeholder-plato.png"}
-                      alt={p.nombre}
-                      loading="lazy"
-                    />
-                  </div>
-
-                  <div className="producto-info">
-                    <h3>{p.nombre}</h3>
-                    {p.descripcion && (
-                      <p className="descripcion-corta">{p.descripcion}</p>
-                    )}
-
-                    <p className="precio">
-                      S/ {Number(p.precio || 0).toFixed(2)}
-                    </p>
-
-                    <button
-                      className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
-                      onClick={() => agregarAlCarrito(p)}
-                      disabled={!p.disponible}
-                    >
-                      {p.disponible ? (
-                        <>
-                          <Plus size={18} />
-                          <span>Agregar</span>
-                        </>
+            <>
+              {/* Panel de pre-selección interactiva para el Menú del Día */}
+              {categoriaActual === "Menú del Día" && (
+                <div className="seccion-armar-menu">
+                  <h4>📋 Tu Menú Actual:</h4>
+                  <ul className="lista-resumen-menu">
+                    <li>
+                      <strong>• Entrada:</strong>{" "}
+                      {entradaSeleccionada ? (
+                        entradaSeleccionada.nombre
                       ) : (
-                        <span>Agotado</span>
+                        <span className="texto-vacio">
+                          No seleccionada (Ninguna)
+                        </span>
                       )}
-                    </button>
-                  </div>
+                    </li>
+                    <li>
+                      <strong>• Segundo:</strong>{" "}
+                      {segundoSeleccionado ? (
+                        segundoSeleccionado.nombre
+                      ) : (
+                        <span className="texto-requerido">Requerido *</span>
+                      )}
+                    </li>
+                    <li>
+                      <strong>• Bebida:</strong>{" "}
+                      {bebidaSeleccionada ? (
+                        bebidaSeleccionada.nombre
+                      ) : (
+                        <span className="texto-cortesia">
+                          Agua de cortesía (Gratis)
+                        </span>
+                      )}
+                    </li>
+                  </ul>
+
+                  <button
+                    className="btn-agregar"
+                    disabled={!segundoSeleccionado}
+                    onClick={() => {
+                      const itemMenu = {
+                        id: `menu_${Date.now()}`,
+                        nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
+                        precio: Number(productosParaMostrar[0]?.precio || 15),
+                        cantidad: 1,
+                        isMenuCompleto: true,
+                        detalles: {
+                          entrada: entradaSeleccionada
+                            ? entradaSeleccionada.nombre
+                            : "Ninguna",
+                          segundo: segundoSeleccionado.nombre,
+                          bebida: bebidaSeleccionada
+                            ? bebidaSeleccionada.nombre
+                            : "Agua de cortesía",
+                        },
+                      };
+
+                      agregarAlCarrito(itemMenu);
+
+                      setEntradaSeleccionada(null);
+                      setSegundoSeleccionado(null);
+                      setBebidaSeleccionada(null);
+                    }}
+                  >
+                    {segundoSeleccionado
+                      ? "➕ Agregar Menú al Carrito"
+                      : "⚠️ Selecciona un Segundo para añadir"}
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+
+              <div className="productos-grid-dos-columnas">
+                {productosParaMostrar.map((p) => {
+                  const esEntradaActiva = entradaSeleccionada?.id === p.id;
+                  const esSegundoActivo = segundoSeleccionado?.id === p.id;
+                  const esBebidaActiva = bebidaSeleccionada?.id === p.id;
+                  const estaSeleccionadoEnMenu =
+                    esEntradaActiva || esSegundoActivo || esBebidaActiva;
+
+                  return (
+                    <div
+                      key={p.id}
+                      className={`producto-card ${estaSeleccionadoEnMenu ? "card-seleccionada-pro" : ""}`}
+                    >
+                      <div className="producto-imagen-wrapper">
+                        <img
+                          src={p.imagenUrl || "/placeholder-plato.png"}
+                          alt={p.nombre}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      <div className="producto-info">
+                        <h3>{p.nombre}</h3>
+                        {p.descripcion && (
+                          <p className="descripcion-corta">{p.descripcion}</p>
+                        )}
+
+                        <p className="precio">
+                          S/ {Number(p.precio || 0).toFixed(2)}
+                        </p>
+
+                        {categoriaActual === "Menú del Día" ? (
+                          <div className="contenedor-botones-pasos">
+                            {p.categoria?.toLowerCase() === "entradas" && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setEntradaSeleccionada(
+                                    esEntradaActiva ? null : p,
+                                  )
+                                }
+                              >
+                                {esEntradaActiva ? "✓ Entrada Ok" : "+ Entrada"}
+                              </button>
+                            )}
+                            {(p.categoria?.toLowerCase() === "comidas" ||
+                              !p.categoria) && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setSegundoSeleccionado(
+                                    esSegundoActivo ? null : p,
+                                  )
+                                }
+                              >
+                                {esSegundoActivo ? "✓ Segundo Ok" : "+ Segundo"}
+                              </button>
+                            )}
+                            {p.categoria?.toLowerCase() === "bebidas" && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setBebidaSeleccionada(
+                                    esBebidaActiva ? null : p,
+                                  )
+                                }
+                              >
+                                {esBebidaActiva ? "✓ Bebida Ok" : "+ Bebida"}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
+                            onClick={() => agregarAlCarrito(p)}
+                            disabled={!p.disponible}
+                          >
+                            {p.disponible ? (
+                              <>
+                                <Plus size={18} />
+                                <span>Agregar</span>
+                              </>
+                            ) : (
+                              <span>Agotado</span>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}

@@ -252,7 +252,56 @@
     border-radius: 8px;
   }
 }
+/* =======================================================
+   NUEVO: PANEL INTERACTIVO PARA ARMAR EL MENÚ DEL DÍA
+   ======================================================= */
+.seccion-armar-menu {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
 
+.seccion-armar-menu h4 {
+  margin: 0 0 10px 0;
+  color: var(--text-main);
+}
+
+.lista-resumen-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.texto-requerido {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.texto-cortesia {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.texto-vacio {
+  color: #999;
+}
+
+.card-seleccionada-pro {
+  border: 2px solid var(--primary) !important;
+}
+
+.contenedor-botones-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 /* =============================================
    5. CARRITO (MODAL, ITEMS, BOTONES)
    ============================================= */
