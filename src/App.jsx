@@ -295,7 +295,6 @@ function App() {
                 {operador && (
                   <button
                     className="btn-nav-admin"
-                    style={{ background: "#e0e7ff", color: "#4f46e5" }}
                     onClick={() => setOperador(null)}
                   >
                     🔒 Cambiar Operador
