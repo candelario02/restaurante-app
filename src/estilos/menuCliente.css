@@ -1009,3 +1009,34 @@
     font-size: 1.1rem;
   }
 }
+/* =============================================
+   12. AJUSTES EXCLUSIVOS PARA PC (ESCRITORIO)
+   ============================================= */
+@media (min-width: 1024px) {
+  /* Forzamos a que tanto la sección del menú como la grilla compartan exactamente el mismo ancho centrado */
+  .seccion-armar-menu,
+  .productos-grid-dos-columnas,
+  .seguimiento-box {
+    max-width: 1100px !important; /* El ancho ideal para que no se estire de forma desproporcionada */
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Aseguramos que la grilla de productos mantenga sus 3 columnas bien estructuradas en este espacio */
+  .productos-grid-dos-columnas {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+    padding: 20px 0px !important; /* Eliminamos el aire lateral para que pegue con el bloque de arriba */
+  }
+
+  /* Ajuste estético para el cuadro blanco superior en PC */
+  .seccion-armar-menu {
+    padding: 30px !important;
+    background-color: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+}
