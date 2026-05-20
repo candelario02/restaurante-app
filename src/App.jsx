@@ -284,6 +284,52 @@ function App() {
                 )}
               </div>
             )}
+            {user && restauranteId && isAdmin && operador && (
+              <div className="nav-admin-tabs-horizontal">
+                {/* 👑 ADMINISTRADORES: Menú y Usuarios */}
+                {PERMISOS_ROLES[operador.rol]?.verUsuarios && (
+                  <>
+                    <button
+                      className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
+                      onClick={() => setSeccion("menu")}
+                    >
+                      Menú
+                    </button>
+                    <button
+                      className={`btn-nav-tab ${seccion === "usuarios" ? "active" : ""}`}
+                      onClick={() => setSeccion("usuarios")}
+                    >
+                      Usuarios
+                    </button>
+                  </>
+                )}
+
+                {/* 📋 SECCIÓN: Pedidos */}
+                {PERMISOS_ROLES[operador.role || operador.rol]?.verPedidos && (
+                  <button
+                    className={`btn-nav-tab ${seccion === "pedidos" ? "active" : ""}`}
+                    onClick={() => setSeccion("pedidos")}
+                  >
+                    Pedidos{" "}
+                    {pedidosPendientes > 0 && (
+                      <span className="badge-notificacion">
+                        {pedidosPendientes}
+                      </span>
+                    )}
+                  </button>
+                )}
+
+                {/* 💰 SECCIÓN: Caja */}
+                {PERMISOS_ROLES[operador.rol]?.verCaja && (
+                  <button
+                    className={`btn-nav-tab ${seccion === "caja" ? "active" : ""}`}
+                    onClick={() => setSeccion("caja")}
+                  >
+                    Caja
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <div className="nav-actions">
             {!user ? (
@@ -329,18 +375,11 @@ function App() {
                 onConfirmar={(datosEmpleado) => {
                   setOperador(datosEmpleado);
 
-                  {
-                    /* 🚀 SOLUCIÓN: Redirección automática según el rol que ponga el PIN */
-                  }
-                  if (datosEmpleado.rol === "mozo") {
-                    setSeccion("pedidos");
-                  } else if (datosEmpleado.rol === "cajero") {
-                    setSeccion("caja");
-                  } else if (
-                    ["admin", "superadmin"].includes(datosEmpleado.rol)
-                  ) {
-                    setSeccion("menu"); // O la sección que prefieras que abra el admin por defecto
-                  }
+                  // 🚀 Obtiene la sección por defecto de la matriz de configuración
+                  const seccionInicial =
+                    PERMISOS_ROLES[datosEmpleado.rol]?.seccionDefault ||
+                    "pedidos";
+                  setSeccion(seccionInicial);
                 }}
               />
             ) : (

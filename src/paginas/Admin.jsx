@@ -35,7 +35,33 @@ import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
-
+// 🔐 MATRIZ DE PERMISOS CENTRALIZADA PARA EL REGISTRO
+const PERMISOS_ROLES = {
+  mozo: {
+    verPedidos: true,
+    verCaja: false,
+    seccionDefault: "pedidos",
+  },
+  cajero: {
+    verPedidos: false, // 🔥 ¡Si mañana quieres que vea pedidos, solo cambias esto a true!
+    verCaja: true,
+    seccionDefault: "caja",
+  },
+  admin: {
+    verMenu: true,
+    verUsuarios: true,
+    verPedidos: true,
+    verCaja: true,
+    seccionDefault: "menu",
+  },
+  superadmin: {
+    verMenu: true,
+    verUsuarios: true,
+    verPedidos: true,
+    verCaja: true,
+    seccionDefault: "menu",
+  },
+};
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -1010,7 +1036,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 Seleccionar Rol
               </option>
               <option value="mozo">Mozo (Solo Pedidos)</option>
-              <option value="cajero">Cajero (Pedidos y Pagos)</option>
+              <option value="cajero">Cajero (Solo Caja)</option>
               <option value="admin">Administrador (Control Total)</option>
             </select>
 
