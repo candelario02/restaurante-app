@@ -317,6 +317,117 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* ==========================================================================
+   TARJETA MAESTRA: CONFIGURACIÓN EXCLUSIVA DEL MENÚ DEL DÍA
+   ========================================================================== */
+.tarjeta-control-menu-dia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.menu-dia-info-grupo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-dia-icono {
+  font-size: 20px;
+}
+
+.menu-dia-titulo {
+  margin: 0;
+  color: #334155;
+  font-weight: 600;
+}
+
+.menu-dia-subtitulo {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.menu-dia-controles-grupo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.menu-dia-precio-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.menu-dia-moneda {
+  font-weight: bold;
+  color: #475569;
+}
+
+.menu-dia-input-precio {
+  width: 80px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  text-align: center;
+  font-size: 14px;
+}
+
+.menu-dia-switch-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-dia-estado-texto {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.menu-dia-estado-texto.activo {
+  color: #10b981;
+}
+
+.menu-dia-estado-texto.apagado {
+  color: #ef4444;
+}
+
+.menu-dia-switch-btn {
+  width: 50px;
+  height: 26px;
+  border-radius: 13px;
+  background-color: #cbd5e1;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-dia-switch-btn.is-active {
+  background-color: #10b981;
+}
+
+.menu-dia-switch-bola {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-dia-switch-btn.is-active .menu-dia-switch-bola {
+  left: 27px;
+}
 
 /* =============================================
    3. SECCIÓN PEDIDOS

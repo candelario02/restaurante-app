@@ -35,7 +35,7 @@ import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
-// 🔐 MATRIZ DE PERMISOS CENTRALIZADA PARA EL REGISTRO
+// 🔐 MATRIZ DE PERMISOS CENTRALIZADA PARA EL REGISTRO de usarios
 export const PERMISOS_ROLES = {
   mozo: {
     verPedidos: true,
@@ -83,7 +83,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
   const [publicIdExistente, setPublicIdExistente] = useState(null);
   const [descripcion, setDescripcion] = useState("");
-
+  //estados opara el menu
+  const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
+  const [menuDiaActivo, setMenuDiaActivo] = useState(true);
   const fileInputRef = useRef(null);
 
   // cargar datos de bd
@@ -98,6 +100,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     let unsubProd = () => {};
     let unsubPed = () => {};
     let unsubUser = () => {};
+    let unsubConfig = () => {};
 
     try {
       // 1. PRODUCTOS
@@ -114,6 +117,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       if (isAdmin) {
         unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
+      const configRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "configuraciones",
+        "menu_dia",
+      );
+      unsubConfig = onSnapshot(configRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setMenuDiaPrecio(data.precio ?? 15);
+          setMenuDiaActivo(data.activo ?? false);
+        }
+      });
     } catch (error) {
       console.error("Error al suscribirse a Firebase:", error);
     }
@@ -122,9 +139,34 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubProd();
       unsubPed();
       unsubUser();
+      unsubConfig();
     };
   }, [restauranteId, rolUsuario, categoria]);
-  //PRODUCTOS
+  //Funcion de agregar menu del dia
+  const guardarConfigMenuDia = async (nuevoPrecio, nuevoEstado) => {
+    if (!restauranteId) return;
+    try {
+      const configRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "configuraciones",
+        "menu_dia",
+      );
+      await setDoc(
+        configRef,
+        {
+          precio: Number(nuevoPrecio),
+          activo: nuevoEstado,
+          ultimaActualizacion: new Date(),
+        },
+        { merge: true },
+      );
+    } catch (error) {
+      console.error("Error al guardar la configuración del menú:", error);
+    }
+  };
+  //Funcion PRODUCTOS
   const guardarProducto = async (e) => {
     e.preventDefault();
 
@@ -537,6 +579,56 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN MENÚ */}
       {seccion === "menu" && (
         <div className="admin-section">
+          {/* 🌟 BARRA DE CONTROL INTEGRADA (MOCKUP) - CLASES LIMPIAS */}
+          <div className="tarjeta-control-menu-dia">
+            <div className="menu-dia-info-grupo">
+              <span className="menu-dia-icono">⚙️</span>
+              <div>
+                <h4 className="menu-dia-titulo">Configuración Menú del Día</h4>
+                <p className="menu-dia-subtitulo">
+                  Control global de disponibilidad y costo
+                </p>
+              </div>
+            </div>
+
+            <div className="menu-dia-controles-grupo">
+              {/* Input Precio */}
+              <div className="menu-dia-precio-box">
+                <span className="menu-dia-moneda">S/</span>
+                <input
+                  type="number"
+                  className="menu-dia-input-precio"
+                  value={menuDiaPrecio}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setMenuDiaPrecio(v);
+                    guardarConfigMenuDia(v, menuDiaActivo);
+                  }}
+                />
+              </div>
+
+              {/* Switch Encendido/Apagado */}
+              <div className="menu-dia-switch-box">
+                <span
+                  className={`menu-dia-estado-texto ${menuDiaActivo ? "activo" : "apagado"}`}
+                >
+                  {menuDiaActivo ? "ACTIVO" : "APAGADO"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nuevoEstado = !menuDiaActivo;
+                    setMenuDiaActivo(nuevoEstado);
+                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
+                  }}
+                  className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
+                >
+                  <div className="menu-dia-switch-bola" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <h2 className="titulo-seccion">
             {editandoId ? "Editar Producto" : "Nuevo Plato"}
           </h2>
@@ -569,7 +661,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafetería</option>
-              <option value="Menú del Día">Menú del Día</option>
+              {/* 🌟 Eliminado "Menú del Día" de aquí para evitar mezclas */}
             </select>
             <textarea
               className="textarea-pro"
@@ -638,7 +730,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="Bebidas">Bebidas</option>
                   <option value="Entradas">Entradas</option>
                   <option value="Cafeteria">Cafetería</option>
-                  <option value="Menú del Día">Menú del Día</option>
+                  {/* 🌟 Eliminado "Menú del Día" de aquí también */}
                 </select>
               </div>
 

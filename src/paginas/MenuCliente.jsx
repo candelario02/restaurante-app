@@ -53,6 +53,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const [entradaSeleccionada, setEntradaSeleccionada] = useState(null);
   const [segundoSeleccionado, setSegundoSeleccionado] = useState(null);
   const [bebidaSeleccionada, setBebidaSeleccionada] = useState(null);
+  // 🌟 ESTADOS PARA CONECTAR EL CONTROL GLOBAL
+  const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
+  const [menuDiaActivo, setMenuDiaActivo] = useState(true);
 
   // Seguimiento Realtime
   const [pedidoActivoId, setPedidoActivoId] = useState(
@@ -80,7 +83,20 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     if (!restauranteId || restauranteId === "undefined") return;
 
     if (productos.length === 0) setCargando(true);
-
+    const configRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "configuraciones",
+      "menu_dia",
+    );
+    const unsubConfig = onSnapshot(configRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.precio !== undefined) setMenuDiaPrecio(Number(data.precio));
+        if (data.activo !== undefined) setMenuDiaActivo(data.activo);
+      }
+    });
     const productosRef = collection(
       db,
       "restaurantes",
@@ -107,7 +123,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       },
     );
 
-    return () => unsub();
+    return () => {
+      unsubConfig();
+      unsub();
+    };
   }, [restauranteId]);
   //Seguimeto para el contador regresivo
   useEffect(() => {
@@ -427,10 +446,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     };
     return etapas[estado] || 1;
   };
-  console.log("DEBUG LOGO:", {
-    recibido: logoRestaurante,
-    tipo: typeof logoRestaurante,
-  });
+
   return (
     <div className="admin-container">
       {/* Mensaje de aviso) */}
@@ -649,13 +665,15 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               <Utensils size={60} className="icon-entradas" />
               <p>Entradas</p>
             </div>
-            <div
-              className="cat-item"
-              onClick={() => setCategoriaActual("Menú del Día")}
-            >
-              <UtensilsCrossed size={60} className="icon-menudia" />
-              <p>Menú del Día</p>
-            </div>
+            {menuDiaActivo && (
+              <div
+                className="cat-item"
+                onClick={() => setCategoriaActual("Menú del Día")}
+              >
+                <UtensilsCrossed size={60} className="icon-menudia" />
+                <p>Menú del Día</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -729,7 +747,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   const itemMenu = {
                     id: `menu_${Date.now()}`,
                     nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
-                    precio: 15, // Precio fijo cerrado del menú completo
+                    precio: menuDiaPrecio, 
                     cantidad: 1,
                     isMenuCompleto: true,
                     detalles: {

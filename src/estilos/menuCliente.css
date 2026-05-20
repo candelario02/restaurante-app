@@ -115,7 +115,7 @@
   color: #ef476f !important;
 }
 .icon-menudia {
-  color: #4caf50 !important; 
+  color: #4caf50 !important;
 }
 
 .categorias-grid-principal > div:hover {
@@ -201,7 +201,10 @@
 
 .productos-grid-dos-columnas {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Fuerza 2 columnas perfectas en celular */
+  grid-template-columns: repeat(
+    2,
+    1fr
+  ); /* Fuerza 2 columnas perfectas en celular */
   gap: 12px;
   padding: 10px;
   width: 100%;
@@ -232,11 +235,12 @@
   }
 
   .productos-grid-dos-columnas .descripcion-corta {
-    font-size: 0.75rem; /* Descripción compacta estilo Roky's */
+    font-size: 0.75rem;
     color: #666;
     margin-bottom: 6px;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Corta el texto a 2 líneas máximo con puntos suspensivos si es muy largo */
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -535,27 +539,27 @@
 
 .seguimiento-box.tarjeta-def-oscura {
   width: 100%;
-  max-width: 800px !important; 
+  max-width: 800px !important;
   background: #0f172a !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
-  padding: 12px 20px !important; 
-  margin: -30px auto 20px auto !important; 
+  padding: 12px 20px !important;
+  margin: -30px auto 20px auto !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.4s ease-out;
   position: relative;
 }
 .seguimiento-box .titulo-categoria {
-  color: #ffffff !important; 
+  color: #ffffff !important;
 }
 .seguimiento-box .pedido-id-tag {
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.15) !important;
   display: inline-flex;
   align-items: center;
-  gap: 6px; 
+  gap: 6px;
   padding: 5px 12px;
   border-radius: 12px;
 }
@@ -568,7 +572,7 @@
 }
 
 .pedido-id-tag {
-  color: #f8fafc !important; 
+  color: #f8fafc !important;
   background: rgba(255, 255, 255, 0.15) !important;
   padding: 4px 10px;
   border-radius: 10px;
@@ -647,7 +651,7 @@
   top: -35px;
   left: 50%;
   transform: translateX(-50%);
-  background: #4f46e5; 
+  background: #4f46e5;
   color: white;
   font-size: 9px;
   padding: 3px 10px;
@@ -664,9 +668,15 @@
 }
 
 @keyframes pulse-blue {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 
 /* --- BOTONES Y TEXTOS --- */
