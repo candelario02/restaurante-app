@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { loginUsuario } from "../servicios/usuariosServicio";
 import { Lock, Mail, LogIn, ShieldAlert } from "lucide-react";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import "../estilos/login.css";
 
 function Login({ onClose, onSuccess, restauranteId }) {

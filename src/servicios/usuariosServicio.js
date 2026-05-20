@@ -9,7 +9,8 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 
-import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword ,signOut } from "firebase/auth";
+
 //registro usarios
 export const registrarUsuario = async (
   email,
