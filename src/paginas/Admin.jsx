@@ -877,23 +877,31 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     </div>
 
                     <div className="items-pedido">
-                      {p.items?.map((item, index) => (
-                        <div key={index} style={{ marginBottom: "8px" }}>
-                          <p className="item-fila">
-                            <span className="cantidad">{item.cantidad}x</span>
-                            <span className="nombre">{item.nombre}</span>
-                          </p>
+                      {p.items?.map((item, index) => {
+                        const safeItem = {
+                          ...item,
+                          detalles: item.detalles || null,
+                        };
 
-                          {/* Muestra el desglose inteligente si es un Menú del Día */}
-                          {item.detalles && (
-                            <span className="detalles-menu-admin">
-                              🍲 E: {item.detalles.entrada} | 🍛 S:{" "}
-                              {item.detalles.segundo} | 🥤 B:{" "}
-                              {item.detalles.bebida}
-                            </span>
-                          )}
-                        </div>
-                      ))}
+                        return (
+                          <div key={index} style={{ marginBottom: "8px" }}>
+                            <p className="item-fila">
+                              <span className="cantidad">
+                                {safeItem.cantidad}x
+                              </span>
+                              <span className="nombre">{safeItem.nombre}</span>
+                            </p>
+
+                            {safeItem.detalles && (
+                              <span className="detalles-menu-admin">
+                                🍲 E: {safeItem.detalles.entrada || "-"} | 🍛 S:{" "}
+                                {safeItem.detalles.segundo || "-"} | 🥤 B:{" "}
+                                {safeItem.detalles.bebida || "-"}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                       <hr />
                       <p className="total-pedido">
                         <strong>

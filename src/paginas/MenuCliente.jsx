@@ -279,24 +279,23 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }, 10);
 
     setCarrito((prev) => {
-      //Primero verificamos si YA EXISTE en el carrito por su ID único
-      const existe = prev.find((item) => item.id === producto.id);
+      const detalleKey = producto.isMenuCompleto
+        ? JSON.stringify(producto.detalles)
+        : "estandar";
+
+      const idUnico = `${producto.id}_${detalleKey}`;
+
+      const existe = prev.find((item) => item.idUnico === idUnico);
 
       if (existe) {
         return prev.map((item) =>
-          item.id === producto.id
+          item.idUnico === idUnico
             ? { ...item, cantidad: item.cantidad + 1 }
             : item,
         );
       }
 
-      // Si no existe y viene de la pantalla principal como Menú del Día nuevo
-      if (producto.isMenuCompleto) {
-        return [...prev, producto];
-      }
-
-      // Si no existe y es un plato a la carta normal
-      return [...prev, { ...producto, cantidad: 1 }];
+      return [...prev, { ...producto, idUnico, cantidad: 1 }];
     });
   };
   // Funcion restar al carrito
@@ -346,61 +345,44 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           datosPedidoRealtime = docSnap.data();
         }
       }
-
       // 3. Mapear productos del carrito actual
       const nuevosItems = carrito.map((item) => {
-        // Calculamos el precio base
         let precioTotalItem = Number(item.precio);
 
-        // Si tiene detalles y hay un precio adicional registrado en el detalle
+        // Si tiene detalles, sumamos el extra
         if (item.isMenuCompleto && item.detalles?.precioExtra) {
           precioTotalItem += Number(item.detalles.precioExtra);
         }
 
         return {
           id: item.id,
+          idUnico: item.idUnico, // Esto es vital para la fusión
           nombre: item.nombre,
-          precio: precioTotalItem, // Precio actualizado con el extra
+          precio: precioTotalItem,
           cantidad: item.cantidad,
           subtotal: precioTotalItem * item.cantidad,
-          ...(item.isMenuCompleto && {
-            detalles: {
-              entrada: item.detalles?.entrada || "Ninguna",
-              segundo: item.detalles?.segundo || "",
-              bebida: item.detalles?.bebida || "Agua de cortesía",
-            },
-          }),
+          detalles: item.detalles || null,
         };
       });
 
-      // Dentro de enviarPedidoFinal, reemplaza el bloque de la sección 4:
-
+      // 4. Lógica de fusión o creación
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        // Obtenemos los ítems existentes en Firebase
         const itemsFirebase = datosPedidoRealtime.items || [];
-
-        // Fusionamos: recorremos nuevosItems y los mezclamos en itemsFirebase
         const itemsFinales = [...itemsFirebase];
 
         nuevosItems.forEach((nuevoItem) => {
           const index = itemsFinales.findIndex((item) => {
-            // Condición de identidad estricta
-            const esMismoId = item.id === nuevoItem.id;
-            const esMismoDetalle =
-              JSON.stringify(item.detalles || {}) ===
-              JSON.stringify(nuevoItem.detalles || {});
-            return esMismoId && esMismoDetalle;
+            // Comparamos usando el idUnico que creamos en agregarAlCarrito
+            return item.idUnico === nuevoItem.idUnico;
           });
 
           if (index !== -1) {
-            // Actualizamos cantidad y subtotal del existente
             itemsFinales[index].cantidad += nuevoItem.cantidad;
             itemsFinales[index].subtotal =
               itemsFinales[index].cantidad * itemsFinales[index].precio;
           } else {
-            // Agregamos el nuevo ítem
             itemsFinales.push(nuevoItem);
           }
         });
@@ -412,7 +394,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             (acc, curr) => acc + (curr.subtotal || 0),
             0,
           ),
-          // Aseguramos que la fecha de actualización se mantenga o se actualice
           fechaActualizacion: new Date(),
         };
       } else {
