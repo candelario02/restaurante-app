@@ -365,39 +365,20 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         };
       });
 
-      // 4. Lógica de fusión o creación
+      // 4. Lógica de Actualización: El carrito local es el que manda
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        const itemsFirebase = datosPedidoRealtime.items || [];
-        const itemsFinales = [...itemsFirebase];
-
-        nuevosItems.forEach((nuevoItem) => {
-          const index = itemsFinales.findIndex((item) => {
-            // Comparamos usando el idUnico que creamos en agregarAlCarrito
-            return item.idUnico === nuevoItem.idUnico;
-          });
-
-          if (index !== -1) {
-            itemsFinales[index].cantidad += nuevoItem.cantidad;
-            itemsFinales[index].subtotal =
-              itemsFinales[index].cantidad * itemsFinales[index].precio;
-          } else {
-            itemsFinales.push(nuevoItem);
-          }
-        });
-
+        // ACTUALIZACIÓN: Sobrescribimos los items con el carrito actual
+        // Esto evita el problema de las sumas infinitas
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: itemsFinales,
-          total: itemsFinales.reduce(
-            (acc, curr) => acc + (curr.subtotal || 0),
-            0,
-          ),
+          items: nuevosItems,
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           fechaActualizacion: new Date(),
         };
       } else {
-        // Lógica para pedido nuevo (mantiene tu estructura original)
+        // PEDIDO NUEVO: Estructura inicial
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
