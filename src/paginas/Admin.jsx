@@ -1354,32 +1354,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </div>
         </div>
       )}
-      {/* solo para un sms de confirmacion */}
-      {mostrarConfirmarEliminar && (
-        <div className="custom-modal-overlay">
-          <div className="custom-modal-alert">
-            <div className="custom-modal-icon-warning">
-              <span>!</span>
-            </div>
-            <h2>¿Estás seguro?</h2>
-            <p>Este pedido se eliminará permanentemente de la cocina.</p>
-            <div className="custom-modal-botones">
-              <button
-                className="btn-modal-confirmar-danger"
-                onClick={() => eliminarPedidoCompleto(true)}
-              >
-                Sí, eliminar
-              </button>
-              <button
-                className="btn-modal-cancelar"
-                onClick={() => setMostrarConfirmarEliminar(false)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -245,7 +245,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       }
     };
 
-    // 🌟 AQUÍ ESTÁ EL CAMBIO: Cambiar cargarPedidoActive() por cargarPedidoActivo()
+    // 🌟 AQUÍ ESTÁ EL CAMBIO: Cambiar por cargarPedidoActivo()
     cargarPedidoActivo();
   }, [pedidoActivoId, restauranteId]);
   // 3. Temporizador Aviso
@@ -462,8 +462,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         idExistente,
       );
 
-      // 6. Sincronizar el carrito local con los datos limpios que se enviaron
-      setCarrito(nuevosItems);
+      // ==========================================================================
+      // 🌟 CAMBIO AQUÍ: Vaciar el carrito por completo tras el envío exitoso
+      // ==========================================================================
+      setCarrito([]); // 🛒 Limpia la interfaz local de React inmediatamente
 
       await Swal.fire({
         title: "¡Éxito!",
