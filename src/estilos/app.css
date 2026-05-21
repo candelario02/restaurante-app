@@ -217,10 +217,11 @@ body {
    5. CONTENIDO PRINCIPAL (MAIN)
    ============================================= */
 .main-content {
-  width: 100%;
-  max-width: 100% !important;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100% !important;
+  max-width: 100% !important; 
+  margin: 0 !important;       
+  padding: 20px !important;
+  box-sizing: border-box;
 }
 
 /* =============================================
@@ -386,32 +387,27 @@ body {
   }
 }
 /* =============================================
-   12. CONTROL TOTAL PARA ESCRITORIO (PC)
+/* =============================================
+   9. CONFIGURACIÓN FINAL PARA EXPANSIÓN TOTAL (PC)
    ============================================= */
 @media (min-width: 1024px) {
-  
-  /* Reset global: obligamos a que todo sea fluido */
-  .main-content, 
-  .admin-container, 
-  .view-principal,
-  .seccion-armar-menu,
-  .seguimiento-box,
-  .header-categoria,
-  .top-bar-container {
-    max-width: 1400px !important;
-    width: 95% !important;
-    margin: 0 auto !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-  }
 
-  /* Grillas: Ajuste automático */
-  .categorias-grid-principal,
-  .productos-grid-dos-columnas {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-    gap: 30px !important;
+  /* 1. Expandir el contenedor principal */
+  .main-content {
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-sizing: border-box;
+  }
+
+  /* 2. Expandir los contenedores internos y grillas */
+  .seccion-armar-menu, 
+  .categorias-grid-principal, 
+  .productos-grid-dos-columnas,
+  .seguimiento-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
 }
