@@ -485,6 +485,108 @@
   border-radius: 50%;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+/* ==========================================================================
+   ESTILOS PARA EL MODAL DE ADVERTENCIA AL MEDIO DE LA PANTALLA
+   ========================================================================== */
+
+/* 1. Fondo oscuro transparente que bloquea la pantalla de atrás */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Oscurece el fondo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* Para que flote por encima del carrito */
+}
+
+/* 2. La caja blanca del mensaje al centro */
+.custom-modal-alert {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 400px;
+  padding: 32px 24px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* 3. El círculo del signo de exclamación (!) */
+.custom-modal-icon-warning {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #f8bb86; /* Color naranja de SweetAlert */
+  border-radius: 50%;
+  margin: 0 auto 16px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-modal-icon-warning span {
+  color: #f8bb86;
+  font-size: 45px;
+  font-weight: bold;
+  font-family: sans-serif;
+}
+
+/* 4. Título y párrafo del mensaje */
+.custom-modal-alert h2 {
+  color: #595959;
+  font-size: 24px;
+  margin: 0 0 8px 0;
+}
+
+.custom-modal-alert p {
+  color: #797979;
+  font-size: 15px;
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+/* 5. Contenedor para alinear los dos botones abajo */
+.custom-modal-botones {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* 6. Botón Rojo: Sí, eliminar */
+.btn-modal-confirmar-danger {
+  background-color: #dc3545; /* Rojo */
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-modal-confirmar-danger:hover {
+  background-color: #bd2130;
+}
+
+/* 7. Botón Gris: Cancelar */
+.btn-modal-cancelar {
+  background-color: #6c757d; /* Gris */
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-modal-cancelar:hover {
+  background-color: #5a6268;
+}
 
 .btn-cerrar-x:hover {
   background-color: #fde8e8; /* Fondo sutil rojizo al pasar el mouse */

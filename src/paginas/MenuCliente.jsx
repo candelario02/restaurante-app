@@ -8,6 +8,7 @@ import {
   onSnapshot,
   collection,
   query,
+  deleteDoc,
   where,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
@@ -51,6 +52,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const [verCarrito, setVerCarrito] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [avisoAgregado, setAvisoAgregado] = useState(null);
+  const [mostrarConfirmarEliminar, setMostrarConfirmarEliminar] =
+    useState(false);
 
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
@@ -501,7 +504,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }, 10);
   };
   // funciond e eleiminar todo el pedido mientras esta pendiente
-  const eliminarPedidoCompleto = async () => {
+  const eliminarPedidoCompleto = async (confirmadoDesdeModal = false) => {
     if (!pedidoActivoId || !restauranteId) return;
 
     // Bloqueo de seguridad: Si ya está en cocina, no se puede cancelar así de fácil
@@ -515,10 +518,11 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       return;
     }
 
-    const confirmar = window.confirm(
-      "¿Estás seguro de que deseas cancelar y eliminar por completo todo este pedido?",
-    );
-    if (!confirmar) return;
+    // 🌟 CAMBIO: Si no viene confirmado desde el modal, solo mostramos el modal estético y frenamos aquí
+    if (!confirmadoDesdeModal) {
+      setMostrarConfirmarEliminar(true);
+      return;
+    }
 
     try {
       const pedidoRef = doc(
@@ -536,6 +540,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setCarrito([]);
       setPedidoActivoId(null);
       setDatosPedidoRealtime(null);
+      setVerCarrito(false); // Cerramos el carrito para limpiar la UI
+      setMostrarConfirmarEliminar(false); // Cerramos el modal de advertencia
 
       // 3. Destruimos el rastro en el almacenamiento del navegador
       localStorage.removeItem(`ultimoPedido_${restauranteId}`);
