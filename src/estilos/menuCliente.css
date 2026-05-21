@@ -1010,45 +1010,41 @@
   }
 }
 /* =============================================
-   12. CONTROL TOTAL Y ÚNICO PARA ESCRITORIO
+   12. CONTROL TOTAL Y FORZADO PARA ESCRITORIO
    ============================================= */
 @media (min-width: 1024px) {
   
-  /* Resetear restricciones de ancho en contenedores */
-  .main-content, 
-  .admin-container,
-  .view-principal {
-    max-width: 1140px !important;
-    margin: 0 auto !important;
-    padding: 20px 0 !important;
+  /* Forzamos a todos los contenedores principales a expandirse */
+  body, #root, .app-container, .main-content, .admin-container, .view-principal {
     width: 100% !important;
-  }
-
-  /* Liberar las categorías para que no se queden en 500px */
-  .categorias-grid-principal {
-    max-width: 1100px !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-  }
-
-  /* Unificar menú, grilla y la caja de seguimiento */
-  .seccion-armar-menu,
-  .header-categoria,
-  .productos-grid-dos-columnas {
-    max-width: 1100px !important;
+    max-width: 1140px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    width: 96% !important;
-    box-sizing: border-box;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
-  /* AMPLIACIÓN ESPECÍFICA PARA SEGUIMIENTO */
+  /* Categorías: quitamos cualquier restricción previa */
+  .categorias-grid-principal {
+    max-width: 1100px !important;
+    width: 100% !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    margin: 20px auto !important;
+  }
+
+  /* Bloques de menú, seguimiento y productos */
+  .seccion-armar-menu,
+  .header-categoria,
+  .productos-grid-dos-columnas,
   .seguimiento-box.tarjeta-def-oscura {
-    max-width: 1100px !important; /* Ahora ocupa lo mismo que el resto */
+    max-width: 1100px !important;
     width: 96% !important;
-    margin: -30px auto 20px auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
   }
 
-  /* Grilla de 3 productos fija en PC */
+  /* Grilla de productos: forzamos 3 columnas fijas */
   .productos-grid-dos-columnas {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
