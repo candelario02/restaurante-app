@@ -203,8 +203,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
   // Cargar el pedido activo en el carrito local al montar el componente
   useEffect(() => {
+    let cargadoEfectivo = false;
+
     const cargarPedidoActivo = async () => {
-      if (!pedidoActivoId || !restauranteId) return;
+      if (!pedidoActivoId || !restauranteId || cargadoEfectivo) return;
       try {
         const pedidoRef = doc(
           db,
@@ -221,19 +223,26 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               id: item.id,
               idUnico: item.idUnico,
               nombre: item.nombre,
-              precio: item.precio,
+              precio: Number(item.precio),
+              precioBase: Number(
+                item.detalles?.precioExtra
+                  ? item.precio - item.detalles.precioExtra
+                  : item.precio,
+              ),
               cantidad: item.cantidad,
-              detalles: item.detalles,
+              detalles: item.details || item.detalles,
               isMenuCompleto: !!item.detalles,
             }));
             setCarrito(itemsCarrito);
+            cargadoEfectivo = true;
           }
         }
       } catch (error) {
         console.error("Error cargando pedido activo:", error);
       }
     };
-    cargarPedidoActivo();
+
+    cargarPedidoActive();
   }, [pedidoActivoId, restauranteId]);
   // 3. Temporizador Aviso
   useEffect(() => {
@@ -295,7 +304,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return (
       <div className="loading-screen">Cargando menú del restaurante...</div>
     );
-
   // Funcion agregar al carrito
   const agregarAlCarrito = (producto) => {
     if (datosPedidoRealtime?.estado === "cocinando") {
@@ -314,12 +322,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }, 10);
 
     setCarrito((prev) => {
-      const detalleKey = producto.isMenuCompleto
-        ? JSON.stringify(producto.detalles)
-        : "estandar";
+      const detalleKey =
+        producto.isMenuCompleto && producto.detalles
+          ? `${producto.detalles.entradaId || "s"}_${producto.detalles.segundoId || "s"}_${producto.detalles.bebidaId || "s"}`
+          : "estandar";
 
       const idUnico = `${producto.id}_${detalleKey}`;
-
       const existe = prev.find((item) => item.idUnico === idUnico);
 
       if (existe) {
@@ -330,7 +338,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         );
       }
 
-      return [...prev, { ...producto, idUnico, cantidad: 1 }];
+      // Guardamos el precioBase original del producto (ej: Menú a S/. 15 o Plato Carta a S/. 18)
+      const precioBase = Number(producto.precioBase || producto.precio || 0);
+
+      return [...prev, { ...producto, idUnico, precioBase, cantidad: 1 }];
     });
   };
   // Funcion restar al carrito
@@ -350,6 +361,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   };
 
   // Funcion enviar pedido
+
   const enviarPedidoFinal = async (datosCliente = null) => {
     if (carrito.length === 0 || enviando) return;
 
@@ -376,61 +388,47 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         }
       }
 
-      // 3. Mapear productos del carrito actual
+      // 3. Mapear productos del carrito actual calculando precios dinámicos
       const nuevosItems = carrito.map((item) => {
-        let precioTotalItem = Number(item.precio);
+        // El precio base ya viene calculado de la selección, nos aseguramos de que sea Number
+        const precioBase = Number(item.precioBase || item.precio || 0);
+        let precioExtra = 0;
 
-        if (item.isMenuCompleto && item.detalles?.precioExtra) {
-          precioTotalItem += Number(item.detalles.precioExtra);
+        // Si es menú completo, sumamos los cargos extras de entrada o bebida seleccionada
+        if (item.isMenuCompleto && item.detalles) {
+          const extraEntrada = Number(item.detalles.entradaPrecioExtra || 0);
+          const extraBebida = Number(item.detalles.bebidaPrecioExtra || 0);
+          const extraGeneral = Number(item.detalles.precioExtra || 0);
+
+          precioExtra = extraEntrada + extraBebida + extraGeneral;
         }
+
+        const precioFinalItem = precioBase + precioExtra;
 
         return {
           id: item.id,
           idUnico: item.idUnico,
           nombre: item.nombre,
-          precio: precioTotalItem,
+          precio: precioFinalItem,
           cantidad: item.cantidad,
-          subtotal: precioTotalItem * item.cantidad,
+          subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
         };
       });
 
-      // 4. Lógica de fusión o creación
+      // 4. Lógica de Reemplazo Absoluto (Evita la duplicación y respeta borrados)
       let pedidoParaFirebase;
-      let itemsFusionados = []; // para luego actualizar el carrito local
 
       if (idExistente && datosPedidoRealtime) {
-        // ---- ACTUALIZACIÓN CON FUSIÓN (NO REEMPLAZO) ----
-        const itemsExistentes = datosPedidoRealtime.items || [];
-        const itemsMap = new Map();
-        itemsExistentes.forEach((item) => {
-          itemsMap.set(item.idUnico, { ...item });
-        });
-
-        nuevosItems.forEach((nuevoItem) => {
-          if (itemsMap.has(nuevoItem.idUnico)) {
-            const existente = itemsMap.get(nuevoItem.idUnico);
-            existente.cantidad += nuevoItem.cantidad;
-            existente.subtotal = existente.precio * existente.cantidad;
-            itemsMap.set(nuevoItem.idUnico, existente);
-          } else {
-            itemsMap.set(nuevoItem.idUnico, { ...nuevoItem });
-          }
-        });
-
-        itemsFusionados = Array.from(itemsMap.values());
-
+        // EN ACTUALIZACIÓN: El carrito local es la verdad absoluta. Reemplazamos la lista de ítems.
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: itemsFusionados,
-          total: itemsFusionados.reduce(
-            (acc, curr) => acc + (curr.subtotal || 0),
-            0,
-          ),
+          items: nuevosItems,
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           fechaActualizacion: new Date(),
         };
       } else {
-        // ---- PEDIDO NUEVO ----
+        // EN PEDIDO NUEVO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -444,40 +442,29 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           fecha: new Date(),
           restauranteId: restauranteId,
         };
-        itemsFusionados = nuevosItems; // para pedido nuevo también
       }
 
-      // 5. Enviar a Firebase
+      // 5. Enviar a Firebase usando tu servicio único
       const idNuevo = await gestionarPedido(
         restauranteId,
         pedidoParaFirebase,
         idExistente,
       );
 
-      // 6. Sincronizar carrito local con los items fusionados (para que no se pierda nada)
-      // Convertir itemsFusionados al formato del carrito (agregar propiedades que falten)
-      const carritoSincronizado = itemsFusionados.map((item) => ({
-        id: item.id,
-        idUnico: item.idUnico,
-        nombre: item.nombre,
-        precio: item.precio,
-        cantidad: item.cantidad,
-        detalles: item.detalles,
-        isMenuCompleto: !!item.detalles, // opcional, según tu lógica
-      }));
-      setCarrito(carritoSincronizado);
+      // 6. Sincronizar el carrito local con los datos limpios que se enviaron
+      setCarrito(nuevosItems);
 
       await Swal.fire({
         title: "¡Éxito!",
         text: idExistente
-          ? "Tu pedido ha sido actualizado."
+          ? "Tu pedido ha sido actualizado correctamente."
           : "Orden enviada con éxito.",
         icon: "success",
         timer: 2000,
         showConfirmButton: false,
       });
 
-      // 7. Limpiar modales (pero NO vaciar carrito si es actualización)
+      // 7. Limpiar estados de control de interfaz
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
@@ -844,20 +831,36 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-agregar"
                 disabled={!segundoSeleccionado}
                 onClick={() => {
+                  const precioExtraBebida = bebidaSeleccionada
+                    ? Number(bebidaSeleccionada.precio || 0)
+                    : 0;
+
+                  const precioCalculadoItem =
+                    Number(menuDiaPrecio) + precioExtraBebida;
+
                   const itemMenu = {
-                    id: `menu_${Date.now()}`,
+                    id: "producto_menu_dia",
                     nombre: `Menú del Día (${segundoSeleccionado.nombre})`,
-                    precio: menuDiaPrecio,
+                    precio: precioCalculadoItem,
+                    precioBase: Number(menuDiaPrecio),
                     cantidad: 1,
                     isMenuCompleto: true,
                     detalles: {
                       entrada: entradaSeleccionada
                         ? entradaSeleccionada.nombre
                         : "Ninguna",
+                      entradaId: entradaSeleccionada
+                        ? entradaSeleccionada.id
+                        : "ninguna",
                       segundo: segundoSeleccionado.nombre,
+                      segundoId: segundoSeleccionado.id,
                       bebida: bebidaSeleccionada
                         ? bebidaSeleccionada.nombre
                         : "Agua de cortesía",
+                      bebidaId: bebidaSeleccionada
+                        ? bebidaSeleccionada.id
+                        : "cortesia",
+                      bebidaPrecioExtra: precioExtraBebida,
                     },
                   };
 
@@ -869,7 +872,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 }}
               >
                 {segundoSeleccionado
-                  ? "➕ Agregar Menú al Carrito"
+                  ? `➕ Agregar Menú al Carrito (S/ ${(Number(menuDiaPrecio) + (bebidaSeleccionada ? Number(bebidaSeleccionada.precio || 0) : 0)).toFixed(2)})`
                   : "⚠️ Selecciona un Segundo para añadir"}
               </button>
             </div>

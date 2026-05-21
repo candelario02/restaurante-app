@@ -6,7 +6,7 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
-  getDoc 
+  getDoc,
 } from "firebase/firestore";
 // SOLUCIÓN ÚNICA: Maneja creación y actualización
 export const gestionarPedido = async (
@@ -23,14 +23,11 @@ export const gestionarPedido = async (
         "pedidos",
         pedidoId,
       );
-      await setDoc(
-        pedidoRef,
-        {
-          ...datosPedido,
-          fechaActualizacion: serverTimestamp(),
-        },
-        { merge: true },
-      );
+
+      await setDoc(pedidoRef, {
+        ...datosPedido,
+        fechaActualizacion: serverTimestamp(),
+      });
 
       return pedidoId;
     } else {
@@ -107,4 +104,3 @@ export const enviarResenaPedido = async (
     throw error;
   }
 };
-
