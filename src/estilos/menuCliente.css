@@ -442,7 +442,54 @@
   cursor: pointer;
   flex: 1;
 }
+/* ==========================================================================
+   BOTÓN NUEVO: Anulación total de la comanda en Firebase
+   ========================================================================== */
+.btn-eliminar-pedido {
+  width: 100%;
+  background-color: #dc3545; /* Rojo peligro */
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 12px; /* Separación respecto a la fila de arriba */
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
 
+.btn-eliminar-pedido:hover {
+  background-color: #bd2130; /* Rojo más oscuro al pasar el mouse */
+}
+
+.btn-eliminar-pedido:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   BOTÓN X: Cierre de la ventana modal
+   ========================================================================== */
+.btn-cerrar-x {
+  background: transparent;
+  border: none;
+  color: #dc3545; /* Letra roja */
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-cerrar-x:hover {
+  background-color: #fde8e8; /* Fondo sutil rojizo al pasar el mouse */
+  color: #bd2130;
+}
 .btn-pagar {
   background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
   color: white;

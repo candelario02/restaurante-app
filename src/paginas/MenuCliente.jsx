@@ -348,21 +348,28 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   // Funcion restar al carrito
   const restarAlCarrito = (idUnico) => {
     if (datosPedidoRealtime?.estado === "cocinando") return;
-    setCarrito((prev) =>
-      prev.map((item) =>
-        item.idUnico === idUnico && item.cantidad > 1
+
+    setCarrito((prev) => {
+      // Buscamos el producto en el carrito actual
+      const itemExistente = prev.find((item) => item.idUnico === idUnico);
+
+      if (!itemExistente) return prev;
+
+      // Si solo queda 1, lo filtramos (lo elimina por completo)
+      if (itemExistente.cantidad === 1) {
+        return prev.filter((item) => item.idUnico !== idUnico);
+      }
+
+      // Si hay más de 1, reducimos la cantidad en una unidad
+      return prev.map((item) =>
+        item.idUnico === idUnico
           ? { ...item, cantidad: item.cantidad - 1 }
           : item,
-      ),
-    );
-    // al llegar a 1 se elimine, descomenta:
-    setCarrito((prev) =>
-      prev.filter((item) => !(item.idUnico === idUnico && item.cantidad === 1)),
-    );
+      );
+    });
   };
 
-  // Funcion enviar pedido
-
+  // Funcion enviar pedido final
   const enviarPedidoFinal = async (datosCliente = null) => {
     if (carrito.length === 0 || enviando) return;
 
@@ -492,6 +499,96 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     setTimeout(() => {
       setAvisoAgregado(`- ${itemEliminado?.nombre} quitado`);
     }, 10);
+  };
+  // funciond e eleiminar todo el pedido mientras esta pendiente
+  const eliminarPedidoCompleto = async () => {
+    if (!pedidoActivoId || !restauranteId) return;
+
+    // Bloqueo de seguridad: Si ya está en cocina, no se puede cancelar así de fácil
+    if (
+      datosPedidoRealtime?.estado === "cocinando" ||
+      datosPedidoRealtime?.estado === "entregado"
+    ) {
+      alert(
+        "El pedido ya está en preparación o entregado. No se puede cancelar de forma directa.",
+      );
+      return;
+    }
+
+    const confirmar = window.confirm(
+      "¿Estás seguro de que deseas cancelar y eliminar por completo todo este pedido?",
+    );
+    if (!confirmar) return;
+
+    try {
+      const pedidoRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "pedidos",
+        pedidoActivoId,
+      );
+
+      // 1. Lo borramos de Firestore
+      await deleteDoc(pedidoRef);
+
+      // 2. Limpiamos todos los estados locales de la app
+      setCarrito([]);
+      setPedidoActivoId(null);
+      setDatosPedidoRealtime(null);
+
+      // 3. Destruimos el rastro en el almacenamiento del navegador
+      localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+
+      alert("Pedido cancelado y eliminado correctamente.");
+    } catch (error) {
+      console.error("Error al eliminar el pedido completo:", error);
+      alert("No se pudo eliminar el pedido. Inténtalo de nuevo.");
+    }
+  };
+  // Función para revertir cambios locales y recuperar lo que está en Firebase
+  const revertirCambiosPedido = async () => {
+    if (!pedidoActivoId || !restauranteId) {
+      setVerCarrito(false);
+      return;
+    }
+
+    try {
+      const pedidoRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "pedidos",
+        pedidoActivoId,
+      );
+      const docSnap = await getDoc(pedidoRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.items && data.items.length > 0) {
+          // Estructuramos los ítems tal como están en la base de datos
+          const itemsOriginales = data.items.map((item) => ({
+            id: item.id,
+            idUnico: item.idUnico,
+            nombre: item.nombre,
+            precio: Number(item.precio),
+            cantidad: item.cantidad,
+            detalles: item.detalles,
+            isMenuCompleto: !!item.detalles,
+          }));
+
+          // Restauramos el carrito al estado real de la cocina
+          setCarrito(itemsOriginales);
+        } else {
+          setCarrito([]);
+        }
+      }
+      // Cerramos el modal una vez restaurado
+      setVerCarrito(false);
+    } catch (error) {
+      console.error("Error al revertir cambios del pedido:", error);
+      setVerCarrito(false);
+    }
   };
   // Funcion para calificar
   const finalizarYCalificar = async (numEstrellas, texto) => {
@@ -1040,9 +1137,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   className="btn-agregar-cerrar"
                   onClick={() => {
                     if (pedidoActivoId) {
-                      setCarrito([]);
+                      revertirCambiosPedido(); // 🔄 Cambiado para que use la lógica de restaurar de Firebase
+                    } else {
+                      setVerCarrito(false);
                     }
-                    setVerCarrito(false);
                   }}
                 >
                   {pedidoActivoId ? "Cancelar Cambios" : "Seguir Comprando"}
@@ -1067,6 +1165,17 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       : "Confirmar Pedido"}
                 </button>
               </div>
+
+              {/* 🚨 BOTÓN NUEVO (Aparte, fuera de tu contenedor original para no romper tu diseño en fila) */}
+              {pedidoActivoId &&
+                datosPedidoRealtime?.estado === "pendiente" && (
+                  <button
+                    className="btn-eliminar-pedido"
+                    onClick={eliminarPedidoCompleto}
+                  >
+                    🗑️ Cancelar y Eliminar Todo el Pedido
+                  </button>
+                )}
             </div>
           </div>
         </div>
