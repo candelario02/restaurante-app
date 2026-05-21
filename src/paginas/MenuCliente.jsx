@@ -451,15 +451,20 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         showConfirmButton: false,
       });
 
-      // 7. Limpiar estados de control de interfaz
+     // 7. Limpiar estados de control de interfaz y guardar ID
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
 
+      // 🌟 PRIMERO: Guardamos el ID para que el tiempo real se active con el carrito lleno
       if (!idExistente && idNuevo) {
         setPedidoActivoId(idNuevo);
         localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
       }
+
+      // 🌟 SEGUNDO: Recién ahora vaciamos el carrito local
+      // Como el tiempo real ya se ejecutó con los datos, no te va a duplicar nada.
+      setCarrito([]); 
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
