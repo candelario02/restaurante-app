@@ -309,16 +309,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       ),
     );
   };
-  //funcion borra dell carrito
-  const eliminarDelCarrito = (id) => {
-    if (datosPedidoRealtime?.estado === "cocinando") return; // Bloqueo coherente
-    const itemEliminado = carrito.find((item) => item.id === id);
-    setCarrito((prev) => prev.filter((item) => item.id !== id));
-    setAvisoAgregado(null);
-    setTimeout(() => {
-      setAvisoAgregado(`- ${itemEliminado?.nombre} quitado`);
-    }, 10);
-  };
+
   // Funcion enviar pedido
   const enviarPedidoFinal = async (datosCliente = null) => {
     if (carrito.length === 0 || enviando) return;
@@ -365,20 +356,45 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         };
       });
 
-      // 4. Lógica de Actualización: El carrito local es el que manda
+      // 4. Lógica Profesional de Combinación para Restaurante
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        // ACTUALIZACIÓN: Sobrescribimos los items con el carrito actual
-        // Esto evita el problema de las sumas infinitas
+        // Obtenemos los platos que ya están cocinándose o pedidos en Firebase
+        const itemsAnteriores = datosPedidoRealtime.items || [];
+
+        // Creamos una copia profunda para manipular las cantidades
+        const itemsFusionados = [...itemsAnteriores];
+
+        nuevosItems.forEach((nuevoItem) => {
+          // Buscamos si el plato (o combinación de menú con el mismo idUnico) ya existe en la orden original
+          const index = itemsFusionados.findIndex(
+            (i) => i.idUnico === nuevoItem.idUnico,
+          );
+
+          if (index !== -1) {
+            // ¡AQUÍ ESTABA LA FUGA!: Sumamos la cantidad nueva a la que ya existía en Firebase
+            itemsFusionados[index].cantidad += nuevoItem.cantidad;
+            itemsFusionados[index].subtotal =
+              itemsFusionados[index].cantidad * itemsFusionados[index].precio;
+          } else {
+            // Si es un plato a la carta nuevo o una bebida extra, se agrega a la lista
+            itemsFusionados.push(nuevoItem);
+          }
+        });
+
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: nuevosItems,
-          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
+          items: itemsFusionados,
+          // Recalculamos el total general sumando todos los subtotales actualizados
+          total: itemsFusionados.reduce(
+            (acc, curr) => acc + Number(curr.subtotal || 0),
+            0,
+          ),
           fechaActualizacion: new Date(),
         };
       } else {
-        // PEDIDO NUEVO: Estructura inicial
+        // PEDIDO NUEVO: Estructura base para el primer envío del cliente
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -387,7 +403,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
-          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
+          total: nuevosItems.reduce(
+            (acc, curr) => acc + Number(curr.subtotal || 0),
+            0,
+          ),
           estado: "pendiente",
           fecha: new Date(),
           restauranteId: restauranteId,
@@ -430,7 +449,16 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setEnviando(false);
     }
   };
-
+  //funcion borra dell carrito
+  const eliminarDelCarrito = (id) => {
+    if (datosPedidoRealtime?.estado === "cocinando") return; // Bloqueo coherente
+    const itemEliminado = carrito.find((item) => item.id === id);
+    setCarrito((prev) => prev.filter((item) => item.id !== id));
+    setAvisoAgregado(null);
+    setTimeout(() => {
+      setAvisoAgregado(`- ${itemEliminado?.nombre} quitado`);
+    }, 10);
+  };
   // Funcion para calificar
   const finalizarYCalificar = async (numEstrellas, texto) => {
     if (!pedidoActivoId) return;
@@ -962,7 +990,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   className="btn-agregar-cerrar"
                   onClick={() => {
                     if (pedidoActivoId) {
-                      setCarrito([]);
+                      setCarrito([]); // Limpia el carrito local si cancela la adición
                     }
                     setVerCarrito(false);
                   }}
@@ -985,7 +1013,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   {enviando
                     ? "Enviando..."
                     : pedidoActivoId
-                      ? "🚀 Actualizar mi Pedido"
+                      ? "🚀 Añadir a mi Pedido Activo"
                       : "Confirmar Pedido"}
                 </button>
               </div>
