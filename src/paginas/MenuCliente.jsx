@@ -140,7 +140,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       unsub();
     };
   }, [restauranteId]);
-  //Seguimeto para el contador regresivo
+  
+  2; //Seguimeto para el contador regresivo
   useEffect(() => {
     let intervalo;
 
@@ -164,7 +165,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
   };
 
-  // 2. Seguimiento Realtime del Pedido Activo
+  // 3. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
   useEffect(() => {
     if (!pedidoActivoId || !restauranteId) {
       setDatosPedidoRealtime(null);
@@ -185,6 +186,23 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setDatosPedidoRealtime({ id: docSnap.id, ...data });
+          if (data.items && data.items.length > 0 && carrito.length === 0) {
+            const itemsCarrito = data.items.map((item) => ({
+              id: item.id,
+              idUnico: item.idUnico,
+              nombre: item.nombre,
+              precio: Number(item.precio),
+              precioBase: Number(
+                item.detalles?.precioExtra
+                  ? item.precio - item.detalles.precioExtra
+                  : item.precio,
+              ),
+              cantidad: item.cantidad,
+              detalles: item.details || item.detalles,
+              isMenuCompleto: !!item.detalles,
+            }));
+            setCarrito(itemsCarrito);
+          }
 
           // Si el pedido se marca como 'entregado' y no ha calificado, mostrar modal
           if (data.estado === "entregado" && !data.calificado) {
@@ -202,53 +220,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     );
 
     return () => unsubscribe();
-  }, [pedidoActivoId, restauranteId]);
+  }, [pedidoActivoId, restauranteId, carrito.length]);
 
-  // Cargar el pedido activo en el carrito local SOLO AL MONTAR O CAMBIAR DE RESTAURANTE
-  useEffect(() => {
-    let cargadoEfectivo = false;
-
-    const cargarPedidoActivo = async () => {
-      if (!pedidoActivoId || !restauranteId || cargadoEfectivo) return;
-      try {
-        const pedidoRef = doc(
-          db,
-          "restaurantes",
-          restauranteId,
-          "pedidos",
-          pedidoActivoId,
-        );
-        const docSnap = await getDoc(pedidoRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.items && data.items.length > 0) {
-            const itemsCarrito = data.items.map((item) => ({
-              id: item.id,
-              idUnico: item.idUnico,
-              nombre: item.nombre,
-              precio: Number(item.precio),
-              precioBase: Number(
-                item.detalles?.precioExtra
-                  ? item.precio - item.detalles.precioExtra
-                  : item.precio,
-              ),
-              cantidad: item.cantidad,
-              detalles: item.details || item.detalles,
-              isMenuCompleto: !!item.detalles,
-            }));
-            setCarrito(itemsCarrito);
-            cargadoEfectivo = true; // Bloquea sobreescrituras en caliente
-          }
-        }
-      } catch (error) {
-        console.error("Error cargando pedido activo:", error);
-      }
-    };
-
-    // 🌟 AQUÍ ESTÁ EL CAMBIO: Cambiar por cargarPedidoActivo()
-    cargarPedidoActivo();
-  }, [pedidoActivoId, restauranteId]);
-  // 3. Temporizador Aviso
+  // 4. Temporizador Aviso
   useEffect(() => {
     if (avisoAgregado) {
       const timer = setTimeout(() => setAvisoAgregado(null), 2000);
