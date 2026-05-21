@@ -201,7 +201,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return () => unsubscribe();
   }, [pedidoActivoId, restauranteId]);
 
-  // Cargar el pedido activo en el carrito local al montar el componente
+  // Cargar el pedido activo en el carrito local SOLO AL MONTAR O CAMBIAR DE RESTAURANTE
   useEffect(() => {
     let cargadoEfectivo = false;
 
@@ -234,7 +234,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               isMenuCompleto: !!item.detalles,
             }));
             setCarrito(itemsCarrito);
-            cargadoEfectivo = true;
+            cargadoEfectivo = true; // Bloquea sobreescrituras en caliente
           }
         }
       } catch (error) {
@@ -242,7 +242,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       }
     };
 
-    cargarPedidoActive();
+    // 🌟 AQUÍ ESTÁ EL CAMBIO: Cambiar cargarPedidoActive() por cargarPedidoActivo()
+    cargarPedidoActivo();
   }, [pedidoActivoId, restauranteId]);
   // 3. Temporizador Aviso
   useEffect(() => {
