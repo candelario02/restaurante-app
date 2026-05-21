@@ -451,7 +451,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         showConfirmButton: false,
       });
 
-     // 7. Limpiar estados de control de interfaz y guardar ID
+      // 7. Limpiar estados de control de interfaz y guardar ID
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
@@ -464,7 +464,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       // 🌟 SEGUNDO: Recién ahora vaciamos el carrito local
       // Como el tiempo real ya se ejecutó con los datos, no te va a duplicar nada.
-      setCarrito([]); 
+      setCarrito([]);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -751,10 +751,28 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       confirmButtonColor: "#4CAF50",
                     });
 
+                    // 🌟 CAMBIO DIRECTO AQUÍ EN TU IF:
                     if (isConfirmed) {
+                      // Cargamos los ítems actuales tal como lo tenías
                       setCarrito([...datosPedidoRealtime.items]);
-                      setVerCarrito(true);
+
+                      // CAMBIO 1: En lugar de true, lo ponemos en false para que el modal NO se abra en la cara
+                      setVerCarrito(false);
+
                       setCategoriaActual(null);
+
+                      // CAMBIO 2: Metemos el aviso guía tipo Toast arriba a la derecha para no interrumpir
+                      Swal.fire({
+                        title: "¡Modo Adicional Activo!",
+                        text: "Ya puedes agregar productos a tu orden actual desde las categorías.",
+                        icon: "success",
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true,
+                      });
+
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
