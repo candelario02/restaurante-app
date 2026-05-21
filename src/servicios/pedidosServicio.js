@@ -6,8 +6,8 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
+  getDoc 
 } from "firebase/firestore";
-
 // SOLUCIÓN ÚNICA: Maneja creación y actualización
 export const gestionarPedido = async (
   restauranteId,
