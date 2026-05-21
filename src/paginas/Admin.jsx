@@ -621,6 +621,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     const nuevoEstado = !menuDiaActivo;
                     setMenuDiaActivo(nuevoEstado);
                     guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
+
+                    // Feedback visual simple
+                    alert(
+                      nuevoEstado
+                        ? "Menú activado correctamente"
+                        : "Menú apagado",
+                    );
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >

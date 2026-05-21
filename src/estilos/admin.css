@@ -324,12 +324,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap; /* Esto permite que se acomode en móviles */
+  gap: 15px;      /* Espacio entre elementos */
   background-color: #f8f9fa;
   padding: 15px 20px;
   border-radius: 12px;
-  margin-bottom: 25px;
+  margin: 0 auto 25px auto; /* Centra la tarjeta en la página */
+  max-width: 600px;         /* Limita el ancho para que no se vea estirada */
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Ajuste específico para móviles */
+@media (max-width: 480px) {
+  .tarjeta-control-menu-dia {
+    justify-content: center; /* Centra los elementos cuando se envuelven */
+    text-align: center;
+  }
 }
 
 .menu-dia-info-grupo {
