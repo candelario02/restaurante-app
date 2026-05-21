@@ -697,18 +697,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             <div className="header-categoria-spacer"></div>
           </div>
 
-          {/* Instrucción fija solo para la categoría Menú del Día */}
-          {categoriaActual === "Menú del Día" && (
-            <p className="descripcion-corta">
-              Seleccione su Segundo + Entrada + Bebida (Si no selecciona bebida,
-              incluye agua de cortesía gratis)
-            </p>
-          )}
-
-          {/* 🌟 El panel superior se queda FIJO si es Menú del Día, sin importar si abajo hay 0 platos */}
           {categoriaActual === "Menú del Día" && (
             <div className="seccion-armar-menu">
-              {/* 🌟 PRECIO DINÁMICO: Integrado de manera limpia e intuitiva en la cabecera */}
+              {/* 🌟 Instrucción integrada */}
+              <p className="descripcion-corta">
+                Seleccione su Segundo + Entrada + Bebida (Si no selecciona
+                bebida, incluye agua de cortesía gratis)
+              </p>
+
               <div className="cabecera-armar-menu">
                 <h4>📋 Tu Menú Actual</h4>
                 <span className="badge-precio-menu">S/ {menuDiaPrecio}</span>

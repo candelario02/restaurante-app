@@ -653,7 +653,17 @@
   font-weight: 600;
   color: #94a3b8;
 }
-
+.descripcion-corta {
+  background-color: #f1f5f9; /* Un gris azulado muy suave */
+  border: 1px dashed #6366f1; /* Un borde punteado sugiere acción */
+  color: #334155;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 15px; /* Espacio para separar del título del menú */
+  text-align: center;
+  font-style: italic; /* La cursiva ayuda a diferenciarlo como instrucción */
+}
 /* --- CONTADOR Y ANIMACIÓN --- */
 .contador-espera {
   position: absolute;
