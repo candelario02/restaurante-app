@@ -842,6 +842,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <div className="grid-admin">
               {pedidos
                 .filter((p) => p.estado !== "entregado")
+                .filter(
+                  (value, index, self) =>
+                    index === self.findIndex((t) => t.id === value.id),
+                ) // <--- FILTRO DE SEGURIDAD PARA ID DUPLICADOS
                 .sort(
                   (a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0),
                 )
