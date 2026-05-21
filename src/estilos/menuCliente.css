@@ -656,15 +656,23 @@
   color: #94a3b8;
 }
 .descripcion-corta-titulo {
-  background-color: #f1f5f9; /* Un gris azulado muy suave */
-  border: 1px dashed #6366f1; /* Un borde punteado sugiere acción */
-  color: #334155;
-  padding: 10px;
+  background-color: #e0f2fe; /* Azul muy clarito */
+  border: 2px dashed #3b82f6; /* Borde azul más fuerte */
+  color: #1e3a8a;            /* Texto azul oscuro */
+  padding: 12px;
   border-radius: 8px;
-  font-size: 0.85rem;
-  margin-bottom: 15px; /* Espacio para separar del título del menú */
   text-align: center;
-  font-style: italic; /* La cursiva ayuda a diferenciarlo como instrucción */
+  font-weight: 600;
+  margin-bottom: 15px;
+  
+  /* Animación de palpitar */
+  animation: pulso 2s infinite;
+}
+
+@keyframes pulso {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
 }
 /* --- CONTADOR Y ANIMACIÓN --- */
 .contador-espera {
