@@ -140,7 +140,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       unsub();
     };
   }, [restauranteId]);
-  
+
   2; //Seguimeto para el contador regresivo
   useEffect(() => {
     let intervalo;
@@ -1263,9 +1263,64 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           </div>
         </div>
       )}
-      {/* ==========================================================================
-          1. MODAL DE ADVERTENCIA (¿Estás seguro?)
-          ========================================================================== */}
+      {/* SESION Modal de Calificación */}
+      {mostrarModalCalificacion && (
+        <div className="modal-overlay">
+          <div className="modal-content-calificacion">
+            <h3>¿Qué te pareció tu pedido?</h3>
+            <p className="subtitulo-modal">Tu opinión nos ayuda a mejorar</p>
+
+            <div className="estrellas-container">
+              {[1, 2, 3, 4, 5].map((num) => (
+                <span
+                  key={num}
+                  className="estrella-span"
+                  style={{
+                    color: num <= estrellas ? "#ffc107" : "#ccc",
+                    fontSize: "2.5rem",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setEstrellas(num)}
+                >
+                  {num <= estrellas ? "★" : "☆"}
+                </span>
+              ))}
+            </div>
+
+            <textarea
+              className="input-resena"
+              placeholder="Cuéntanos tu experiencia (opcional)..."
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              maxLength="200"
+            />
+
+            <div className="contenedor-botones-modal">
+              <button
+                className="btn-enviar-resena"
+                disabled={estrellas === 0 || enviando}
+                onClick={() => finalizarYCalificar(estrellas, comentario)}
+              >
+                {enviando ? "Guardando..." : "Enviar y Finalizar"}
+              </button>
+
+              <button
+                className="btn-omitir"
+                disabled={enviando}
+                onClick={() => {
+                  localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+                  setPedidoActivoId(null);
+                  setDatosPedidoRealtime(null);
+                  setMostrarModalCalificacion(false);
+                }}
+              >
+                Omitir por ahora
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL DE ADVERTENCIA (¿Estás seguro?)*/}
       {mostrarConfirmarEliminar && (
         <div className="custom-modal-overlay">
           <div className="custom-modal-alert">
@@ -1292,9 +1347,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         </div>
       )}
 
-      {/* ==========================================================================
-          2. MODAL DE ÉXITO VERDE (Pedido Cancelado con Éxito)
-          ========================================================================== */}
+      {/*MODAL DE ÉXITO VERDE (Pedido Cancelado con Éxito) */}
       {mostrarExitoEliminar && (
         <div className="custom-modal-overlay">
           <div className="custom-modal-alert">
