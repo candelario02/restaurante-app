@@ -4,8 +4,9 @@
 .admin-container {
   padding: 20px;
   animation: fadeIn 0.4s ease;
-  max-width: 1000px;
-  margin: 0 auto;
+  /* Borra las líneas de max-width y margin */
+  width: 100%; 
+  box-sizing: border-box;
 }
 
 .admin-section {
