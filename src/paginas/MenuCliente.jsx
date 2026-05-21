@@ -165,7 +165,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
   };
 
-  // 3. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
+  // 3. SEGUIMIENTO REALTIME DEL PEDIDO ACTIVO (SOLO ESTADO Y MODAL)
   useEffect(() => {
     if (!pedidoActivoId || !restauranteId) {
       setDatosPedidoRealtime(null);
@@ -186,30 +186,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setDatosPedidoRealtime({ id: docSnap.id, ...data });
-          if (data.items && data.items.length > 0 && carrito.length === 0) {
-            const itemsCarrito = data.items.map((item) => ({
-              id: item.id,
-              idUnico: item.idUnico,
-              nombre: item.nombre,
-              precio: Number(item.precio),
-              precioBase: Number(
-                item.detalles?.precioExtra
-                  ? item.precio - item.detalles.precioExtra
-                  : item.precio,
-              ),
-              cantidad: item.cantidad,
-              detalles: item.details || item.detalles,
-              isMenuCompleto: !!item.detalles,
-            }));
-            setCarrito(itemsCarrito);
-          }
-
-          // Si el pedido se marca como 'entregado' y no ha calificado, mostrar modal
           if (data.estado === "entregado" && !data.calificado) {
             setMostrarModalCalificacion(true);
           }
         } else {
-          // Si el pedido no existe (fue borrado), limpiamos
           setPedidoActivoId(null);
           localStorage.removeItem(`ultimoPedido_${restauranteId}`);
         }
@@ -220,7 +200,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     );
 
     return () => unsubscribe();
-  }, [pedidoActivoId, restauranteId, carrito.length]);
+  }, [pedidoActivoId, restauranteId]);
 
   // 4. Temporizador Aviso
   useEffect(() => {
@@ -397,7 +377,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           precio: precioFinalItem,
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
-          detalles: item.detalles || null,
+          detalles: item.detalles || item.descripcion || item.nota || null,
         };
       });
 
@@ -451,7 +431,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         showConfirmButton: false,
       });
 
-     // 7. Limpiar estados de control de interfaz y guardar ID
+      // 7. Limpiar estados de control de interfaz y guardar ID
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
@@ -464,7 +444,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       // 🌟 SEGUNDO: Recién ahora vaciamos el carrito local
       // Como el tiempo real ya se ejecutó con los datos, no te va a duplicar nada.
-      setCarrito([]); 
+      setCarrito([]);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -751,10 +731,28 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       confirmButtonColor: "#4CAF50",
                     });
 
+                    // 🌟 CAMBIO DIRECTO AQUÍ EN TU IF:
                     if (isConfirmed) {
+                      // Cargamos los ítems actuales tal como lo tenías
                       setCarrito([...datosPedidoRealtime.items]);
-                      setVerCarrito(true);
+
+                      // CAMBIO 1: En lugar de true, lo ponemos en false para que el modal NO se abra en la cara
+                      setVerCarrito(false);
+
                       setCategoriaActual(null);
+
+                      // CAMBIO 2: Metemos el aviso guía tipo Toast arriba a la derecha para no interrumpir
+                      Swal.fire({
+                        title: "¡Modo Adicional Activo!",
+                        text: "Ya puedes agregar productos a tu orden actual desde las categorías.",
+                        icon: "success",
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true,
+                      });
+
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
@@ -1123,7 +1121,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   className="btn-agregar-cerrar"
                   onClick={() => {
                     if (pedidoActivoId) {
-                      revertirCambiosPedido(); // 🔄 Cambiado para que use la lógica de restaurar de Firebase
+                      revertirCambiosPedido();
                     } else {
                       setVerCarrito(false);
                     }
