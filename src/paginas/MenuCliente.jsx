@@ -8,7 +8,6 @@ import {
   onSnapshot,
   collection,
   query,
-  deleteDoc,
   where,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
@@ -507,7 +506,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const eliminarPedidoCompleto = async (confirmadoDesdeModal = false) => {
     if (!pedidoActivoId || !restauranteId) return;
 
-    // Bloqueo de seguridad: Si ya está en cocina, no se puede cancelar así de fácil
     if (
       datosPedidoRealtime?.estado === "cocinando" ||
       datosPedidoRealtime?.estado === "entregado"
@@ -518,7 +516,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       return;
     }
 
-    // 🌟 CAMBIO: Si no viene confirmado desde el modal, solo mostramos el modal estético y frenamos aquí
     if (!confirmadoDesdeModal) {
       setMostrarConfirmarEliminar(true);
       return;
@@ -533,23 +530,25 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         pedidoActivoId,
       );
 
-      // 1. Lo borramos de Firestore
-      await deleteDoc(pedidoRef);
+      await updateDoc(pedidoRef, {
+        estado: "cancelado",
+        canceladoPor: "cliente",
+        fechaCancelacion: new Date(),
+      });
 
-      // 2. Limpiamos todos los estados locales de la app
       setCarrito([]);
       setPedidoActivoId(null);
       setDatosPedidoRealtime(null);
-      setVerCarrito(false); // Cerramos el carrito para limpiar la UI
-      setMostrarConfirmarEliminar(false); // Cerramos el modal de advertencia
 
-      // 3. Destruimos el rastro en el almacenamiento del navegador
+      setVerCarrito(false); 
+      setMostrarConfirmarEliminar(false); 
+
       localStorage.removeItem(`ultimoPedido_${restauranteId}`);
 
-      alert("Pedido cancelado y eliminado correctamente.");
+      alert("Pedido cancelado correctamente.");
     } catch (error) {
       console.error("Error al eliminar el pedido completo:", error);
-      alert("No se pudo eliminar el pedido. Inténtalo de nuevo.");
+      alert("No se pudo cancelar el pedido. Inténtalo de nuevo.");
     }
   };
   // Función para revertir cambios locales y recuperar lo que está en Firebase
