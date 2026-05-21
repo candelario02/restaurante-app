@@ -218,7 +218,7 @@ body {
    ============================================= */
 .main-content {
   width: 100%;
-  max-width: 100%;
+  max-width: 100% !important;
   margin: 0 auto;
   padding: 20px;
 }
@@ -390,31 +390,28 @@ body {
    ============================================= */
 @media (min-width: 1024px) {
   
-  /* 1. Asegurar que contenedores principales no tengan límites de 1100px/1200px */
+  /* Reset global: obligamos a que todo sea fluido */
   .main-content, 
-  .admin-container,
-  .view-principal {
-    max-width: 1600px !important; /* Puedes subirlo a 1600px o 100% */
-    width: 95% !important;        /* Ocupa el 95% del ancho de pantalla */
+  .admin-container, 
+  .view-principal,
+  .seccion-armar-menu,
+  .seguimiento-box,
+  .header-categoria,
+  .top-bar-container {
+    max-width: 1400px !important;
+    width: 95% !important;
     margin: 0 auto !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
   }
 
-  /* 2. Ajuste automático para el Grid de Categorías y Productos */
-  /* Quitamos el max-width fijo y dejamos que el grid decida */
+  /* Grillas: Ajuste automático */
   .categorias-grid-principal,
   .productos-grid-dos-columnas {
-    max-width: 100% !important;
-    width: 100% !important;
-    /* Ajuste mágico: Las tarjetas se adaptan solas, mínimo 250px, máximo 1fr */
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-    gap: 25px !important;
     display: grid !important;
-  }
-
-  /* 3. Ajuste para tarjetas de menú */
-  .seccion-armar-menu,
-  .seguimiento-box {
-    max-width: 100% !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 30px !important;
     width: 100% !important;
+    max-width: 100% !important;
   }
 }
