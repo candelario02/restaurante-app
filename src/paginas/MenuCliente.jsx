@@ -53,6 +53,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const [avisoAgregado, setAvisoAgregado] = useState(null);
   const [mostrarConfirmarEliminar, setMostrarConfirmarEliminar] =
     useState(false);
+  const [mostrarExitoEliminar, setMostrarExitoEliminar] = useState(false);
 
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
@@ -510,9 +511,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       datosPedidoRealtime?.estado === "cocinando" ||
       datosPedidoRealtime?.estado === "entregado"
     ) {
-      alert(
-        "El pedido ya está en preparación o entregado. No se puede cancelar de forma directa.",
-      );
+      // Nota: Si tienes un modal de error general puedes usarlo aquí, por ahora manejamos el flujo principal
       return;
     }
 
@@ -536,19 +535,20 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         fechaCancelacion: new Date(),
       });
 
+      // Limpieza total del carrito e interfaz
       setCarrito([]);
       setPedidoActivoId(null);
       setDatosPedidoRealtime(null);
 
-      setVerCarrito(false); 
-      setMostrarConfirmarEliminar(false); 
+      setVerCarrito(false);
+      setMostrarConfirmarEliminar(false);
 
       localStorage.removeItem(`ultimoPedido_${restauranteId}`);
 
-      alert("Pedido cancelado correctamente.");
+      // 🌟 ACTIVAMOS EL MODAL DE ÉXITO ESTÉTICO
+      setMostrarExitoEliminar(true);
     } catch (error) {
       console.error("Error al eliminar el pedido completo:", error);
-      alert("No se pudo cancelar el pedido. Inténtalo de nuevo.");
     }
   };
   // Función para revertir cambios locales y recuperar lo que está en Firebase
@@ -1287,58 +1287,55 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           </div>
         </div>
       )}
-      {/* SESION Modal de Calificación */}
-      {mostrarModalCalificacion && (
-        <div className="modal-overlay">
-          <div className="modal-content-calificacion">
-            <h3>¿Qué te pareció tu pedido?</h3>
-            <p className="subtitulo-modal">Tu opinión nos ayuda a mejorar</p>
-
-            <div className="estrellas-container">
-              {[1, 2, 3, 4, 5].map((num) => (
-                <span
-                  key={num}
-                  className="estrella-span"
-                  style={{
-                    color: num <= estrellas ? "#ffc107" : "#ccc",
-                    fontSize: "2.5rem",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setEstrellas(num)}
-                >
-                  {num <= estrellas ? "★" : "☆"}
-                </span>
-              ))}
+      {/* ==========================================================================
+          1. MODAL DE ADVERTENCIA (¿Estás seguro?)
+          ========================================================================== */}
+      {mostrarConfirmarEliminar && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-alert">
+            <div className="custom-modal-icon-warning">
+              <span>!</span>
             </div>
-
-            <textarea
-              className="input-resena"
-              placeholder="Cuéntanos tu experiencia (opcional)..."
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-              maxLength="200"
-            />
-
-            <div className="contenedor-botones-modal">
+            <h2>¿Estás seguro?</h2>
+            <p>Este pedido se eliminará permanentemente de la cocina.</p>
+            <div className="custom-modal-botones">
               <button
-                className="btn-enviar-resena"
-                disabled={estrellas === 0 || enviando}
-                onClick={() => finalizarYCalificar(estrellas, comentario)}
+                className="btn-modal-confirmar-danger"
+                onClick={() => eliminarPedidoCompleto(true)}
               >
-                {enviando ? "Guardando..." : "Enviar y Finalizar"}
+                Sí, eliminar
               </button>
-
               <button
-                className="btn-omitir"
-                disabled={enviando}
-                onClick={() => {
-                  localStorage.removeItem(`ultimoPedido_${restauranteId}`);
-                  setPedidoActivoId(null);
-                  setDatosPedidoRealtime(null);
-                  setMostrarModalCalificacion(false);
-                }}
+                className="btn-modal-cancelar"
+                onClick={() => setMostrarConfirmarEliminar(false)}
               >
-                Omitir por ahora
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================================
+          2. MODAL DE ÉXITO VERDE (Pedido Cancelado con Éxito)
+          ========================================================================== */}
+      {mostrarExitoEliminar && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-alert">
+            <div className="custom-modal-icon-success">
+              <span>✓</span>
+            </div>
+            <h2>¡Cancelado!</h2>
+            <p>
+              Tu pedido ha sido cancelado y el carrito se ha vaciado
+              correctamente.
+            </p>
+            <div className="custom-modal-botones">
+              <button
+                className="btn-modal-entendido"
+                onClick={() => setMostrarExitoEliminar(false)}
+              >
+                Entendido
               </button>
             </div>
           </div>

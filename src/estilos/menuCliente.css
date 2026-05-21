@@ -587,6 +587,40 @@
 .btn-modal-cancelar:hover {
   background-color: #5a6268;
 }
+/* Icono circular de éxito (Verde) */
+.custom-modal-icon-success {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #a5dc86;
+  border-radius: 50%;
+  margin: 0 auto 16px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.custom-modal-icon-success span {
+  color: #a5dc86;
+  font-size: 40px;
+  font-weight: bold;
+}
+
+/* Botón de éxito final */
+.btn-modal-entendido {
+  background-color: #7cd1f9;
+  color: white;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-modal-entendido:hover {
+  background-color: #5ec0ea;
+}
 
 .btn-cerrar-x:hover {
   background-color: #fde8e8; /* Fondo sutil rojizo al pasar el mouse */
