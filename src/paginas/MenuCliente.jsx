@@ -319,7 +319,19 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setEnviando(true);
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
-
+      if (idExistente) {
+        const docRef = doc(
+          db,
+          "restaurantes",
+          restauranteId,
+          "pedidos",
+          idExistente,
+        );
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          datosPedidoRealtime = docSnap.data(); // Forzamos la actualización de la variable
+        }
+      }
       // 🌟 MAPEO ACTUALIZADO CON CONDICIONAL INTELIGENTE PARA MENÚS
       const nuevosItems = carrito.map((item) => {
         const baseItem = {
@@ -350,10 +362,19 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
+        const itemsAntiguos = datosPedidoRealtime.items || [];
+
+        const itemsFusionados = [...itemsAntiguos, ...nuevosItems];
+
+        const totalFusionado = itemsFusionados.reduce(
+          (acc, curr) => acc + curr.subtotal,
+          0,
+        );
+
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: nuevosItems,
-          total: totalCalculado,
+          items: itemsFusionados,
+          total: totalFusionado,
           estado: "pendiente",
         };
       } else {
@@ -701,7 +722,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             <div className="seccion-armar-menu">
               {/* 🌟 Instrucción integrada */}
               <p className="descripcion-corta-titulo">
-                Arma tu menú: Selecciona 1 Segundo + 1 Entrada + 1 Bebida. (Si prefieres no elegir bebida, incluye refresco del dia gratis).
+                Arma tu menú: Selecciona 1 Segundo + 1 Entrada + 1 Bebida. (Si
+                prefieres no elegir bebida, incluye refresco del dia gratis).
               </p>
 
               <div className="cabecera-armar-menu">
