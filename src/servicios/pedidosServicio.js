@@ -3,6 +3,7 @@ import {
   collection,
   addDoc,
   doc,
+  setDoc,
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
