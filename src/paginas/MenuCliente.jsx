@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { db } from "../firebase/config";
-import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
 import Swal from "sweetalert2";
 import "../estilos/menuCliente.css";
 
@@ -317,8 +324,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
     try {
       setEnviando(true);
+
+      // 1. Identificar si ya existe un pedido activo
       const idExistente =
         pedidoActivoId || localStorage.getItem(`ultimoPedido_${restauranteId}`);
+      let datosPedidoRealtime = null;
+
+      // 2. Obtener datos frescos si hay un pedido previo
       if (idExistente) {
         const docRef = doc(
           db,
@@ -329,52 +341,38 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         );
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          datosPedidoRealtime = docSnap.data(); // Forzamos la actualización de la variable
+          datosPedidoRealtime = docSnap.data();
         }
       }
-      // 🌟 MAPEO ACTUALIZADO CON CONDICIONAL INTELIGENTE PARA MENÚS
-      const nuevosItems = carrito.map((item) => {
-        const baseItem = {
-          id: item.id,
-          nombre: item.nombre,
-          precio: Number(item.precio),
-          cantidad: item.cantidad,
-          subtotal: Number(item.precio) * item.cantidad,
-        };
 
-        // Si el producto viene de la interfaz del menú del día, inyectamos los detalles elegidos
-        if (item.isMenuCompleto) {
-          baseItem.detalles = {
+      // 3. Mapear productos del carrito actual
+      const nuevosItems = carrito.map((item) => ({
+        id: item.id,
+        nombre: item.nombre,
+        precio: Number(item.precio),
+        cantidad: item.cantidad,
+        subtotal: Number(item.precio) * item.cantidad,
+        ...(item.isMenuCompleto && {
+          detalles: {
             entrada: item.detalles?.entrada || "Ninguna",
             segundo: item.detalles?.segundo || "",
             bebida: item.detalles?.bebida || "Agua de cortesía",
-          };
-        }
+          },
+        }),
+      }));
 
-        return baseItem;
-      });
-
-      const totalCalculado = nuevosItems.reduce(
-        (acc, curr) => acc + curr.subtotal,
-        0,
-      );
-
+      // 4. Preparar objeto para Firebase (Fusión o Creación)
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        const itemsAntiguos = datosPedidoRealtime.items || [];
-
-        const itemsFusionados = [...itemsAntiguos, ...nuevosItems];
-
-        const totalFusionado = itemsFusionados.reduce(
-          (acc, curr) => acc + curr.subtotal,
-          0,
-        );
-
+        const itemsFusionados = [
+          ...(datosPedidoRealtime.items || []),
+          ...nuevosItems,
+        ];
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
           items: itemsFusionados,
-          total: totalFusionado,
+          total: itemsFusionados.reduce((acc, curr) => acc + curr.subtotal, 0),
           estado: "pendiente",
         };
       } else {
@@ -386,13 +384,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
-          total: totalCalculado,
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           estado: "pendiente",
           fecha: new Date(),
           restauranteId: restauranteId,
         };
       }
 
+      // 5. Enviar a Firebase
       const idNuevo = await gestionarPedido(
         restauranteId,
         pedidoParaFirebase,
@@ -409,6 +408,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         showConfirmButton: false,
       });
 
+      // 6. Limpieza de estado
       setCarrito([]);
       setVerCarrito(false);
       setMostrarFormulario(false);
@@ -421,7 +421,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
-      Swal.fire("Aviso", error.message, "warning");
+      console.error("Error al enviar pedido:", error);
+      Swal.fire("Aviso", "Ocurrió un error al procesar tu pedido.", "warning");
     } finally {
       setEnviando(false);
     }
