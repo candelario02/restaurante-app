@@ -13,12 +13,14 @@
   --radius: 20px;
 }
 
-.admin-container {
+.inicio-container {
   min-height: 100vh;
   background-color: var(--bg-main);
-  padding-bottom: 100px;
-  animation: fadeIn 0.4s ease;
-  width: 100%; /* Aseguramos que ocupe todo */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra horizontalmente */
+  justify-content: center; /* Centra verticalmente */
+  padding: 20px;
 }
 
 /* =============================================
@@ -653,7 +655,7 @@
   font-weight: 600;
   color: #94a3b8;
 }
-.descripcion-corta {
+.descripcion-corta-titulo {
   background-color: #f1f5f9; /* Un gris azulado muy suave */
   border: 1px dashed #6366f1; /* Un borde punteado sugiere acción */
   color: #334155;

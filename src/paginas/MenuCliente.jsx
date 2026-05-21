@@ -448,7 +448,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   };
 
   return (
-    <div className="admin-container">
+    <div className="inicio-container">
       {/* Mensaje de aviso) */}
       {avisoAgregado && (
         <div
@@ -700,7 +700,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           {categoriaActual === "Menú del Día" && (
             <div className="seccion-armar-menu">
               {/* 🌟 Instrucción integrada */}
-              <p className="descripcion-corta">
+              <p className="descripcion-corta-titulo">
                 Seleccione su Segundo + Entrada + Bebida (Si no selecciona
                 bebida, incluye agua de cortesía gratis)
               </p>
