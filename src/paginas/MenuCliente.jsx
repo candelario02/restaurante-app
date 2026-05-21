@@ -3,8 +3,8 @@ import { db } from "../firebase/config";
 import {
   doc,
   getDoc,
-  setDoc,     
-  updateDoc, 
+  setDoc,
+  updateDoc,
   onSnapshot,
   collection,
   query,
@@ -348,36 +348,72 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       }
 
       // 3. Mapear productos del carrito actual
-      const nuevosItems = carrito.map((item) => ({
-        id: item.id,
-        nombre: item.nombre,
-        precio: Number(item.precio),
-        cantidad: item.cantidad,
-        subtotal: Number(item.precio) * item.cantidad,
-        ...(item.isMenuCompleto && {
-          detalles: {
-            entrada: item.detalles?.entrada || "Ninguna",
-            segundo: item.detalles?.segundo || "",
-            bebida: item.detalles?.bebida || "Agua de cortesía",
-          },
-        }),
-      }));
+      const nuevosItems = carrito.map((item) => {
+        // Calculamos el precio base
+        let precioTotalItem = Number(item.precio);
 
-      // 4. Preparar objeto para Firebase (Fusión o Creación)
+        // Si tiene detalles y hay un precio adicional registrado en el detalle
+        if (item.isMenuCompleto && item.detalles?.precioExtra) {
+          precioTotalItem += Number(item.detalles.precioExtra);
+        }
+
+        return {
+          id: item.id,
+          nombre: item.nombre,
+          precio: precioTotalItem, // Precio actualizado con el extra
+          cantidad: item.cantidad,
+          subtotal: precioTotalItem * item.cantidad,
+          ...(item.isMenuCompleto && {
+            detalles: {
+              entrada: item.detalles?.entrada || "Ninguna",
+              segundo: item.detalles?.segundo || "",
+              bebida: item.detalles?.bebida || "Agua de cortesía",
+            },
+          }),
+        };
+      });
+
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        const itemsFusionados = [
-          ...(datosPedidoRealtime.items || []),
-          ...nuevosItems,
-        ];
+        // Clonamos el array de items existentes para trabajar sobre ellos
+        const itemsActuales = [...(datosPedidoRealtime.items || [])];
+
+        // Iteramos sobre los nuevos ítems para fusionarlos
+        nuevosItems.forEach((nuevoItem) => {
+          // Buscamos si existe un ítem idéntico (mismo ID y mismos detalles)
+          const index = itemsActuales.findIndex((item) => {
+            const esMismoId = item.id === nuevoItem.id;
+            // Comparamos detalles stringueados para asegurar igualdad profunda
+            const esMismoDetalle =
+              JSON.stringify(item.detalles || {}) ===
+              JSON.stringify(nuevoItem.detalles || {});
+            return esMismoId && esMismoDetalle;
+          });
+
+          if (index !== -1) {
+            // Si existe, actualizamos cantidad y subtotal (profesional: mantenemos integridad)
+            itemsActuales[index].cantidad += nuevoItem.cantidad;
+            itemsActuales[index].subtotal =
+              itemsActuales[index].cantidad * itemsActuales[index].precio;
+          } else {
+            // Si es un ítem distinto (o diferente configuración), lo agregamos como nuevo
+            itemsActuales.push(nuevoItem);
+          }
+        });
+
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: itemsFusionados,
-          total: itemsFusionados.reduce((acc, curr) => acc + curr.subtotal, 0),
+          items: itemsActuales,
+          // Calculamos el total real basándonos en los items fusionados
+          total: itemsActuales.reduce(
+            (acc, curr) => acc + (curr.subtotal || 0),
+            0,
+          ),
           estado: "pendiente",
         };
       } else {
+        // Creación de pedido nuevo (sin cambios, ya que aquí no hay fusión)
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
