@@ -200,6 +200,41 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
     return () => unsubscribe();
   }, [pedidoActivoId, restauranteId]);
+
+  // Cargar el pedido activo en el carrito local al montar el componente
+  useEffect(() => {
+    const cargarPedidoActivo = async () => {
+      if (!pedidoActivoId || !restauranteId) return;
+      try {
+        const pedidoRef = doc(
+          db,
+          "restaurantes",
+          restauranteId,
+          "pedidos",
+          pedidoActivoId,
+        );
+        const docSnap = await getDoc(pedidoRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.items && data.items.length > 0) {
+            const itemsCarrito = data.items.map((item) => ({
+              id: item.id,
+              idUnico: item.idUnico,
+              nombre: item.nombre,
+              precio: item.precio,
+              cantidad: item.cantidad,
+              detalles: item.detalles,
+              isMenuCompleto: !!item.detalles,
+            }));
+            setCarrito(itemsCarrito);
+          }
+        }
+      } catch (error) {
+        console.error("Error cargando pedido activo:", error);
+      }
+    };
+    cargarPedidoActivo();
+  }, [pedidoActivoId, restauranteId]);
   // 3. Temporizador Aviso
   useEffect(() => {
     if (avisoAgregado) {
@@ -299,14 +334,18 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     });
   };
   // Funcion restar al carrito
-  const restarAlCarrito = (id) => {
+  const restarAlCarrito = (idUnico) => {
     if (datosPedidoRealtime?.estado === "cocinando") return;
     setCarrito((prev) =>
       prev.map((item) =>
-        item.id === id && item.cantidad > 1
+        item.idUnico === idUnico && item.cantidad > 1
           ? { ...item, cantidad: item.cantidad - 1 }
           : item,
       ),
+    );
+    // al llegar a 1 se elimine, descomenta:
+    setCarrito((prev) =>
+      prev.filter((item) => !(item.idUnico === idUnico && item.cantidad === 1)),
     );
   };
 
@@ -336,18 +375,18 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           datosPedidoRealtime = docSnap.data();
         }
       }
+
       // 3. Mapear productos del carrito actual
       const nuevosItems = carrito.map((item) => {
         let precioTotalItem = Number(item.precio);
 
-        // Si tiene detalles, sumamos el extra
         if (item.isMenuCompleto && item.detalles?.precioExtra) {
           precioTotalItem += Number(item.detalles.precioExtra);
         }
 
         return {
           id: item.id,
-          idUnico: item.idUnico, // Esto es vital para la fusión
+          idUnico: item.idUnico,
           nombre: item.nombre,
           precio: precioTotalItem,
           cantidad: item.cantidad,
@@ -356,45 +395,42 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         };
       });
 
-      // 4. Lógica Profesional de Combinación para Restaurante
+      // 4. Lógica de fusión o creación
       let pedidoParaFirebase;
+      let itemsFusionados = []; // para luego actualizar el carrito local
 
       if (idExistente && datosPedidoRealtime) {
-        // Obtenemos los platos que ya están cocinándose o pedidos en Firebase
-        const itemsAnteriores = datosPedidoRealtime.items || [];
-
-        // Creamos una copia profunda para manipular las cantidades
-        const itemsFusionados = [...itemsAnteriores];
+        // ---- ACTUALIZACIÓN CON FUSIÓN (NO REEMPLAZO) ----
+        const itemsExistentes = datosPedidoRealtime.items || [];
+        const itemsMap = new Map();
+        itemsExistentes.forEach((item) => {
+          itemsMap.set(item.idUnico, { ...item });
+        });
 
         nuevosItems.forEach((nuevoItem) => {
-          // Buscamos si el plato (o combinación de menú con el mismo idUnico) ya existe en la orden original
-          const index = itemsFusionados.findIndex(
-            (i) => i.idUnico === nuevoItem.idUnico,
-          );
-
-          if (index !== -1) {
-            // ¡AQUÍ ESTABA LA FUGA!: Sumamos la cantidad nueva a la que ya existía en Firebase
-            itemsFusionados[index].cantidad += nuevoItem.cantidad;
-            itemsFusionados[index].subtotal =
-              itemsFusionados[index].cantidad * itemsFusionados[index].precio;
+          if (itemsMap.has(nuevoItem.idUnico)) {
+            const existente = itemsMap.get(nuevoItem.idUnico);
+            existente.cantidad += nuevoItem.cantidad;
+            existente.subtotal = existente.precio * existente.cantidad;
+            itemsMap.set(nuevoItem.idUnico, existente);
           } else {
-            // Si es un plato a la carta nuevo o una bebida extra, se agrega a la lista
-            itemsFusionados.push(nuevoItem);
+            itemsMap.set(nuevoItem.idUnico, { ...nuevoItem });
           }
         });
+
+        itemsFusionados = Array.from(itemsMap.values());
 
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
           items: itemsFusionados,
-          // Recalculamos el total general sumando todos los subtotales actualizados
           total: itemsFusionados.reduce(
-            (acc, curr) => acc + Number(curr.subtotal || 0),
+            (acc, curr) => acc + (curr.subtotal || 0),
             0,
           ),
           fechaActualizacion: new Date(),
         };
       } else {
-        // PEDIDO NUEVO: Estructura base para el primer envío del cliente
+        // ---- PEDIDO NUEVO ----
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -403,14 +439,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             telefono: datosCliente?.telefono || "No provisto",
           },
           items: nuevosItems,
-          total: nuevosItems.reduce(
-            (acc, curr) => acc + Number(curr.subtotal || 0),
-            0,
-          ),
+          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
           estado: "pendiente",
           fecha: new Date(),
           restauranteId: restauranteId,
         };
+        itemsFusionados = nuevosItems; // para pedido nuevo también
       }
 
       // 5. Enviar a Firebase
@@ -419,6 +453,19 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         pedidoParaFirebase,
         idExistente,
       );
+
+      // 6. Sincronizar carrito local con los items fusionados (para que no se pierda nada)
+      // Convertir itemsFusionados al formato del carrito (agregar propiedades que falten)
+      const carritoSincronizado = itemsFusionados.map((item) => ({
+        id: item.id,
+        idUnico: item.idUnico,
+        nombre: item.nombre,
+        precio: item.precio,
+        cantidad: item.cantidad,
+        detalles: item.detalles,
+        isMenuCompleto: !!item.detalles, // opcional, según tu lógica
+      }));
+      setCarrito(carritoSincronizado);
 
       await Swal.fire({
         title: "¡Éxito!",
@@ -430,8 +477,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         showConfirmButton: false,
       });
 
-      // 6. Limpieza de estado
-      setCarrito([]);
+      // 7. Limpiar modales (pero NO vaciar carrito si es actualización)
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
@@ -450,10 +496,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }
   };
   //funcion borra dell carrito
-  const eliminarDelCarrito = (id) => {
-    if (datosPedidoRealtime?.estado === "cocinando") return; // Bloqueo coherente
-    const itemEliminado = carrito.find((item) => item.id === id);
-    setCarrito((prev) => prev.filter((item) => item.id !== id));
+  const eliminarDelCarrito = (idUnico) => {
+    if (datosPedidoRealtime?.estado === "cocinando") return;
+    const itemEliminado = carrito.find((item) => item.idUnico === idUnico);
+    setCarrito((prev) => prev.filter((item) => item.idUnico !== idUnico));
     setAvisoAgregado(null);
     setTimeout(() => {
       setAvisoAgregado(`- ${itemEliminado?.nombre} quitado`);
@@ -955,21 +1001,21 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 </div>
               ) : (
                 carrito.map((item) => (
-                  <div key={item.id} className="carrito-item">
+                  <div key={item.idUnico} className="carrito-item">
                     <div className="item-info">
                       <h4>{item.nombre}</h4>
                       <span>S/ {Number(item.precio).toFixed(2)}</span>
                     </div>
 
                     <div className="item-controles">
-                      <button onClick={() => restarAlCarrito(item.id)}>
+                      <button onClick={() => restarAlCarrito(item.idUnico)}>
                         -
                       </button>
                       <span className="item-cantidad">{item.cantidad}</span>
                       <button onClick={() => agregarAlCarrito(item)}>+</button>
                       <button
                         className="btn-eliminar-item"
-                        onClick={() => eliminarDelCarrito(item.id)}
+                        onClick={() => eliminarDelCarrito(item.idUnico)}
                       >
                         <Trash2 size={16} />
                       </button>
@@ -990,7 +1036,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   className="btn-agregar-cerrar"
                   onClick={() => {
                     if (pedidoActivoId) {
-                      setCarrito([]); // Limpia el carrito local si cancela la adición
+                      setCarrito([]);
                     }
                     setVerCarrito(false);
                   }}
@@ -1013,7 +1059,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   {enviando
                     ? "Enviando..."
                     : pedidoActivoId
-                      ? "🚀 Añadir a mi Pedido Activo"
+                      ? "🚀 Actualizar mi Pedido"
                       : "Confirmar Pedido"}
                 </button>
               </div>
