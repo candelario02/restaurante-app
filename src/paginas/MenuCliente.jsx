@@ -54,6 +54,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
   const [mostrarConfirmarEliminar, setMostrarConfirmarEliminar] =
     useState(false);
   const [mostrarExitoEliminar, setMostrarExitoEliminar] = useState(false);
+  //apagar carrioto
+  const [mostrarIconoCarrito, setMostrarIconoCarrito] = useState(false);
 
   // Formulario Pedido
   const [nombre, setNombre] = useState("");
@@ -631,7 +633,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       )}
 
       {/* ✅ BOTÓN CARRITO FLOTANTE */}
-      {carrito.length > 0 && !mostrarFormulario && (
+      {carrito.length > 0 && !mostrarFormulario && mostrarIconoCarrito && (
         <button
           className="carrito-flotante"
           onClick={() => setVerCarrito(true)}
@@ -774,6 +776,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       });
 
                       window.scrollTo({ top: 0, behavior: "smooth" });
+                      setMostrarIconoCarrito(true);
                     }
                   }}
                 >
@@ -967,10 +970,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   };
 
                   agregarAlCarrito(itemMenu);
-
                   setEntradaSeleccionada(null);
                   setSegundoSeleccionado(null);
                   setBebidaSeleccionada(null);
+                  setMostrarIconoCarrito(true);
                 }}
               >
                 {segundoSeleccionado
@@ -1063,7 +1066,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       ) : (
                         <button
                           className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
-                          onClick={() => agregarAlCarrito(p)}
+                          onClick={() => {
+                            agregarAlCarrito(p);
+                            setMostrarIconoCarrito(true);
+                          }}
                           disabled={!p.disponible}
                         >
                           {!p.disponible ? (
@@ -1196,6 +1202,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
+
+                // 🌟 CAMBIO: Al confirmar la orden, ocultamos el icono del carrito en la interfaz
+                setMostrarIconoCarrito(false);
+
                 enviarPedidoFinal({
                   nombre: formData.get("nombre"),
                   tipo: tipoPedido,
@@ -1322,7 +1332,11 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               <button
                 className="btn-enviar-resena"
                 disabled={estrellas === 0 || enviando}
-                onClick={() => finalizarYCalificar(estrellas, comentario)}
+                onClick={() => {
+                  // 🌟 CAMBIO: Al calificar con éxito, nos aseguramos de apagar el icono
+                  setMostrarIconoCarrito(false);
+                  finalizarYCalificar(estrellas, comentario);
+                }}
               >
                 {enviando ? "Guardando..." : "Enviar y Finalizar"}
               </button>
@@ -1331,6 +1345,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-omitir"
                 disabled={enviando}
                 onClick={() => {
+                  // 🌟 CAMBIO: Al omitir, también nos aseguramos de apagar el icono
+                  setMostrarIconoCarrito(false);
                   localStorage.removeItem(`ultimoPedido_${restauranteId}`);
                   setPedidoActivoId(null);
                   setDatosPedidoRealtime(null);
