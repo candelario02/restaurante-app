@@ -7,32 +7,38 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-// ✅ SOLUCIÓN ÚNICA: Maneja creación y actualización
+// SOLUCIÓN ÚNICA: Maneja creación y actualización
 export const gestionarPedido = async (
   restauranteId,
   datosPedido,
   pedidoId = null,
 ) => {
   try {
-    const pedidosRef = collection(db, "restaurantes", restauranteId, "pedidos");
-
     if (pedidoId) {
-      const pedidoExistenteRef = doc(
+      const pedidoRef = doc(
         db,
         "restaurantes",
         restauranteId,
         "pedidos",
         pedidoId,
       );
+      await setDoc(
+        pedidoRef,
+        {
+          ...datosPedido,
+          fechaActualizacion: serverTimestamp(),
+        },
+        { merge: true },
+      );
 
-      await updateDoc(pedidoExistenteRef, {
-        items: datosPedido.items,
-        total: datosPedido.total,
-        estado: "pendiente",
-        fechaActualizacion: serverTimestamp(),
-      });
       return pedidoId;
     } else {
+      const pedidosRef = collection(
+        db,
+        "restaurantes",
+        restauranteId,
+        "pedidos",
+      );
       const docRef = await addDoc(pedidosRef, {
         ...datosPedido,
         restauranteId,
@@ -42,7 +48,7 @@ export const gestionarPedido = async (
       return docRef.id;
     }
   } catch (error) {
-    console.error("Error en la gestión del pedido:", error);
+    console.error("Error:", error);
     throw error;
   }
 };
@@ -73,7 +79,7 @@ export const enviarResenaPedido = async (
     throw error;
   }
 };
-// ✅ Mantener para el Admin (Cambiar a Cocinando/Entregado)
+// Mantener para el Admin (Cambiar a Cocinando/Entregado)
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,

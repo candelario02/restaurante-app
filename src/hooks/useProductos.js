@@ -49,16 +49,13 @@ export const escucharProductosAdmin = (restauranteId, callback) => {
   });
 };
 
-// ==========================================
 // 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
-// ==========================================
 export const escucharPedidos = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
   const q = query(
     collection(db, "restaurantes", restauranteId, "pedidos"),
     orderBy("fecha", "desc"),
-    limit(25),
   );
 
   return onSnapshot(q, (snapshot) => {
@@ -69,4 +66,3 @@ export const escucharPedidos = (restauranteId, callback) => {
     callback(pedidos);
   });
 };
-

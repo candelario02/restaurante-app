@@ -701,12 +701,11 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             <div className="seccion-armar-menu">
               {/* 🌟 Instrucción integrada */}
               <p className="descripcion-corta-titulo">
-                Seleccione su Segundo + Entrada + Bebida (Si no selecciona
-                bebida, incluye agua de cortesía gratis)
+                Arma tu menú: Selecciona 1 Segundo + 1 Entrada + 1 Bebida. (Si prefieres no elegir bebida, incluye refresco del dia gratis).
               </p>
 
               <div className="cabecera-armar-menu">
-                <h4>📋 Tu Menú Actual</h4>
+                <h4>📋 Tu Menú Actual Por:s/</h4>
                 <span className="badge-precio-menu">S/ {menuDiaPrecio}</span>
               </div>
 
