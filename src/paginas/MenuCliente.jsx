@@ -373,18 +373,21 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         };
       });
 
+      // Dentro de enviarPedidoFinal, reemplaza el bloque de la sección 4:
+
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        // Clonamos el array de items existentes para trabajar sobre ellos
-        const itemsActuales = [...(datosPedidoRealtime.items || [])];
+        // Obtenemos los ítems existentes en Firebase
+        const itemsFirebase = datosPedidoRealtime.items || [];
 
-        // Iteramos sobre los nuevos ítems para fusionarlos
+        // Fusionamos: recorremos nuevosItems y los mezclamos en itemsFirebase
+        const itemsFinales = [...itemsFirebase];
+
         nuevosItems.forEach((nuevoItem) => {
-          // Buscamos si existe un ítem idéntico (mismo ID y mismos detalles)
-          const index = itemsActuales.findIndex((item) => {
+          const index = itemsFinales.findIndex((item) => {
+            // Condición de identidad estricta
             const esMismoId = item.id === nuevoItem.id;
-            // Comparamos detalles stringueados para asegurar igualdad profunda
             const esMismoDetalle =
               JSON.stringify(item.detalles || {}) ===
               JSON.stringify(nuevoItem.detalles || {});
@@ -392,28 +395,28 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           });
 
           if (index !== -1) {
-            // Si existe, actualizamos cantidad y subtotal (profesional: mantenemos integridad)
-            itemsActuales[index].cantidad += nuevoItem.cantidad;
-            itemsActuales[index].subtotal =
-              itemsActuales[index].cantidad * itemsActuales[index].precio;
+            // Actualizamos cantidad y subtotal del existente
+            itemsFinales[index].cantidad += nuevoItem.cantidad;
+            itemsFinales[index].subtotal =
+              itemsFinales[index].cantidad * itemsFinales[index].precio;
           } else {
-            // Si es un ítem distinto (o diferente configuración), lo agregamos como nuevo
-            itemsActuales.push(nuevoItem);
+            // Agregamos el nuevo ítem
+            itemsFinales.push(nuevoItem);
           }
         });
 
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: itemsActuales,
-          // Calculamos el total real basándonos en los items fusionados
-          total: itemsActuales.reduce(
+          items: itemsFinales,
+          total: itemsFinales.reduce(
             (acc, curr) => acc + (curr.subtotal || 0),
             0,
           ),
-          estado: "pendiente",
+          // Aseguramos que la fecha de actualización se mantenga o se actualice
+          fechaActualizacion: new Date(),
         };
       } else {
-        // Creación de pedido nuevo (sin cambios, ya que aquí no hay fusión)
+        // Lógica para pedido nuevo (mantiene tu estructura original)
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -1040,7 +1043,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-
                 enviarPedidoFinal({
                   nombre: formData.get("nombre"),
                   tipo: tipoPedido,
