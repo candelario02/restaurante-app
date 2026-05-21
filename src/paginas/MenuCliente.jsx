@@ -3,6 +3,8 @@ import { db } from "../firebase/config";
 import {
   doc,
   getDoc,
+  setDoc,     
+  updateDoc, 
   onSnapshot,
   collection,
   query,
