@@ -147,7 +147,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubPed();
       unsubUser();
       unsubConfig();
-      unsubDatos = () => {};
+      unsubDatos();
     };
   }, [restauranteId, rolUsuario, categoria]);
 
