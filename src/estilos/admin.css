@@ -561,6 +561,78 @@
   flex-direction: column;
   gap: 8px;
 }
+/* ==========================================================================
+   ESTRUCTURA DE LA CABECERA DE LA TARJETA
+   ========================================================================== */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Contenedor alineado para el Teléfono y el Botón */
+.container-telefono-whatsapp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.texto-telefono-admin {
+  font-size: 0.8rem;
+  color: #007bff;
+  margin: 0;
+}
+
+.btn-whatsapp-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #25D366;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-whatsapp-admin:hover {
+  background-color: #1ebd59;
+  color: #ffffff;
+}
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Se pinta de rojo suave de fondo con letras rojas si está cancelado */
+.status-badge.cancelado {
+  background-color: #fde8e8;
+  color: #e02424;
+}
+
+/* Estilos opcionales por si usas los otros estados en CSS */
+.status-badge.pendiente {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.cocinando {
+  background-color: #e1effe;
+  color: #1e429f;
+}
+
+.status-badge.entregado {
+  background-color: #def7ec;
+  color: #03543f;
+}
 
 .card-admin h3 {
   font-size: 1rem;
@@ -574,16 +646,6 @@
   margin: 0;
 }
 
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  width: fit-content;
-  text-transform: uppercase;
-}
-.status-badge.entregado { background: #dcfce7; color: #166534; }
-.status-badge.pendiente { background: #fef9c3; color: #854d0e; }
 .acciones-pedido {
   display: flex !important; 
   gap: 8px;                

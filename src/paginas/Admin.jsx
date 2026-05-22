@@ -917,26 +917,29 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 .map((p) => (
                   <div key={p.id} className="card-admin">
                     <div className="card-header">
-                      <div>
-                        <strong>{p.cliente?.nombre || "Cliente"}</strong>
-                        <p
-                          style={{
-                            fontSize: "0.85rem",
-                            color: "#666",
-                            margin: "4px 0",
-                          }}
-                        >
-                          {p.cliente?.tipo === "Mesa"
-                            ? `📍 Mesa: ${p.cliente?.referencia}`
-                            : `🛵 Delivery: ${p.cliente?.referencia}`}
-                        </p>
-                        {p.cliente?.telefono && (
-                          <p style={{ fontSize: "0.8rem", color: "#007bff" }}>
-                            📞 {p.cliente.telefono}
-                          </p>
+                      {p.cliente?.telefono &&
+                        p.cliente.telefono !== "No provisto" && (
+                          <div className="container-telefono-whatsapp">
+                            <p className="texto-telefono-admin">
+                              📞 {p.cliente.telefono}
+                            </p>
+                            <a
+                              href={`https://wa.me/51${p.cliente.telefono}?text=${encodeURIComponent(
+                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreRestaurante || "el restaurante"}*.\n\n` +
+                                  `*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
+                                  `*Total:* S/ ${Number(p.total || 0).toFixed(2)}\n\n` +
+                                  `Por favor, confírmanos tu dirección exacta o envíanos tu enlace de *Waze/Google Maps* en tiempo real para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
+                              )}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btn-whatsapp-admin"
+                              title="Coordinar entrega por WhatsApp"
+                            >
+                              💬 WhatsApp
+                            </a>
+                          </div>
                         )}
-                      </div>
-                      <span className={`status-badge ${p.estado}`}>
+                     <span className={`status-badge ${(p.estado || "pendiente").toLowerCase()}`}>
                         {(p.estado || "pendiente").toUpperCase()}
                       </span>
                     </div>
