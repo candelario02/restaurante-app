@@ -142,7 +142,10 @@
   background-color: #dc2626;
 }
 
-/* Tabla de productos */
+/* ==========================================================================
+   TABLA DE PRODUCTOS (BLOQUE COMPLETO ACTUALIZADO)
+   ========================================================================== */
+
 .tabla-container-pro {
   overflow-x: auto;
   background: white;
@@ -164,17 +167,25 @@
   border-bottom: 2px solid #f1f5f9;
 }
 
+/* 🌟 CORRECCIÓN 1: Forzamos el centrado vertical nativo para todos los TD */
 .tabla-admin-pro td {
   padding: 15px;
   border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle; 
 }
 
+/* 🌟 CORRECCIÓN 2: Quitamos el flex directo del td y manejamos sus hijos de forma alineada */
 .td-plato {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   font-weight: 600;
   color: #1e293b;
+  white-space: nowrap; /* Evita que el nombre del plato se parta feo en dos líneas */
+}
+
+/* Forzamos a la imagen y al texto del plato a alinearse perfectamente en el centro */
+.td-plato img,
+.td-plato span {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .img-mini-pro {
@@ -182,47 +193,81 @@
   height: 45px;
   border-radius: 8px;
   object-fit: cover;
+  margin-right: 12px; /* Sustituye de forma segura al anterior gap: 12px */
+}
+
+/* 🌟 NUEVAS CLASES DE DESCRIPCIÓN (Con control de saltos de línea automáticos) */
+.td-descripcion {
+  font-weight: 700;
+  color: #64748b;
+  display: block;
+  max-width: 350px;       /* Evita que se estire infinitamente a la derecha */
+  white-space: normal;    /* Permite saltos de línea automáticos hacia abajo */
+  word-break: break-word; /* Rompe palabras ultra largas si es necesario */
+  line-height: 1.4;
+}
+
+.detalles-producto-admin {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  background-color: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 2px;
+  margin-left: 0px; /* Centrado sin desfases */
+  border-left: 3px solid var(--primary);
+  max-width: 350px;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .td-precio {
   font-weight: 700;
   color: #64748b;
-}
-.td-descripcion {
-  font-weight: 700;
-  color: #64748b;
-  /* 🌟 Ajustes para controlar el texto largo y saltos de línea */
-  display: block;
-  max-width: 350px;       /* Controla el ancho máximo de la columna */
-  white-space: normal;    /* Permite saltos de línea */
-  word-break: break-word; /* Rompe palabras largas si es necesario */
-  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .btn-status-pro {
   background: none;
   padding: 5px;
+  border: none;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto; /* Centra el botón de encendido en su propia columna */
 }
 
+/* 🌟 CORRECCIÓN 3: Cambiamos a inline-flex para que el TD mantenga su comportamiento de celda */
 .acciones-pro {
-  display: flex;
+  white-space: nowrap;
+}
+
+/* Creamos un contenedor interno seguro para tus dos botones de acción */
+.acciones-pro-container {
+  display: inline-flex;
   gap: 10px;
+  vertical-align: middle;
 }
 
 .acciones-pro button {
   padding: 8px;
   border-radius: 6px;
   transition: 0.2s;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-edit {
   background: #f1f5f9;
   color: #64748b;
 }
+
 .btn-delete {
   background: #fff1f2;
   color: #ef4444;
 }
+
 .btn-edit:hover { background: #e2e8f0; }
 .btn-delete:hover { background: #fee2e2; }
 /* Fila que mezcla Guardar y Buscar */
@@ -505,17 +550,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 15px;
-}
-.detalles-menu-admin {
-  display: block;
-  font-size: 0.8rem;
-  color: #555;
-  background-color: #f1f5f9;
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin-top: 2px;
-  margin-left: 24px;
-  border-left: 3px solid var(--primary);
 }
 
 .card-admin {

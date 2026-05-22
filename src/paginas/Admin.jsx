@@ -788,8 +788,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <thead>
                 <tr>
                   <th>PLATO</th>
-                  <th>DESCRIPCIÓN</th>{" "}
-                  <th>PRECIO</th>
+                  <th>DESCRIPCIÓN</th> <th>PRECIO</th>
                   <th>DISP.</th>
                   <th>ACCIONES</th>
                 </tr>
@@ -806,19 +805,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       <span>{p.nombre}</span>
                     </td>
 
+                    {/* Celda de Descripción */}
                     <td>
                       {p.descripcion ? (
-                        <span className="td-descripcion">{p.descripcion}</span>
+                        <div className="td-descripcion">{p.descripcion}</div>
                       ) : (
-                        <span className="detalles-producto-admin">
+                        <div className="detalles-producto-admin">
                           Sin descripción
-                        </span>
+                        </div>
                       )}
                     </td>
 
                     <td className="td-precio">
                       S/ {Number(p.precio).toFixed(2)}
                     </td>
+
                     <td>
                       <button
                         className="btn-status-pro"
@@ -837,18 +838,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         />
                       </button>
                     </td>
+
+                    {/* 🌟 ENVOLVEMOS LOS BOTONES EN EL CONTAINER PARA ALINEACIÓN PERFECTA */}
                     <td className="acciones-pro">
-                      <button
-                        className="btn-edit"
-                        onClick={() => prepararEdicion(p)}
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => manejarEliminar(p.id, p.cloudinaryId)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="acciones-pro-container">
+                        <button
+                          className="btn-edit"
+                          onClick={() => prepararEdicion(p)}
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          className="btn-delete" /* Se mapea con tu clase de CSS */
+                          onClick={() => manejarEliminar(p.id, p.cloudinaryId)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -923,7 +929,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                             {!safeItem.detalles && safeItem.descripcion && (
                               <span className="detalles-menu-admin">
-                               {safeItem.descripcion}
+                                {safeItem.descripcion}
                               </span>
                             )}
 
