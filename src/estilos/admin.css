@@ -567,7 +567,7 @@
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; 
   width: 100%;
 }
 
@@ -578,13 +578,18 @@
   gap: 8px;
   margin: 4px 0;
 }
+.container-telefono-whatsapp p.texto-telefono-admin {
+  color: #475569 !important; /* Color slate oscuro limpio */
+  font-weight: 600 !important; /* Semibold equilibrado */
+  font-size: 0.85rem !important; /* Tamaño controlado para que entre todo en una línea */
+  margin: 0 !important;
+}
 
 .texto-telefono-admin {
   font-size: 0.8rem;
   color: #007bff;
   margin: 0;
 }
-
 .btn-whatsapp-admin {
   display: inline-flex;
   align-items: center;
@@ -599,6 +604,7 @@
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  height: 20px; /* 👈 Altura fija para que no deforme la fila */
 }
 
 .btn-whatsapp-admin:hover {
@@ -656,9 +662,9 @@
 
 /* Estilo para los textos de Delivery o Mesa */
 .texto-tipo-entrega {
-  font-size: 0.85rem;
-  color: #475569 !important; /* Forzamos color slate oscuro elegante */
-  font-weight: 600 !important; /* Peso semibold para que no use el global de 700 */
+  font-size: 0.85rem !important;
+  color: #1e293b !important; 
+  font-weight: 600 !important; 
   margin: 0 !important;
 }
 
@@ -670,12 +676,11 @@
   margin: 0;
 }
 
-/* Ajuste fino al contenedor de WhatsApp para que no rompa el bloque */
 .container-telefono-whatsapp {
-  display: flex;
+  display: inline-flex; /* 👈 Cambiado a inline-flex para un comportamiento más ceñido */
   align-items: center;
-  gap: 8px;
-  margin: 2px 0 0 0;
+  gap: 6px;
+  margin: 4px 0 0 0;
 }
 
 .acciones-pedido {
