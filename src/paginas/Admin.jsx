@@ -143,8 +143,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubConfig();
     };
   }, [restauranteId, rolUsuario, categoria]);
-  //Funcion de agregar menu del dia
-  const guardarConfigMenuDia = async (nuevoPrecio, nuevoEstado) => {
+  // Funcion de agregar menu del dia (añadimos mostrarAlerta como tercer parámetro)
+  const guardarConfigMenuDia = async (
+    nuevoPrecio,
+    nuevoEstado,
+    mostrarAlerta = false,
+  ) => {
     if (!restauranteId) return;
     try {
       const configRef = doc(
@@ -164,12 +168,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         { merge: true },
       );
 
-      // 🌟 El mensaje sale aquí en el centro, directo y sin crear código basura
-      alert(
-        nuevoEstado
-          ? "Menú activado correctamente"
-          : "Menú desactivado correctamente",
-      );
+      // 🌟 Solo interrumpe con el alert si explícitamente viene del Switch
+      if (mostrarAlerta) {
+        alert(
+          nuevoEstado
+            ? "Menú activado correctamente"
+            : "Menú desactivado correctamente",
+        );
+      }
     } catch (error) {
       console.error("Error al guardar la configuración del menú:", error);
       alert("Hubo un error al guardar la configuración");
@@ -611,7 +617,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   onChange={(e) => {
                     const v = e.target.value;
                     setMenuDiaPrecio(v);
-                    guardarConfigMenuDia(v, menuDiaActivo);
+                    // 🤫 Guarda silencioso en base de datos mientras escribes (sin alert)
+                    guardarConfigMenuDia(v, menuDiaActivo, false);
                   }}
                 />
               </div>
@@ -628,7 +635,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   onClick={() => {
                     const nuevoEstado = !menuDiaActivo;
                     setMenuDiaActivo(nuevoEstado);
-                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado); // 🌟 Esta función ahora se encarga del aviso
+                    // 🚀 Aquí sí le mandamos 'true' para que te salte el mensaje correcto en el centro
+                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado, true);
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >
