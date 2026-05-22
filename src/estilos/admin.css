@@ -339,16 +339,32 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #1e293b;
+  /* 🌟 Fondo azul suave/morado a juego con la paleta de tu sistema */
+  background-color: #5c60f5; 
   color: #ffffff;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 14px 28px;
+  border-radius: 12px;
+  /* 🌟 Sombra suave integrada con desenfoque elegante */
+  box-shadow: 0 8px 24px rgba(92, 96, 245, 0.25);
   z-index: 9999;
-  font-weight: 500;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
   pointer-events: none;
+  /* 🌟 Animación de entrada fluida por si quieres que se note más estético */
+  animation: toastFadeIn 0.2s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 /* Ajuste específico para móviles */
