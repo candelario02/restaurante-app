@@ -1162,6 +1162,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   onClick={() => {
                     setVerCarrito(false);
                     if (pedidoActivoId) {
+                      setMostrarIconoCarrito(false); 
                       enviarPedidoFinal();
                     } else {
                       setMostrarFormulario(true);
@@ -1176,7 +1177,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 </button>
               </div>
 
-              {/* 🚨 BOTÓN NUEVO (Aparte, fuera de tu contenedor original para no romper tu diseño en fila) */}
               {pedidoActivoId &&
                 datosPedidoRealtime?.estado === "pendiente" && (
                   <button
@@ -1333,8 +1333,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-enviar-resena"
                 disabled={estrellas === 0 || enviando}
                 onClick={() => {
-                  // 🌟 CAMBIO: Al calificar con éxito, nos aseguramos de apagar el icono
                   setMostrarIconoCarrito(false);
+                  setCarrito([]); // 🌟 DEFENITIVO: Vacía el carrito del estado al terminar y calificar
                   finalizarYCalificar(estrellas, comentario);
                 }}
               >
@@ -1345,8 +1345,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-omitir"
                 disabled={enviando}
                 onClick={() => {
-                  // 🌟 CAMBIO: Al omitir, también nos aseguramos de apagar el icono
                   setMostrarIconoCarrito(false);
+                  setCarrito([]); // 🌟 DEFINITIVO: Vacía el carrito del estado si el cliente omite
                   localStorage.removeItem(`ultimoPedido_${restauranteId}`);
                   setPedidoActivoId(null);
                   setDatosPedidoRealtime(null);
