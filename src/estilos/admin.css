@@ -728,6 +728,23 @@
 /* =============================================
    4. SECCIÓN CAJA (Ventas y estadísticas)
    ============================================= */
+
+.tabla-admin-caja {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+
+.tabla-admin-caja td {
+  vertical-align: top;
+  padding: 12px 8px; 
+}
+
+/* Mantenemos el estilo de tus columnas */
+.tabla-admin-caja .col-total-monto {
+  font-weight: bold;
+}
 .select-admin-filtro {
   padding: 10px 15px;
   font-size: 0.9rem;
