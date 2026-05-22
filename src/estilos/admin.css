@@ -729,15 +729,30 @@
    4. SECCIÓN CAJA (Ventas y estadísticas)
    ============================================= */
 
+/* --- BLOQUE CORREGIDO: SECCIÓN CAJA TABLA --- */
 .tabla-admin-caja {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
-}.tabla-admin-caja td {
-  padding: 12px 8px; 
-  vertical-align: middle; 
-  text-align: left;
+  table-layout: fixed; /* Fuerza a las columnas a no moverse */
 }
+
+.tabla-admin-caja th, 
+.tabla-admin-caja td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Anchos porcentuales para que sea profesional */
+.tabla-admin-caja th:nth-child(1) { width: 15%; } /* FECHA */
+.tabla-admin-caja th:nth-child(2) { width: 30%; } /* CLIENTE */
+.tabla-admin-caja th:nth-child(3) { width: 15%; } /* TOTAL */
+.tabla-admin-caja th:nth-child(4) { width: 25%; } /* RESEÑA */
+.tabla-admin-caja th:nth-child(5) { width: 15%; } /* ACCIÓN */
 .txt-cancelado {
   color: #dc3545;
   font-weight: bold;
@@ -989,12 +1004,6 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.control-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 /* =============================================
    5. SECCIÓN USUARIOS (Gestión de personal)
    ============================================= */
@@ -1055,35 +1064,3 @@
 .btn-ojito-detalleydatos:active {
   transform: scale(0.96); 
 }
-
-/* --- prubas nada mas NUEVOS ESTILOS PARA CAJA (Solo afectan a la caja) --- */
-/* Asegura que el contenedor no tenga flexbox que distorsione la tabla */
-.contenedor-caja-v2 {
-  width: 100%;
-  overflow-x: auto;
-  display: block; /* Forzamos bloque para que no afecte la alineación */
-}
-
-/* La tabla aislada */
-.tabla-caja-v2 {
-  width: 100% !important;
-  border-collapse: collapse !important;
-  table-layout: fixed !important;
-}
-
-.tabla-caja-v2 th, 
-.tabla-caja-v2 td {
-  padding: 12px 8px !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  vertical-align: middle !important;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* Anchos definidos (Suma 100%) */
-.tabla-caja-v2 th:nth-child(1), .tabla-caja-v2 td:nth-child(1) { width: 18% !important; } 
-.tabla-caja-v2 th:nth-child(2), .tabla-caja-v2 td:nth-child(2) { width: 32% !important; } 
-.tabla-caja-v2 th:nth-child(3), .tabla-caja-v2 td:nth-child(3) { width: 15% !important; } 
-.tabla-caja-v2 th:nth-child(4), .tabla-caja-v2 td:nth-child(4) { width: 20% !important; } 
-.tabla-caja-v2 th:nth-child(5), .tabla-caja-v2 td:nth-child(5) { width: 15% !important; }

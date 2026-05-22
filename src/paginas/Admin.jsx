@@ -1139,8 +1139,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </div>
 
           <h3 className="subtitulo-tabla">📝 Detalle de Transacciones</h3>
-          <div className="contenedor-caja-v2">
-            <table className="tabla-caja-v2">
+          <div className="tabla-container-caja">
+            <table className="tabla-admin-caja">
               <thead>
                 <tr>
                   <th>FECHA</th>
@@ -1218,7 +1218,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </table>
           </div>
 
-          {/* MODAL DETALLE */}
+          {/* MODAL DETALLE para ver detalle del pedido terminado y cobrado*/}
           {pedidoDetalle && (
             <div
               className="modal-overlay-fijo"
