@@ -1001,100 +1001,114 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             )
           ) : (
             <div className="productos-grid-dos-columnas">
-              {productosParaMostrar.map((p) => {
-                const esEntradaActiva = entradaSeleccionada?.id === p.id;
-                const esSegundoActivo = segundoSeleccionado?.id === p.id;
-                const esBebidaActiva = bebidaSeleccionada?.id === p.id;
-                const estaSeleccionadoEnMenu =
-                  esEntradaActiva || esSegundoActivo || esBebidaActiva;
+              {/* 🌟 ORDENAR: Ponemos el refresco gratis (precio 0) siempre en primera fila */}
+              {[...productosParaMostrar]
+                .sort((a, b) => Number(a.precio || 0) - Number(b.precio || 0))
+                .map((p) => {
+                  const esEntradaActiva = entradaSeleccionada?.id === p.id;
+                  const esSegundoActivo = segundoSeleccionado?.id === p.id;
+                  const esBebidaActiva = bebidaSeleccionada?.id === p.id;
+                  const estaSeleccionadoEnMenu =
+                    esEntradaActiva || esSegundoActivo || esBebidaActiva;
 
-                return (
-                  <div
-                    key={p.id}
-                    className={`producto-card ${estaSeleccionadoEnMenu ? "card-seleccionada-pro" : ""}`}
-                  >
-                    <div className="producto-imagen-wrapper">
-                      <img
-                        src={p.imagenUrl || "/placeholder-plato.png"}
-                        alt={p.nombre}
-                        loading="lazy"
-                      />
+                  const precioNumerico = Number(p.precio || 0);
+
+                  return (
+                    <div
+                      key={p.id}
+                      className={`producto-card ${estaSeleccionadoEnMenu ? "card-seleccionada-pro" : ""}`}
+                    >
+                      <div className="producto-imagen-wrapper">
+                        <img
+                          src={p.imagenUrl || "/placeholder-plato.png"}
+                          alt={p.nombre}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      <div className="producto-info">
+                        <h3>{p.nombre}</h3>
+                        {p.descripcion && (
+                          <p className="descripcion-corta">{p.descripcion}</p>
+                        )}
+
+                        {/* 🌟 PRECIOS TRANSPARENTES: Mostramos precio real de la carta en Menú del Día, salvo que sea el gratis (0.00) */}
+                        {categoriaActual === "Menú del Día" ? (
+                          <p className="precio-referencia-menu">
+                            {precioNumerico === 0
+                              ? "Gratis con tu menú"
+                              : `Carta: S/ ${precioNumerico.toFixed(2)}`}
+                          </p>
+                        ) : (
+                          <p className="precio">
+                            S/ {precioNumerico.toFixed(2)}
+                          </p>
+                        )}
+
+                        {categoriaActual === "Menú del Día" ? (
+                          <div className="contenedor-botones-pasos">
+                            {p.categoria?.toLowerCase() === "entradas" && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setEntradaSeleccionada(
+                                    esEntradaActiva ? null : p,
+                                  )
+                                }
+                              >
+                                {esEntradaActiva ? "✓ Entrada Ok" : "+ Entrada"}
+                              </button>
+                            )}
+                            {(p.categoria?.toLowerCase() === "comidas" ||
+                              !p.categoria) && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setSegundoSeleccionado(
+                                    esSegundoActivo ? null : p,
+                                  )
+                                }
+                              >
+                                {esSegundoActivo ? "✓ Segundo Ok" : "+ Segundo"}
+                              </button>
+                            )}
+                            {(p.categoria?.toLowerCase() === "bebidas" ||
+                              p.categoria?.toLowerCase() === "cafeteria") && (
+                              <button
+                                className="btn-agregar"
+                                onClick={() =>
+                                  setBebidaSeleccionada(
+                                    esBebidaActiva ? null : p,
+                                  )
+                                }
+                              >
+                                {esBebidaActiva ? "✓ Bebida Ok" : "+ Bebida"}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
+                            onClick={() => {
+                              agregarAlCarrito(p);
+                              setMostrarIconoCarrito(true);
+                            }}
+                            disabled={!p.disponible}
+                          >
+                            {!p.disponible ? (
+                              <span>Agotado</span>
+                            ) : (
+                              <>
+                                <Plus size={18} />
+                                <span>Agregar</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
-
-                    <div className="producto-info">
-                      <h3>{p.nombre}</h3>
-                      {p.descripcion && (
-                        <p className="descripcion-corta">{p.descripcion}</p>
-                      )}
-
-                      {/* 🌟 CAMBIO 3: Ocultamos el precio individual de la carta si estamos armando el Menú del Día */}
-                      {categoriaActual !== "Menú del Día" && (
-                        <p className="precio">
-                          S/ {Number(p.precio || 0).toFixed(2)}
-                        </p>
-                      )}
-
-                      {categoriaActual === "Menú del Día" ? (
-                        <div className="contenedor-botones-pasos">
-                          {p.categoria?.toLowerCase() === "entradas" && (
-                            <button
-                              className="btn-agregar"
-                              onClick={() =>
-                                setEntradaSeleccionada(
-                                  esEntradaActiva ? null : p,
-                                )
-                              }
-                            >
-                              {esEntradaActiva ? "✓ Entrada Ok" : "+ Entrada"}
-                            </button>
-                          )}
-                          {(p.categoria?.toLowerCase() === "comidas" ||
-                            !p.categoria) && (
-                            <button
-                              className="btn-agregar"
-                              onClick={() =>
-                                setSegundoSeleccionado(
-                                  esSegundoActivo ? null : p,
-                                )
-                              }
-                            >
-                              {esSegundoActivo ? "✓ Segundo Ok" : "+ Segundo"}
-                            </button>
-                          )}
-                          {p.categoria?.toLowerCase() === "bebidas" && (
-                            <button
-                              className="btn-agregar"
-                              onClick={() =>
-                                setBebidaSeleccionada(esBebidaActiva ? null : p)
-                              }
-                            >
-                              {esBebidaActiva ? "✓ Bebida Ok" : "+ Bebida"}
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <button
-                          className={`btn-agregar ${!p.disponible ? "agotado" : ""}`}
-                          onClick={() => {
-                            agregarAlCarrito(p);
-                            setMostrarIconoCarrito(true);
-                          }}
-                          disabled={!p.disponible}
-                        >
-                          {!p.disponible ? (
-                            <span>Agotado</span>
-                          ) : (
-                            <>
-                              <Plus size={18} />
-                              <span>Agregar</span>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           )}
         </div>

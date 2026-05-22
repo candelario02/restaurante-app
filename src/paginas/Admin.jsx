@@ -669,7 +669,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Bebidas">Bebidas</option>
               <option value="Entradas">Entradas</option>
               <option value="Cafeteria">Cafetería</option>
-              {/* 🌟 Eliminado "Menú del Día" de aquí para evitar mezclas */}
+              <option value="Postres">Postres</option>{" "}
             </select>
             <textarea
               className="textarea-pro"
@@ -738,7 +738,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="Bebidas">Bebidas</option>
                   <option value="Entradas">Entradas</option>
                   <option value="Cafeteria">Cafetería</option>
-                  {/* 🌟 Eliminado "Menú del Día" de aquí también */}
+                  <option value="Postres">Postres</option>{" "}
                 </select>
               </div>
 
@@ -891,6 +891,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                               </span>
                               <span className="nombre">{safeItem.nombre}</span>
                             </p>
+
+                            {!safeItem.detalles && safeItem.descripcion && (
+                              <span className="detalles-menu-admin">
+                                📝 Nota: {safeItem.descripcion}
+                              </span>
+                            )}
 
                             {safeItem.detalles && (
                               <span className="detalles-menu-admin">
