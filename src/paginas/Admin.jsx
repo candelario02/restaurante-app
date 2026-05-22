@@ -632,11 +632,19 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 </span>
                 <button
                   type="button"
-                  onClick={() => {
-                    const nuevoEstado = !menuDiaActivo;
-                    setMenuDiaActivo(nuevoEstado);
-                    // 🚀 Aquí sí le mandamos 'true' para que te salte el mensaje correcto en el centro
-                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado, true);
+                  onClick={async () => {
+                    // 1. Calculamos el estado real que DEBE tener inmediatamente
+                    const siguienteEstado = !menuDiaActivo;
+
+                    // 2. Primero mandamos a guardar a Firebase con el valor real e inmediato
+                    await guardarConfigMenuDia(
+                      menuDiaPrecio,
+                      siguienteEstado,
+                      true,
+                    );
+
+                    // 3. Al final actualizamos el estado local para que la bola cambie de posición en sincronía
+                    setMenuDiaActivo(siguienteEstado);
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >
