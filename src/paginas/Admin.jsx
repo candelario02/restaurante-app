@@ -124,6 +124,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       if (isAdmin) {
         unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
+
+      // 4. CONFIGURACIÓN MENÚ DEL DÍA
       const configRef = doc(
         db,
         "restaurantes",
@@ -138,6 +140,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           setMenuDiaActivo(data.activo ?? false);
         }
       });
+
+      // 5. 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO) - ¡AHORA ADENTRO PROTEGIDO!
+      const datosRef = doc(
+        db,
+        "restaurantes",
+        restauranteId,
+        "configuraciones",
+        "datos",
+      );
+      unsubDatos = onSnapshot(datosRef, (snapshot) => {
+        if (snapshot.exists()) {
+          setNombreLocal(snapshot.data().nombre || "");
+        }
+      });
     } catch (error) {
       console.error("Error al suscribirse a Firebase:", error);
     }
@@ -150,20 +166,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubDatos();
     };
   }, [restauranteId, rolUsuario, categoria]);
-
-  // 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO)
-  const datosRef = doc(
-    db,
-    "restaurantes",
-    restauranteId,
-    "configuraciones",
-    "datos",
-  );
-  unsubDatos = onSnapshot(datosRef, (snapshot) => {
-    if (snapshot.exists()) {
-      setNombreLocal(snapshot.data().nombre || "");
-    }
-  });
 
   //Funcion de agregar menu del dia
   const guardarConfigMenuDia = async (nuevoPrecio, nuevoEstado) => {
