@@ -92,6 +92,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     mostrar: false,
     mensaje: "",
   });
+  const [nombreLocal, setNombreLocal] = useState("");
 
   // cargar datos de bd
   useEffect(() => {
@@ -106,6 +107,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     let unsubPed = () => {};
     let unsubUser = () => {};
     let unsubConfig = () => {};
+    let unsubDatos = () => {};
 
     try {
       // 1. PRODUCTOS
@@ -145,8 +147,24 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubPed();
       unsubUser();
       unsubConfig();
+      unsubDatos = () => {};
     };
   }, [restauranteId, rolUsuario, categoria]);
+
+  // 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO)
+  const datosRef = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "configuraciones",
+    "datos",
+  );
+  unsubDatos = onSnapshot(datosRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setNombreLocal(snapshot.data().nombre || "");
+    }
+  });
+
   //Funcion de agregar menu del dia
   const guardarConfigMenuDia = async (nuevoPrecio, nuevoEstado) => {
     if (!restauranteId) return;
@@ -925,10 +943,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             </p>
                             <a
                               href={`https://wa.me/51${p.cliente.telefono}?text=${encodeURIComponent(
-                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreRestaurante || "el restaurante"}*.\n\n` +
-                                  `*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
+                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreLocal || "el restaurante"}*.\n\n``*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
                                   `*Total:* S/ ${Number(p.total || 0).toFixed(2)}\n\n` +
-                                  `Por favor, confírmanos tu dirección exacta o envíanos tu enlace de *Waze/Google Maps* en tiempo real para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
+                                  `Por favor, confírmanos tu dirección exacta en tiempo actual para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
                               )}`}
                               target="_blank"
                               rel="noreferrer"
@@ -939,7 +956,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             </a>
                           </div>
                         )}
-                     <span className={`status-badge ${(p.estado || "pendiente").toLowerCase()}`}>
+                      <span
+                        className={`status-badge ${(p.estado || "pendiente").toLowerCase()}`}
+                      >
                         {(p.estado || "pendiente").toUpperCase()}
                       </span>
                     </div>
