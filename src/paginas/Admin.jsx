@@ -788,6 +788,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <thead>
                 <tr>
                   <th>PLATO</th>
+                  <th>DESCRIPCIÓN</th>{" "}
                   <th>PRECIO</th>
                   <th>DISP.</th>
                   <th>ACCIONES</th>
@@ -802,14 +803,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         alt={p.nombre}
                         className="img-mini-pro"
                       />
-                      <div className="plato-info-box">
-                        <span>{p.nombre}</span>
-                        {p.descripcion && (
-                          <span className="td-descripcion">
-                            {p.descripcion}
-                          </span>
-                        )}
-                      </div>
+                      <span>{p.nombre}</span>
+                    </td>
+
+                    <td>
+                      {p.descripcion ? (
+                        <span className="td-descripcion">{p.descripcion}</span>
+                      ) : (
+                        <span className="detalles-producto-admin">
+                          Sin descripción
+                        </span>
+                      )}
                     </td>
 
                     <td className="td-precio">
@@ -919,7 +923,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                             {!safeItem.detalles && safeItem.descripcion && (
                               <span className="detalles-menu-admin">
-                                📝 Nota: {safeItem.descripcion}
+                               {safeItem.descripcion}
                               </span>
                             )}
 

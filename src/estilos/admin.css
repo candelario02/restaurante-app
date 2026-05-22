@@ -46,7 +46,18 @@
   gap: 15px;
   margin-bottom: 40px;
 }
-
+.detalles-producto-admin {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600; /* 🌟 Letras un poco más gruesas y legibles */
+  color: #555;
+  background-color: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-top: 2px;
+  margin-left: 24px;
+  border-left: 3px solid var(--primary);
+}
 .input-pro, .select-pro {
   width: 100%;
   padding: 14px;
