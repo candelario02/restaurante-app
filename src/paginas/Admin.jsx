@@ -1186,26 +1186,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </td>
                       <td className="col-total-monto">
                         {p.estado === "cancelado" ? (
-                          <span
-                            style={{ color: "#dc3545", fontWeight: "bold" }}
-                          >
-                            S/ 0.00
-                          </span>
+                          <span className="txt-cancelado">S/ 0.00</span>
                         ) : (
                           `S/ ${Number(p.total || 0).toFixed(2)}`
                         )}
                       </td>
                       <td className="col-resena">
                         {p.estado === "cancelado" ? (
-                          <span
-                            style={{
-                              color: "#dc3545",
-                              fontSize: "0.85rem",
-                              fontWeight: "600",
-                            }}
-                          >
-                            ❌ Cancelado
-                          </span>
+                          <span className="badge-cancelado">❌ Cancelado</span>
                         ) : (
                           <div className="estrellas-display">
                             {"★".repeat(p.rating || 0)}

@@ -738,6 +738,16 @@
   vertical-align: middle; 
   text-align: left;
 }
+.txt-cancelado {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.badge-cancelado {
+  color: #dc3545;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 
 /* Mantenemos el estilo de tus columnas */
 .tabla-admin-caja .col-total-monto {
