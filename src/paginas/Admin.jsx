@@ -919,14 +919,18 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section">
           <h2 className="titulo-seccion">📦 Pedidos pendientes </h2>
 
-          {pedidos.filter((p) => p.estado !== "entregado").length === 0 ? (
+          {pedidos.filter(
+            (p) => p.estado !== "entregado" && p.estado !== "cancelado",
+          ).length === 0 ? (
             <div className="no-data">
               Todo en orden. No hay pedidos recientes.
             </div>
           ) : (
             <div className="grid-admin">
               {pedidos
-                .filter((p) => p.estado !== "entregado")
+                .filter(
+                  (p) => p.estado !== "entregado" && p.estado !== "cancelado",
+                )
                 .filter(
                   (value, index, self) =>
                     index === self.findIndex((t) => t.id === value.id),
