@@ -163,8 +163,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         },
         { merge: true },
       );
+
+      // 🌟 El mensaje sale aquí en el centro, directo y sin crear código basura
+      alert(
+        nuevoEstado
+          ? "Menú activado correctamente"
+          : "Menú desactivado correctamente",
+      );
     } catch (error) {
       console.error("Error al guardar la configuración del menú:", error);
+      alert("Hubo un error al guardar la configuración");
     }
   };
   //Funcion PRODUCTOS
@@ -620,14 +628,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   onClick={() => {
                     const nuevoEstado = !menuDiaActivo;
                     setMenuDiaActivo(nuevoEstado);
-                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
-
-                    // Feedback visual simple
-                    alert(
-                      nuevoEstado
-                        ? "Menú activado correctamente"
-                        : "Menú apagado",
-                    );
+                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado); // 🌟 Esta función ahora se encarga del aviso
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >
