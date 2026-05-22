@@ -1139,8 +1139,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </div>
 
           <h3 className="subtitulo-tabla">📝 Detalle de Transacciones</h3>
-          <div className="tabla-container-caja">
-            <table className="tabla-admin-caja">
+          <div className="contenedor-caja-v2">
+            <table className="tabla-caja-v2">
               <thead>
                 <tr>
                   <th>FECHA</th>

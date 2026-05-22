@@ -1055,3 +1055,35 @@
 .btn-ojito-detalleydatos:active {
   transform: scale(0.96); 
 }
+
+/* --- prubas nada mas NUEVOS ESTILOS PARA CAJA (Solo afectan a la caja) --- */
+/* Asegura que el contenedor no tenga flexbox que distorsione la tabla */
+.contenedor-caja-v2 {
+  width: 100%;
+  overflow-x: auto;
+  display: block; /* Forzamos bloque para que no afecte la alineación */
+}
+
+/* La tabla aislada */
+.tabla-caja-v2 {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+}
+
+.tabla-caja-v2 th, 
+.tabla-caja-v2 td {
+  padding: 12px 8px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Anchos definidos (Suma 100%) */
+.tabla-caja-v2 th:nth-child(1), .tabla-caja-v2 td:nth-child(1) { width: 18% !important; } 
+.tabla-caja-v2 th:nth-child(2), .tabla-caja-v2 td:nth-child(2) { width: 32% !important; } 
+.tabla-caja-v2 th:nth-child(3), .tabla-caja-v2 td:nth-child(3) { width: 15% !important; } 
+.tabla-caja-v2 th:nth-child(4), .tabla-caja-v2 td:nth-child(4) { width: 20% !important; } 
+.tabla-caja-v2 th:nth-child(5), .tabla-caja-v2 td:nth-child(5) { width: 15% !important; }
