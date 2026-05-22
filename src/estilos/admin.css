@@ -172,7 +172,10 @@
   font-weight: 700;
   color: #64748b;
 }
-
+.td-descripcion {
+  font-weight: 700;
+  color: #64748b;
+}
 .btn-status-pro {
   background: none;
   padding: 5px;

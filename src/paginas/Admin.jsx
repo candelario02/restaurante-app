@@ -802,8 +802,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         alt={p.nombre}
                         className="img-mini-pro"
                       />
-                      <span>{p.nombre}</span>
+                      <div className="plato-info-box">
+                        <span>{p.nombre}</span>
+                        {p.descripcion && (
+                          <span className="td-descripcion">
+                            {p.descripcion}
+                          </span>
+                        )}
+                      </div>
                     </td>
+
                     <td className="td-precio">
                       S/ {Number(p.precio).toFixed(2)}
                     </td>
