@@ -26,6 +26,7 @@ import {
   ArrowLeft,
   Pizza,
   Coffee,
+  Cake,
   Droplet,
   CheckCircle,
   UtensilsCrossed,
@@ -267,7 +268,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       // 3. Si ya eligió Segundo y Entrada pero falta Bebida, mostramos solo la categoría "Bebidas"
       if (!bebidaSeleccionada) {
-        return p.categoria === "Bebidas";
+        return p.categoria === "Bebidas" || p.categoria === "Cafeteria";
       }
 
       return false;
@@ -396,6 +397,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           id: item.id,
           idUnico: item.idUnico,
           nombre: item.nombre,
+          descripcion: item.descripcion || "",
           precio: precioFinalItem,
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
@@ -865,6 +867,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 <p>Menú del Día</p>
               </div>
             )}
+            <div
+              className="cat-item"
+              onClick={() => setCategoriaActual("Postres")}
+            >
+              <Cake size={60} className="icon-postres" />
+              <p>Postres</p>
+            </div>
           </div>
         </div>
       )}
