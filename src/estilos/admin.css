@@ -49,14 +49,19 @@
 .detalles-producto-admin {
   display: block;
   font-size: 0.8rem;
-  font-weight: 600; /* 🌟 Letras un poco más gruesas y legibles */
+  font-weight: 600;
   color: #555;
   background-color: #f1f5f9;
   padding: 4px 8px;
   border-radius: 4px;
   margin-top: 2px;
-  margin-left: 24px;
+  /* 🌟 Quitamos el margin-left: 24px para que no se desalinee */
+  margin-left: 0px; 
   border-left: 3px solid var(--primary);
+  /* 🌟 Control de texto para mantener consistencia */
+  max-width: 350px;
+  white-space: normal;
+  word-break: break-word;
 }
 .input-pro, .select-pro {
   width: 100%;
@@ -186,7 +191,14 @@
 .td-descripcion {
   font-weight: 700;
   color: #64748b;
+  /* 🌟 Ajustes para controlar el texto largo y saltos de línea */
+  display: block;
+  max-width: 350px;       /* Controla el ancho máximo de la columna */
+  white-space: normal;    /* Permite saltos de línea */
+  word-break: break-word; /* Rompe palabras largas si es necesario */
+  line-height: 1.4;
 }
+
 .btn-status-pro {
   background: none;
   padding: 5px;
