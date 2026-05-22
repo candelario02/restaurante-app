@@ -584,7 +584,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN MENÚ */}
       {seccion === "menu" && (
         <div className="admin-section">
-          {/* 🌟 BARRA DE CONTROL INTEGRADA (MOCKUP) - CLASES LIMPIAS */}
           <div className="tarjeta-control-menu-dia">
             <div className="menu-dia-info-grupo">
               <span className="menu-dia-icono">⚙️</span>
@@ -692,7 +691,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               className="textarea-pro"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción del producto o detalles del combo (Ej: Entrada + Segundo + Bebida)..."
+              placeholder="Descripción del producto o ingredientesd del plato..."
               rows={3}
             />
 
