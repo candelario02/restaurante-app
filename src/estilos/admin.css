@@ -733,20 +733,10 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 600px;
-}
-/* Reset de alineación para la nueva tabla de caja */
-.tabla-admin-caja tr {
-    display: table-row !important;
-}
-
-.tabla-admin-caja td {
-    vertical-align: top !important;
-    text-align: left;
-}
-
-.tabla-admin-caja td {
-  vertical-align: top;
+}.tabla-admin-caja td {
   padding: 12px 8px; 
+  vertical-align: middle; 
+  text-align: left;
 }
 
 /* Mantenemos el estilo de tus columnas */
