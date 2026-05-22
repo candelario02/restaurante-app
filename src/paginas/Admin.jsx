@@ -656,23 +656,25 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <h2 className="titulo-seccion">
             {editandoId ? "Editar Producto" : "Nuevo Plato"}
           </h2>
-
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              // 🌟 CANDADO 1: Si no está editando (plato nuevo), la imagen es 100% obligatoria
+
               if (!editandoId && !archivo) {
-                alert(
-                  "Por favor, sube una imagen para el producto antes de guardar.",
-                );
+                Swal.fire({
+                  title: "¡Imagen Obligatoria!",
+                  text: "Debe subir una foto para registrar el plato. Use el botón 'Subir Imagen' de abajo.",
+                  icon: "warning",
+                  confirmButtonColor: "#10b981",
+                  confirmButtonText: "OK",
+                });
                 return;
               }
-              // Si pasa el filtro, ejecuta tu función original
+
               guardarProducto(e);
             }}
             className="form-admin-pro"
           >
-            {/* INPUT NOMBRE: Limitado a 45 caracteres comerciales */}
             <input
               className="input-pro"
               required
@@ -682,7 +684,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               placeholder="Nombre del plato (Máx. 45 caracteres)"
             />
 
-            {/* INPUT PRECIO: Validado entre S/ 0.50 y S/ 999.00 para evitar errores de tipeo */}
             <input
               className="input-pro"
               type="number"
@@ -691,7 +692,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               max={999}
               step="0.01"
               value={precio}
-              onChange={(e) => setPrecio(e.target.value)}
+              onChange={(e) => {
+                const valor = e.target.value;
+                if (valor.split(".")[0].length > 3) {
+                  return;
+                }
+                setPrecio(valor);
+              }}
               placeholder="Precio (S/)"
             />
 
@@ -710,13 +717,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Postres">Postres</option>{" "}
             </select>
 
-            {/* TEXTAREA DESCRIPCIÓN: Limitada a 150 caracteres para un resumen limpio */}
             <textarea
               className="textarea-pro"
               maxLength={150}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción o ingredientes del plato... (Máx. 150 caracteres)"
+              placeholder="Descripción del producto o ingredientes del plato... (Máx. 150 caracteres)"
               rows={3}
             />
 
