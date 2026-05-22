@@ -1162,7 +1162,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   onClick={() => {
                     setVerCarrito(false);
                     if (pedidoActivoId) {
-                      setMostrarIconoCarrito(false); 
+                      setMostrarIconoCarrito(false);
                       enviarPedidoFinal();
                     } else {
                       setMostrarFormulario(true);
@@ -1333,8 +1333,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-enviar-resena"
                 disabled={estrellas === 0 || enviando}
                 onClick={() => {
+                  // 🌟 FIJAR LIMPIEZA ABSOLUTA AL ENVIAR RESEÑA
                   setMostrarIconoCarrito(false);
-                  setCarrito([]); // 🌟 DEFENITIVO: Vacía el carrito del estado al terminar y calificar
+                  setCarrito([]);
+                  localStorage.removeItem(`ultimoPedido_${restauranteId}`);
+                  setPedidoActivoId(null);
+                  setDatosPedidoRealtime(null);
+
+                  // Finalmente mandas la calificación a tu base de datos
                   finalizarYCalificar(estrellas, comentario);
                 }}
               >
@@ -1345,8 +1351,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 className="btn-omitir"
                 disabled={enviando}
                 onClick={() => {
+                  // 🌟 FIJAR LIMPIEZA ABSOLUTA AL OMITIR
                   setMostrarIconoCarrito(false);
-                  setCarrito([]); // 🌟 DEFINITIVO: Vacía el carrito del estado si el cliente omite
+                  setCarrito([]);
                   localStorage.removeItem(`ultimoPedido_${restauranteId}`);
                   setPedidoActivoId(null);
                   setDatosPedidoRealtime(null);
