@@ -143,12 +143,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       unsubConfig();
     };
   }, [restauranteId, rolUsuario, categoria]);
-  // Funcion de agregar menu del dia (añadimos mostrarAlerta como tercer parámetro)
-  const guardarConfigMenuDia = async (
-    nuevoPrecio,
-    nuevoEstado,
-    mostrarAlerta = false,
-  ) => {
+  //Funcion de agregar menu del dia
+  const guardarConfigMenuDia = async (nuevoPrecio, nuevoEstado) => {
     if (!restauranteId) return;
     try {
       const configRef = doc(
@@ -167,18 +163,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         },
         { merge: true },
       );
-
-      // 🌟 Solo interrumpe con el alert si explícitamente viene del Switch
-      if (mostrarAlerta) {
-        alert(
-          nuevoEstado
-            ? "Menú activado correctamente"
-            : "Menú desactivado correctamente",
-        );
-      }
     } catch (error) {
       console.error("Error al guardar la configuración del menú:", error);
-      alert("Hubo un error al guardar la configuración");
     }
   };
   //Funcion PRODUCTOS
@@ -617,8 +603,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   onChange={(e) => {
                     const v = e.target.value;
                     setMenuDiaPrecio(v);
-                    // 🤫 Guarda silencioso en base de datos mientras escribes (sin alert)
-                    guardarConfigMenuDia(v, menuDiaActivo, false);
+                    guardarConfigMenuDia(v, menuDiaActivo);
                   }}
                 />
               </div>
@@ -632,19 +617,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 </span>
                 <button
                   type="button"
-                  onClick={async () => {
-                    // 1. Calculamos el estado real que DEBE tener inmediatamente
-                    const siguienteEstado = !menuDiaActivo;
+                  onClick={() => {
+                    const nuevoEstado = !menuDiaActivo;
+                    setMenuDiaActivo(nuevoEstado);
+                    guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
 
-                    // 2. Primero mandamos a guardar a Firebase con el valor real e inmediato
-                    await guardarConfigMenuDia(
-                      menuDiaPrecio,
-                      siguienteEstado,
-                      true,
+                    // 🌟 Muestra el SMS al centro basándose en la acción real del click
+                    alert(
+                      nuevoEstado
+                        ? "Menú activado correctamente"
+                        : "Menú desactivado correctamente",
                     );
-
-                    // 3. Al final actualizamos el estado local para que la bola cambie de posición en sincronía
-                    setMenuDiaActivo(siguienteEstado);
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >
