@@ -951,7 +951,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       {p.cliente?.tipo === "Delivery" ? (
                         <>
                           <p className="texto-tipo-entrega">
-                            🛵 Delivery: {p.cliente?.direccion || "No provista"}
+                            🛵 Delivery:{" "}
+                            {p.cliente?.direccion ||
+                              p.cliente?.referencia ||
+                              "Dirección no registrada"}
                           </p>
 
                           {p.cliente?.telefono &&
