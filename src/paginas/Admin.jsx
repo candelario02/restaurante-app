@@ -657,22 +657,44 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             {editandoId ? "Editar Producto" : "Nuevo Plato"}
           </h2>
 
-          <form onSubmit={guardarProducto} className="form-admin-pro">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // 🌟 CANDADO 1: Si no está editando (plato nuevo), la imagen es 100% obligatoria
+              if (!editandoId && !archivo) {
+                alert(
+                  "Por favor, sube una imagen para el producto antes de guardar.",
+                );
+                return;
+              }
+              // Si pasa el filtro, ejecuta tu función original
+              guardarProducto(e);
+            }}
+            className="form-admin-pro"
+          >
+            {/* INPUT NOMBRE: Limitado a 45 caracteres comerciales */}
             <input
               className="input-pro"
               required
+              maxLength={45}
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Nombre del plato"
+              placeholder="Nombre del plato (Máx. 45 caracteres)"
             />
+
+            {/* INPUT PRECIO: Validado entre S/ 0.50 y S/ 999.00 para evitar errores de tipeo */}
             <input
               className="input-pro"
               type="number"
               required
+              min={0.5}
+              max={999}
+              step="0.01"
               value={precio}
               onChange={(e) => setPrecio(e.target.value)}
               placeholder="Precio (S/)"
             />
+
             <select
               className="select-pro"
               value={categoria}
@@ -687,11 +709,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="Cafeteria">Cafetería</option>
               <option value="Postres">Postres</option>{" "}
             </select>
+
+            {/* TEXTAREA DESCRIPCIÓN: Limitada a 150 caracteres para un resumen limpio */}
             <textarea
               className="textarea-pro"
+              maxLength={150}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción del producto o ingredientesd del plato..."
+              placeholder="Descripción o ingredientes del plato... (Máx. 150 caracteres)"
               rows={3}
             />
 
@@ -717,7 +742,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 disabled={cargando}
               >
                 {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
-                {imgPreview ? " Imagen Cargada" : " Subir Imagen"}
+                {imgPreview ? " Imagen Cargada" : " Subir Imagen (Obligatorio)"}
               </button>
 
               {imgPreview && (
