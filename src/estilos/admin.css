@@ -333,6 +333,23 @@
   max-width: 600px;         /* Limita el ancho para que no se vea estirada */
   border: 1px solid #e2e8f0;
 }
+/* Nueva clase para el mensaje flotante centrado bonito */
+.menu-dia-notificacion-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #1e293b;
+  color: #ffffff;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
 
 /* Ajuste específico para móviles */
 @media (max-width: 480px) {

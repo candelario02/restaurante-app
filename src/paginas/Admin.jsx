@@ -88,6 +88,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
   const fileInputRef = useRef(null);
+  const [notificacionMenu, setNotificacionMenu] = useState({
+    mostrar: false,
+    mensaje: "",
+  });
 
   // cargar datos de bd
   useEffect(() => {
@@ -622,18 +626,31 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     setMenuDiaActivo(nuevoEstado);
                     guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
 
-                    // 🌟 Muestra el SMS al centro basándose en la acción real del click
-                    alert(
-                      nuevoEstado
+                    // 🌟 Lanzamos el mensaje bonito usando el nuevo estado
+                    setNotificacionMenu({
+                      mostrar: true,
+                      mensaje: nuevoEstado
                         ? "Menú activado correctamente"
                         : "Menú desactivado correctamente",
-                    );
+                    });
+
+                    // ⏱️ Se limpia automáticamente a los 2 segundos sin trabar el switch
+                    setTimeout(() => {
+                      setNotificacionMenu({ mostrar: false, mensaje: "" });
+                    }, 2000);
                   }}
                   className={`menu-dia-switch-btn ${menuDiaActivo ? "is-active" : ""}`}
                 >
                   <div className="menu-dia-switch-bola" />
                 </button>
               </div>
+
+              {/* 🌟 MENSAJE BONITO EN EL CENTRO CON LA NUEVA CLASE CSS */}
+              {notificacionMenu.mostrar && (
+                <div className="menu-dia-notificacion-toast">
+                  {notificacionMenu.mensaje}
+                </div>
+              )}
             </div>
           </div>
 
