@@ -496,7 +496,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const obtenerEstadisticasCaja = (listaPedidos, periodo) => {
     const ahora = new Date();
     const filtrados = listaPedidos.filter((p) => {
-      const estadosValidos = ["entregado", "finalizado"];
+      const estadosValidos = ["entregado", "finalizado", "cancelado"];
       if (!estadosValidos.includes(p.estado) || !p.fecha?.toDate) return false;
       const fechaP = p.fecha.toDate();
 
@@ -514,12 +514,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         );
       }
       if (periodo === "anio")
-        return fechaP.getFullYear() === ahora.getFullYear();
+        return fechaP.getFullYear() === coordinator.getFullYear();
       return true;
     });
 
     const monto = filtrados
-      .reduce((acc, p) => acc + Number(p.total), 0)
+      .reduce(
+        (acc, p) => acc + (p.estado === "cancelado" ? 0 : Number(p.total)),
+        0,
+      )
       .toFixed(2);
     const cantidad = filtrados.length;
 
@@ -1157,21 +1160,51 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           : "Sin fecha"}
                       </td>
                       <td>
-                        <strong>{p.cliente?.nombre || "Cte. Genérico"}</strong>
+                        {p.estado === "cancelado" ? (
+                          <del>
+                            <strong>
+                              {p.cliente?.nombre || "Cte. Genérico"}
+                            </strong>
+                          </del>
+                        ) : (
+                          <strong>
+                            {p.cliente?.nombre || "Cte. Genérico"}
+                          </strong>
+                        )}
                         <br />
                         <small className="texto-secundario">
                           {p.cliente?.tipo} {p.cliente?.referencia}
                         </small>
                       </td>
                       <td className="col-total-monto">
-                        S/ {Number(p.total || 0).toFixed(2)}
+                        {p.estado === "cancelado" ? (
+                          <span
+                            style={{ color: "#dc3545", fontWeight: "bold" }}
+                          >
+                            S/ 0.00
+                          </span>
+                        ) : (
+                          `S/ ${Number(p.total || 0).toFixed(2)}`
+                        )}
                       </td>
                       <td className="col-resena">
-                        <div className="estrellas-display">
-                          {"★".repeat(p.rating || 0)}
-                          {"☆".repeat(5 - (p.rating || 0))}
-                        </div>
-                        {p.resena && (
+                        {p.estado === "cancelado" ? (
+                          <span
+                            style={{
+                              color: "#dc3545",
+                              fontSize: "0.85rem",
+                              fontWeight: "600",
+                            }}
+                          >
+                            ❌ Cancelado
+                          </span>
+                        ) : (
+                          <div className="estrellas-display">
+                            {"★".repeat(p.rating || 0)}
+                            {"☆".repeat(5 - (p.rating || 0))}
+                          </div>
+                        )}
+                        {p.resena && p.estado !== "cancelado" && (
                           <i className="comentario-mini">"{p.resena}"</i>
                         )}
                       </td>
