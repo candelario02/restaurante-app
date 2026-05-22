@@ -445,17 +445,95 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       // ==========================================================================
       setCarrito([]); // 🛒 Limpia la interfaz local de React inmediatamente
 
-      await Swal.fire({
-        title: "¡Éxito!",
-        text: idExistente
-          ? "Tu pedido ha sido actualizado correctamente."
-          : "Orden enviada con éxito.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
+      // ==========================================================================
+      // 🌟 AGREGADO: GESTIÓN DE ALERTAS DINÁMICAS (DELIVERY MULTIPUNTO vs MESA)
+      // ==========================================================================
+      const esDelivery = pedidoParaFirebase.cliente.tipo === "Delivery";
 
-      // 7. Limpiar estados de control de interfaz y guardar ID
+      if (esDelivery) {
+        // 🛵 BLOQUE DELIVERY: Jalamos el número estrictamente de Firestore
+        const numeroWhatsApp = datosConfig?.whatsapp;
+
+        // 🌟 CANDADO MULTIPUNTO: Si el local no tiene WhatsApp configurado en Firestore, frenamos el envío cruzado
+        if (!numeroWhatsApp) {
+          await Swal.fire({
+            title: "Aviso del Restaurante",
+            text: "Este local no tiene un número de WhatsApp configurado para coordinar el despacho. Tu pedido ya está guardado en la cocina de la web.",
+            icon: "warning",
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#6b7280",
+          });
+
+          // Ejecutamos el cierre normal de tu interfaz para que el flujo web continúe limpio
+          setVerCarrito(false);
+          setMostrarFormulario(false);
+          setCategoriaActual(null);
+          setCarrito([]);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return; // Rompe la función aquí para que no intente abrir un WhatsApp inválido o cruzado
+        }
+
+        // Si el número existe en Firestore, el flujo continúa de forma perfecta y dinámica:
+        const totalFinal = pedidoParaFirebase.total;
+        const infoCliente = pedidoParaFirebase.cliente;
+
+        // Estructura limpia de ítems para el cuerpo del mensaje de texto
+        const listaPlatosTexto = nuevosItems
+          .map(
+            (item) =>
+              `• ${item.cantidad}x ${item.nombre} (S/ ${item.precio.toFixed(2)})`,
+          )
+          .join("\n");
+
+        // Evalúa dinámicamente el título del mensaje según si es actualización o nuevo
+        const encabezadoTexto = idExistente
+          ? `🔄 *¡PEDIDO ACTUALIZADO EN LA WEB!* 🔄`
+          : `🍔 *¡NUEVO PEDIDO DESDE LA WEB!* 🍔`;
+
+        // Construcción del mensaje con formato nativo de WhatsApp
+        const textoWhatsApp = encodeURIComponent(
+          `${encabezadoTexto}\n\n` +
+            `*Cliente:* ${infoCliente.nombre}\n` +
+            `*Teléfono:* ${infoCliente.telefono}\n` +
+            `*Tipo:* ${infoCliente.tipo}\n` +
+            `${infoCliente.referencia ? `*Dirección/Ref:* ${infoCliente.referencia}\n` : ""}\n` +
+            `*Detalle del Pedido:*\n${listaPlatosTexto}\n\n` +
+            `*Total a Pagar:* S/ ${totalFinal.toFixed(2)}\n\n` +
+            `_Enviado de forma automática desde el sistema._`,
+        );
+
+        const linkWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${textoWhatsApp}`;
+
+        // Lanzamiento del Modal Híbrido interactivo de SweetAlert2 para Delivery
+        await Swal.fire({
+          title: idExistente ? "¡Pedido Actualizado!" : "¡Pedido Registrado!",
+          text: "Los datos ya están guardados en cocina. ¿Deseas enviar el resumen detallado a nuestro WhatsApp para coordinar el motorizado?",
+          icon: "success",
+          showCancelButton: true, // Renderiza el botón secundario (Omitir)
+          confirmButtonColor: "#10b981", // Color de confirmación verde WhatsApp
+          cancelButtonColor: "#6b7280", // Color de cancelación gris elegante
+          confirmButtonText: "Enviar a WhatsApp",
+          cancelButtonText: "Omitir, ver en web",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Dispara el enlace en una pestaña limpia si se decide notificar por WhatsApp
+            window.open(linkWhatsApp, "_blank");
+          }
+        });
+      } else {
+        // 🪑 BLOQUE MESA / LOCAL: Tu comportamiento original intacto (Rápido, automático y limpio sin WhatsApp)
+        await Swal.fire({
+          title: "¡Éxito!",
+          text: idExistente
+            ? "Tu pedido ha sido actualizado correctamente."
+            : "Orden enviada con éxito.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+
+      // 7. Limpiar estados de control de interfaz y guardar ID (Tu lógica original intacta)
       setVerCarrito(false);
       setMostrarFormulario(false);
       setCategoriaActual(null);
@@ -467,7 +545,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       }
 
       // 🌟 SEGUNDO: Recién ahora vaciamos el carrito local
-      // Como el tiempo real ya se ejecutó con los datos, no te va a duplicar nada.
       setCarrito([]);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1415,7 +1492,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           </div>
         </div>
       )}
-
       {/*MODAL DE ÉXITO VERDE (Pedido Cancelado con Éxito) */}
       {mostrarExitoEliminar && (
         <div className="custom-modal-overlay">
