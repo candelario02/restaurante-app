@@ -645,6 +645,38 @@
   font-size: 1.1rem;
   margin: 0;
 }
+/* Contenedor secundario para la información de entrega */
+.datos-despacho-admin {
+  margin-top: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Estilo para los textos de Delivery o Mesa */
+.texto-tipo-entrega {
+  font-size: 0.85rem;
+  color: #475569 !important; /* Forzamos color slate oscuro elegante */
+  font-weight: 600 !important; /* Peso semibold para que no use el global de 700 */
+  margin: 0 !important;
+}
+
+/* Forzar tamaño correcto al nombre del cliente en cabecera */
+.card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Ajuste fino al contenedor de WhatsApp para que no rompa el bloque */
+.container-telefono-whatsapp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0 0 0;
+}
 
 .acciones-pedido {
   display: flex !important; 

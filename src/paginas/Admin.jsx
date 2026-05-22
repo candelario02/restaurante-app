@@ -936,29 +936,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 )
                 .map((p) => (
                   <div key={p.id} className="card-admin">
+                    {/* Cabecera limpia: Nombre a la izquierda, Badge a la derecha */}
                     <div className="card-header">
-                      {p.cliente?.telefono &&
-                        p.cliente.telefono !== "No provisto" && (
-                          <div className="container-telefono-whatsapp">
-                            <p className="texto-telefono-admin">
-                              📞 {p.cliente?.telefono || "No provisto"}
-                            </p>
-                            <a
-                              href={`https://wa.me/51${p.cliente?.telefono || ""}?text=${encodeURIComponent(
-                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreLocal || "el restaurante"}*.\n\n` +
-                                  `*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
-                                  `*Total:* S/ ${Number(p.total || 0).toFixed(2)}\n\n` +
-                                  `Por favor, confírmanos tu dirección exacta en tiempo actual para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
-                              )}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn-whatsapp-admin"
-                              title="Coordinar entrega por WhatsApp"
-                            >
-                              💬 WhatsApp
-                            </a>
-                          </div>
-                        )}
+                      <h3>{p.cliente?.nombre || "Cliente"}</h3>
                       <span
                         className={`status-badge ${(p.estado || "pendiente").toLowerCase()}`}
                       >
@@ -966,6 +946,45 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </span>
                     </div>
 
+                    {/* Información de despacho y contacto */}
+                    <div className="datos-despacho-admin">
+                      {p.cliente?.tipo === "Delivery" ? (
+                        <>
+                          <p className="texto-tipo-entrega">
+                            🛵 Delivery: {p.cliente?.direccion || "No provista"}
+                          </p>
+
+                          {p.cliente?.telefono &&
+                            p.cliente.telefono !== "No provisto" && (
+                              <div className="container-telefono-whatsapp">
+                                <p className="texto-telefono-admin">
+                                  📞 {p.cliente.telefono}
+                                </p>
+                                <a
+                                  href={`https://wa.me/51${p.cliente.telefono}?text=${encodeURIComponent(
+                                    `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreLocal || "el restaurante"}*.\n\n` +
+                                      `*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
+                                      `*Total:* S/ ${Number(p.total || 0).toFixed(2)}\n\n` +
+                                      `Por favor, confírmanos tu dirección exacta en tiempo actual para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
+                                  )}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn-whatsapp-admin"
+                                  title="Coordinar entrega por WhatsApp"
+                                >
+                                  💬 WhatsApp
+                                </a>
+                              </div>
+                            )}
+                        </>
+                      ) : (
+                        <p className="texto-tipo-entrega">
+                          📍 Mesa: {p.cliente?.mesa || "Mesa"}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Cuerpo del pedido: Items */}
                     <div className="items-pedido">
                       {p.items?.map((item, index) => {
                         const safeItem = {
@@ -1006,6 +1025,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </p>
                     </div>
 
+                    {/* Botones de acción inferiores */}
                     <div className="acciones-pedido">
                       {p.estado === "pendiente" && (
                         <button
