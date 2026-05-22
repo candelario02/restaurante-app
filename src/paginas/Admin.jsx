@@ -517,7 +517,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         return fechaP.getFullYear() === coordinator.getFullYear();
       return true;
     });
-
+    if (periodo === "cancelados") {
+      const soloCancelados = filtrados.filter((p) => p.estado === "cancelado");
+      return {
+        monto: "0.00",
+        cantidad: soloCancelados.length,
+        filtrados: soloCancelados,
+      };
+    }
     const monto = filtrados
       .reduce(
         (acc, p) => acc + (p.estado === "cancelado" ? 0 : Number(p.total)),
@@ -1093,6 +1100,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="semana">Ventas de la Semana</option>
                   <option value="mes">Mes Actual</option>
                   <option value="total">Ventas Total</option>
+                  <option value="cancelados">❌ Solo Cancelados</option>
                 </select>
                 <button
                   onClick={() => {
