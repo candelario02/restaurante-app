@@ -734,7 +734,15 @@
   border-collapse: collapse;
   min-width: 600px;
 }
+/* Reset de alineación para la nueva tabla de caja */
+.tabla-admin-caja tr {
+    display: table-row !important;
+}
 
+.tabla-admin-caja td {
+    vertical-align: top !important;
+    text-align: left;
+}
 
 .tabla-admin-caja td {
   vertical-align: top;
@@ -743,6 +751,7 @@
 
 /* Mantenemos el estilo de tus columnas */
 .tabla-admin-caja .col-total-monto {
+  vertical-align: top;
   font-weight: bold;
 }
 .select-admin-filtro {
