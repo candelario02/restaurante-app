@@ -452,7 +452,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       if (esDelivery) {
         // 🛵 BLOQUE DELIVERY: Jalamos el número estrictamente de Firestore
-        const numeroWhatsApp = datosConfig?.whatsapp;
+        // 🛵 BLOQUE DELIVERY: Llamamos a tu servicio importado para traer el número fresco
+        const configData = await obtenerConfigRestaurante(restauranteId);
+        const numeroWhatsApp = configData?.whatsapp;
 
         // 🌟 CANDADO MULTIPUNTO: Si el local no tiene WhatsApp configurado en Firestore, frenamos el envío cruzado
         if (!numeroWhatsApp) {
