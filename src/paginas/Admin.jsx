@@ -941,11 +941,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         p.cliente.telefono !== "No provisto" && (
                           <div className="container-telefono-whatsapp">
                             <p className="texto-telefono-admin">
-                              📞 {p.cliente.telefono}
+                              📞 {p.cliente?.telefono || "No provisto"}
                             </p>
                             <a
-                              href={`https://wa.me/51${p.cliente.telefono}?text=${encodeURIComponent(
-                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreLocal || "el restaurante"}*.\n\n``*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
+                              href={`https://wa.me/51${p.cliente?.telefono || ""}?text=${encodeURIComponent(
+                                `¡Hola *${p.cliente?.nombre || "Cliente"}*! 🌟 Recibimos tu pedido de *${nombreLocal || "el restaurante"}*.\n\n` +
+                                  `*Detalle:* ${p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", ") || ""}\n` +
                                   `*Total:* S/ ${Number(p.total || 0).toFixed(2)}\n\n` +
                                   `Por favor, confírmanos tu dirección exacta en tiempo actual para despachar tu orden lo antes posible. ¡Muchas gracias! 🛵`,
                               )}`}
