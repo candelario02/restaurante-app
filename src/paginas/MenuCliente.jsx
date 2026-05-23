@@ -1327,7 +1327,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
 
-                // 🌟 CAMBIO: Al confirmar la orden, ocultamos el icono del carrito en la interfaz
                 setMostrarIconoCarrito(false);
 
                 enviarPedidoFinal({
