@@ -1301,7 +1301,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                       textAlign: "center",
                     }}
                   >
-                    Tu pedido está en <b>{datosPedidoRealtime?.estado}</b>, ya
+                    Tu pedido se está <b>{datosPedidoRealtime?.estado}</b>, ya
                     no se permiten cambios.
                   </p>
                 )}
