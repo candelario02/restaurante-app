@@ -18,10 +18,10 @@
   background-color: var(--bg-main);
   display: flex;
   flex-direction: column;
-  
+
   /* CAMBIA ESTO */
   justify-content: flex-start; /* Antes era 'center', esto sube el contenido */
-  align-items: center; 
+  align-items: center;
   padding: 20px;
   width: 100%;
 }
@@ -323,6 +323,35 @@
 /* =============================================
    5. CARRITO (MODAL, ITEMS, BOTONES)
    ============================================= */
+.msg-bloqueo {
+  color: var(--primary-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 15px;
+  padding: 12px;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  background-color: var(--msg-bloqueo-bg);
+
+  /* Animación de palpito */
+  animation: palpitar 2s infinite ease-in-out;
+}
+
+@keyframes palpitar {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 .carrito-overlay,
 .overlay-msg {
   position: fixed;
@@ -456,7 +485,9 @@
   font-size: 14px;
   cursor: pointer;
   margin-top: 12px; /* Separación respecto a la fila de arriba */
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -483,7 +514,9 @@
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 50%;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 /* ==========================================================================
    ESTILOS PARA EL MODAL DE ADVERTENCIA AL MEDIO DE LA PANTALLA
@@ -844,21 +877,30 @@
 .descripcion-corta-titulo {
   background-color: #e0f2fe; /* Azul muy clarito */
   border: 2px dashed #3b82f6; /* Borde azul más fuerte */
-  color: #1e3a8a;            /* Texto azul oscuro */
+  color: #1e3a8a; /* Texto azul oscuro */
   padding: 12px;
   border-radius: 8px;
   text-align: center;
   font-weight: 600;
   margin-bottom: 15px;
-  
+
   /* Animación de palpitar */
   animation: pulso 2s infinite;
 }
 
 @keyframes pulso {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-  50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
 }
 /* --- CONTADOR Y ANIMACIÓN --- */
 .contador-espera {
@@ -1106,10 +1148,14 @@
    11. RESPONSIVE (TODO LO DE CELULARES UNIFICADO)
    ============================================= */
 @media (max-width: 480px) {
-
   /* ─── 0. LIBERACIÓN DE BORDES DE LA PANTALLA ─── */
   /* Destruimos el padding de 20px de la clase padre (.main-content) y liberamos espacio */
-  body, html, #root, .main-content, .view-principal, .admin-container {
+  body,
+  html,
+  #root,
+  .main-content,
+  .view-principal,
+  .admin-container {
     padding-left: 0px !important;
     padding-right: 0px !important;
     margin-left: 0px !important;
@@ -1136,7 +1182,7 @@
     margin-top: 4px !important;
     margin-bottom: 10px !important;
     padding: 12px !important;
-    width: auto !important; 
+    width: auto !important;
     margin-left: 6px !important;
     margin-right: 6px !important;
     box-sizing: border-box;
@@ -1146,7 +1192,7 @@
   .categoria-titulo {
     margin-top: 6px !important;
     margin-bottom: 6px !important;
-    padding-left: 8px !important; 
+    padding-left: 8px !important;
   }
 
   /* ─── 2. CATEGORÍAS PRINCIPALES (TU DISEÑO ORIGINAL) ─── */
@@ -1216,4 +1262,3 @@
     font-size: 1.1rem;
   }
 }
-
