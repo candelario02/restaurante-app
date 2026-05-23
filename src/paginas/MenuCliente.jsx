@@ -194,6 +194,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               id: item.id,
               idUnico: item.idUnico,
               nombre: item.nombre,
+              descripcion: item.descripcion || "",
               precio: Number(item.precio),
               precioBase: Number(
                 item.detalles?.precioExtra
@@ -540,13 +541,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setMostrarFormulario(false);
       setCategoriaActual(null);
 
-      // 🌟 PRIMERO: Guardamos el ID para que el tiempo real se active con el carrito lleno
+      // Guardamos el ID si es un pedido nuevo
       if (!idExistente && idNuevo) {
         setPedidoActivoId(idNuevo);
         localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
       }
 
-      // 🌟 SEGUNDO: Recién ahora vaciamos el carrito local
+      // Vaciamos el carrito local al final de todo el proceso
       setCarrito([]);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
