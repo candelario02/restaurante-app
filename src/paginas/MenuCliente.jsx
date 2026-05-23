@@ -1222,17 +1222,27 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     </div>
 
                     <div className="item-controles">
-                      <button onClick={() => restarAlCarrito(item.idUnico)}>
-                        -
-                      </button>
-                      <span className="item-cantidad">{item.cantidad}</span>
-                      <button onClick={() => agregarAlCarrito(item)}>+</button>
-                      <button
-                        className="btn-eliminar-item"
-                        onClick={() => eliminarDelCarrito(item.idUnico)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {datosPedidoRealtime?.estado === "pendiente" ? (
+                        <>
+                          <button onClick={() => restarAlCarrito(item.idUnico)}>
+                            -
+                          </button>
+                          <span className="item-cantidad">{item.cantidad}</span>
+                          <button onClick={() => agregarAlCarrito(item)}>
+                            +
+                          </button>
+                          <button
+                            className="btn-eliminar-item"
+                            onClick={() => eliminarDelCarrito(item.idUnico)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      ) : (
+                        <span className="item-cantidad">
+                          Cant: {item.cantidad}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
@@ -1246,39 +1256,55 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               </div>
 
               <div className="carrito-acciones">
-                <button
-                  className="btn-agregar-cerrar"
-                  onClick={() => {
-                    if (pedidoActivoId) {
-                      revertirCambiosPedido();
-                      setVerCarrito(false);
-                    } else {
-                      setVerCarrito(false);
-                    }
-                  }}
-                >
-                  {pedidoActivoId ? "Cancelar Cambios" : "Seguir Comprando"}
-                </button>
+                {datosPedidoRealtime?.estado === "pendiente" ? (
+                  <>
+                    <button
+                      className="btn-agregar-cerrar"
+                      onClick={() => {
+                        if (pedidoActivoId) {
+                          revertirCambiosPedido();
+                          setVerCarrito(false);
+                        } else {
+                          setVerCarrito(false);
+                        }
+                      }}
+                    >
+                      {pedidoActivoId ? "Cancelar Cambios" : "Seguir Comprando"}
+                    </button>
 
-                <button
-                  className="btn-pagar"
-                  disabled={carrito.length === 0 || enviando}
-                  onClick={() => {
-                    setVerCarrito(false);
-                    if (pedidoActivoId) {
-                      setMostrarIconoCarrito(false);
-                      enviarPedidoFinal();
-                    } else {
-                      setMostrarFormulario(true);
-                    }
-                  }}
-                >
-                  {enviando
-                    ? "Enviando..."
-                    : pedidoActivoId
-                      ? "🚀 Actualizar mi Pedido"
-                      : "Confirmar Pedido"}
-                </button>
+                    <button
+                      className="btn-pagar"
+                      disabled={carrito.length === 0 || enviando}
+                      onClick={() => {
+                        setVerCarrito(false);
+                        if (pedidoActivoId) {
+                          setMostrarIconoCarrito(false);
+                          enviarPedidoFinal();
+                        } else {
+                          setMostrarFormulario(true);
+                        }
+                      }}
+                    >
+                      {enviando
+                        ? "Enviando..."
+                        : pedidoActivoId
+                          ? "🚀 Actualizar mi Pedido"
+                          : "Confirmar Pedido"}
+                    </button>
+                  </>
+                ) : (
+                  <p
+                    className="msg-bloqueo"
+                    style={{
+                      color: "#6b7280",
+                      fontSize: "0.9rem",
+                      textAlign: "center",
+                    }}
+                  >
+                    Tu pedido está en <b>{datosPedidoRealtime?.estado}</b>, ya
+                    no se permiten cambios.
+                  </p>
+                )}
               </div>
 
               {pedidoActivoId &&
