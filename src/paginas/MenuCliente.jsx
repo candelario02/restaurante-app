@@ -167,6 +167,32 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     const s = segundos % 60;
     return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
   };
+  
+// Efecto para sincronizar el carrito cuando el estado cambia de estado fuera de "pendiente"
+useEffect(() => {
+  if (datosPedidoRealtime && datosPedidoRealtime.estado !== "pendiente") {
+   
+    if (datosPedidoRealtime.items) {
+      const itemsSincronizados = datosPedidoRealtime.items.map((item) => ({
+        id: item.id,
+        idUnico: item.idUnico,
+        nombre: item.nombre,
+        descripcion: item.descripcion || "",
+        precio: Number(item.precio),
+        precioBase: Number(
+          item.detalles?.precioExtra
+            ? item.precio - item.detalles.precioExtra
+            : item.precio
+        ),
+        cantidad: item.cantidad,
+        detalles: item.details || item.detalles,
+        isMenuCompleto: !!item.detalles,
+      }));
+      
+      setCarrito(itemsSincronizados);
+    }
+  }
+}, [datosPedidoRealtime?.estado]); 
 
   // 3. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
   useEffect(() => {
