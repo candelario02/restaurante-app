@@ -332,24 +332,21 @@
   padding: 12px;
   border: 1px solid var(--primary);
   border-radius: var(--radius);
-  background-color: var(--msg-bloqueo-bg);
-
-  /* Animación de palpito */
-  animation: palpitar 2s infinite ease-in-out;
+  /* Usamos tu variable de azul suave */
+  background-color: var(--primary-light); 
+  
+  /* Animación de palpito más suave */
+  animation: palpitar 3s infinite ease-in-out;
 }
 
 @keyframes palpitar {
-  0% {
-    opacity: 1;
+  0%, 100% { 
     transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2);
   }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+  50% { 
+    transform: scale(1.01); /* Un leve aumento más sutil */
+    box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.15); /* Añade un brillo suave */
   }
 }
 .carrito-overlay,
