@@ -1251,6 +1251,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   onClick={() => {
                     if (pedidoActivoId) {
                       revertirCambiosPedido();
+                      setVerCarrito(false);
                     } else {
                       setVerCarrito(false);
                     }
