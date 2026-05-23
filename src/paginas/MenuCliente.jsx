@@ -1293,17 +1293,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     </button>
                   </>
                 ) : (
-                  <p
-                    className="msg-bloqueo"
-                    style={{
-                      color: "#6b7280",
-                      fontSize: "0.9rem",
-                      textAlign: "center",
-                    }}
-                  >
-                    "¡Buenas noticias! Tu orden se está{" "}
+                  <p className="msg-bloqueo">
+                    ¡Buenas noticias! Tu orden se está{" "}
                     <b>{datosPedidoRealtime?.estado}</b>, y ya no es posible
-                    realizar modificaciones."
+                    realizar modificaciones.
                   </p>
                 )}
               </div>
