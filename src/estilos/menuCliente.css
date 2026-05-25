@@ -273,6 +273,10 @@
 /* =======================================================
    NUEVO: PANEL INTERACTIVO PARA ARMAR EL MENÚ DEL DÍA
    ======================================================= */
+   .step.pending {
+  background: #cbd5e1; /* Un tono gris intermedio */
+  border: 2px dashed #6366f1; /* Borde punteado para indicar que es el siguiente */
+}
 .stepper-container {
   display: flex;
   align-items: center;
