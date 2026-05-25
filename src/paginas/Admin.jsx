@@ -104,7 +104,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   });
   const [busquedaInsumo, setBusquedaInsumo] = useState("");
   const [operacionStock, setOperacionStock] = useState({});
-
+  const [tipoFiltroInventario, setTipoFiltroInventario] = useState("insumos");
   //estados opara el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
@@ -976,90 +976,120 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {/* SECCIÓN INVENTARIO */}
       {seccion === "inventario" && (
         <div className="admin-section inventario-container">
-          <h2 className="titulo-seccion">Control de Insumos</h2>
+          <h2 className="titulo-seccion">Control de Inventario Global</h2>
 
-          {/* Formulario de creación (Inalterado) */}
-          <div className="admin-form-inventario">
-            <input
-              placeholder="Nombre del insumo"
-              value={nuevoInsumo.nombre}
-              onChange={(e) =>
-                setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
-              }
-            />
-            <input
-              type="number"
-              min="0"
-              placeholder="Stock inicial"
-              value={nuevoInsumo.stock_actual}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  stock_actual: Math.max(0, Number(e.target.value)),
-                })
-              }
-            />
-            <input
-              type="number"
-              min="0"
-              placeholder="Stock mínimo"
-              value={nuevoInsumo.stock_minimo}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  stock_minimo: Math.max(0, Number(e.target.value)),
-                })
-              }
-            />
-            <input
-              placeholder="Unidad (kg, gr, und)"
-              value={nuevoInsumo.unidad_medida}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  unidad_medida: e.target.value,
-                })
-              }
-            />
+          {/* Formulario de creación (Solo visible si estás en la pestaña de Insumos) */}
+          {tipoFiltroInventario === "insumos" && (
+            <div className="admin-form-inventario">
+              <input
+                placeholder="Nombre del insumo"
+                value={nuevoInsumo.nombre}
+                onChange={(e) =>
+                  setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+                }
+              />
+              <input
+                type="number"
+                min="0"
+                placeholder="Stock inicial"
+                value={nuevoInsumo.stock_actual}
+                onChange={(e) =>
+                  setNuevoInsumo({
+                    ...nuevoInsumo,
+                    stock_actual: Math.max(0, Number(e.target.value)),
+                  })
+                }
+              />
+              <input
+                type="number"
+                min="0"
+                placeholder="Stock mínimo"
+                value={nuevoInsumo.stock_minimo}
+                onChange={(e) =>
+                  setNuevoInsumo({
+                    ...nuevoInsumo,
+                    stock_minimo: Math.max(0, Number(e.target.value)),
+                  })
+                }
+              />
+              <input
+                placeholder="Unidad (kg, gr, und)"
+                value={nuevoInsumo.unidad_medida}
+                onChange={(e) =>
+                  setNuevoInsumo({
+                    ...nuevoInsumo,
+                    unidad_medida: e.target.value,
+                  })
+                }
+              />
+              <button
+                className="btn-guardar-inventario"
+                onClick={registrarNuevoInsumo}
+              >
+                Registrar Insumo
+              </button>
+            </div>
+          )}
+
+          {/* 🎛️ SELECTOR DE VISTA: INSUMOS VS PRODUCTOS */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
             <button
-              className="btn-guardar-inventario"
-              onClick={registrarNuevoInsumo}
+              type="button"
+              className={`btn-guardar-inventario ${tipoFiltroInventario === "insumos" ? "" : "btn-secundario-apagado"}`}
+              style={{
+                backgroundColor:
+                  tipoFiltroInventario === "insumos" ? "#10b981" : "#cbd5e1",
+              }}
+              onClick={() => setTipoFiltroInventario("insumos")}
             >
-              Registrar Insumo
+              🥕 Ver Insumos Cocina
+            </button>
+            <button
+              type="button"
+              className={`btn-guardar-inventario ${tipoFiltroInventario === "productos" ? "" : "btn-secundario-apagado"}`}
+              style={{
+                backgroundColor:
+                  tipoFiltroInventario === "productos" ? "#6366f1" : "#cbd5e1",
+              }}
+              onClick={() => setTipoFiltroInventario("productos")}
+            >
+              🍺 Ver Productos Menú (Unidades)
             </button>
           </div>
 
-          {/* 🔍 BUSCADOR DE INSUMOS */}
+          {/* 🔍 BUSCADOR DE INVENTARIO */}
           <div className="buscador-inventario-container">
             <input
               type="text"
               className="input-busqueda-insumo"
-              placeholder="🔍 Buscar insumo por nombre..."
+              placeholder={`🔍 Buscar en ${tipoFiltroInventario}...`}
               value={busquedaInsumo}
               onChange={(e) => setBusquedaInsumo(e.target.value)}
             />
           </div>
 
-          {/* Tabla de insumos */}
+          {/* Tabla de Control de Stock Única */}
           <table className="tabla-insumos">
             <thead>
               <tr>
-                <th>INSUMO</th>
+                <th>ELEMENTO</th>
                 <th>STOCK ACTUAL</th>
-                <th>MÍNIMO</th>
+                {tipoFiltroInventario === "insumos" && <th>MÍNIMO</th>}
                 <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
             </thead>
             <tbody>
-              {insumos
-                .filter((i) =>
-                  i.nombre.toLowerCase().includes(busquedaInsumo.toLowerCase()),
+              {(tipoFiltroInventario === "insumos" ? insumos : productosAdmin)
+                .filter((item) =>
+                  item.nombre
+                    .toLowerCase()
+                    .includes(busquedaInsumo.toLowerCase()),
                 )
-                .map((i) => {
-                  const esCritico = i.stock_actual <= i.stock_minimo;
-
-                  // Obtener el estado local de operación para esta fila específica o usar el por defecto
-                  const estadoFila = operacionStock[i.id] || {
+                .map((item) => {
+                  const esCritico =
+                    tipoFiltroInventario === "insumos" &&
+                    item.stock_actual <= item.stock_minimo;
+                  const estadoFila = operacionStock[item.id] || {
                     cantidad: "",
                     tipo: "entrada",
                   };
@@ -1074,60 +1104,74 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       );
                     }
 
-                    // Multiplicamos por -1 si es salida a cocina o transferencia para restar la cantidad
                     const multiplicador =
                       estadoFila.tipo === "entrada" ? 1 : -1;
                     const cantidadFinal = cant * multiplicador;
 
                     try {
-                      // LLAMADA DIRECTA A TU SERVICIO ORIGINAL
-                      await actualizarStockInsumo(
-                        restauranteId,
-                        i.id,
-                        cantidadFinal,
-                      );
+                      if (tipoFiltroInventario === "insumos") {
+                        // Actualiza la colección 'insumos'
+                        await actualizarStockInsumo(
+                          restauranteId,
+                          item.id,
+                          cantidadFinal,
+                        );
+                      } else {
+                        // Actualiza la colección 'productos' usando tu lógica del servicio
+                        await actualizarProducto(
+                          item.id,
+                          { stock_actual: increment(cantidadFinal) },
+                          restauranteId,
+                        );
+                      }
 
-                      // Limpiar el input de la fila tras el éxito
                       setOperacionStock({
                         ...operacionStock,
-                        [i.id]: { cantidad: "", tipo: "entrada" },
+                        [item.id]: { cantidad: "", tipo: "entrada" },
                       });
 
                       Swal.fire({
                         icon: "success",
-                        title: "Movimiento Registrado",
-                        text: `Se aplicó la ${estadoFila.tipo} correctamente.`,
+                        title: "Movimiento Aplicado",
+                        text: `Se registró la ${estadoFila.tipo} correctamente.`,
                         timer: 1500,
                         showConfirmButton: false,
                       });
                     } catch (err) {
                       Swal.fire(
                         "Error",
-                        "No se pudo procesar el cambio de stock",
+                        "No se pudo procesar el cambio en la base de datos",
                         "error",
                       );
                     }
                   };
 
                   return (
-                    <tr key={i.id}>
-                      <td>{i.nombre}</td>
+                    <tr key={item.id}>
+                      <td>{item.nombre}</td>
                       <td className={esCritico ? "stock-alerta" : ""}>
-                        {i.stock_actual} {i.unidad_medida}
+                        {item.stock_actual !== undefined
+                          ? item.stock_actual
+                          : 0}{" "}
+                        {item.unidad_medida || "und"}
                       </td>
-                      <td>
-                        {i.stock_minimo} {i.unidad_medida}
-                      </td>
+                      {tipoFiltroInventario === "insumos" && (
+                        <td>
+                          {item.stock_minimo} {item.unidad_medida}
+                        </td>
+                      )}
                       <td>
                         <div className="contenedor-acciones-stock">
-                          {/* Selector del tipo de operación */}
                           <select
                             className="select-movimiento-tipo"
                             value={estadoFila.tipo}
                             onChange={(e) =>
                               setOperacionStock({
                                 ...operacionStock,
-                                [i.id]: { ...estadoFila, tipo: e.target.value },
+                                [item.id]: {
+                                  ...estadoFila,
+                                  tipo: e.target.value,
+                                },
                               })
                             }
                           >
@@ -1138,7 +1182,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             </option>
                           </select>
 
-                          {/* Input de cantidad manual */}
                           <input
                             type="number"
                             className="input-movimiento-cantidad"
@@ -1148,7 +1191,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             onChange={(e) =>
                               setOperacionStock({
                                 ...operacionStock,
-                                [i.id]: {
+                                [item.id]: {
                                   ...estadoFila,
                                   cantidad: e.target.value,
                                 },
@@ -1156,8 +1199,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             }
                           />
 
-                          {/* Botón único de ejecución */}
                           <button
+                            type="button"
                             className="btn-aplicar-movimiento"
                             onClick={ejecutarMovimiento}
                           >
