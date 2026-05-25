@@ -62,6 +62,7 @@ export const escucharInsumosAdmin = (restauranteId, callback) => {
   });
 };
 
+
 // 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
 export const escucharPedidos = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
