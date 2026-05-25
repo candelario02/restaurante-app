@@ -24,7 +24,7 @@ service cloud.firestore {
         allow write: if esAdminDelRestaurante(restId);
       }
        // 📦 INVENTARIO (Control de Stock)
-      match /insumos/{docId} {
+    match /restaurantes/{restId}/insumos/{docId} {
         allow read, write: if esAdminDelRestaurante(restId);
       }
 
