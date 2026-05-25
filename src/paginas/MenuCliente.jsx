@@ -167,32 +167,31 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     const s = segundos % 60;
     return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
   };
-  
-// Efecto para sincronizar el carrito cuando el estado cambia de estado fuera de "pendiente"
-useEffect(() => {
-  if (datosPedidoRealtime && datosPedidoRealtime.estado !== "pendiente") {
-   
-    if (datosPedidoRealtime.items) {
-      const itemsSincronizados = datosPedidoRealtime.items.map((item) => ({
-        id: item.id,
-        idUnico: item.idUnico,
-        nombre: item.nombre,
-        descripcion: item.descripcion || "",
-        precio: Number(item.precio),
-        precioBase: Number(
-          item.detalles?.precioExtra
-            ? item.precio - item.detalles.precioExtra
-            : item.precio
-        ),
-        cantidad: item.cantidad,
-        detalles: item.details || item.detalles,
-        isMenuCompleto: !!item.detalles,
-      }));
-      
-      setCarrito(itemsSincronizados);
+
+  // Efecto para sincronizar el carrito cuando el estado cambia de estado fuera de "pendiente"
+  useEffect(() => {
+    if (datosPedidoRealtime && datosPedidoRealtime.estado !== "pendiente") {
+      if (datosPedidoRealtime.items) {
+        const itemsSincronizados = datosPedidoRealtime.items.map((item) => ({
+          id: item.id,
+          idUnico: item.idUnico,
+          nombre: item.nombre,
+          descripcion: item.descripcion || "",
+          precio: Number(item.precio),
+          precioBase: Number(
+            item.detalles?.precioExtra
+              ? item.precio - item.detalles.precioExtra
+              : item.precio,
+          ),
+          cantidad: item.cantidad,
+          detalles: item.details || item.detalles,
+          isMenuCompleto: !!item.detalles,
+        }));
+
+        setCarrito(itemsSincronizados);
+      }
     }
-  }
-}, [datosPedidoRealtime?.estado]); 
+  }, [datosPedidoRealtime?.estado]);
 
   // 3. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
   useEffect(() => {
@@ -1015,7 +1014,39 @@ useEffect(() => {
                 <h4>📋 Tu Menú Actual Por:s/</h4>
                 <span className="badge-precio-menu">S/ {menuDiaPrecio}</span>
               </div>
+              {/* --- STEPER VISUAL MEJORADO --- */}
+              <div className="stepper-container">
+                {/* Paso 1: Entrada (Siempre activo al empezar o si se seleccionó) */}
+                <div
+                  className={`step ${entradaSeleccionada ? "active" : "active"}`}
+                >
+                  1
+                </div>
 
+                {/* Línea 1: Se activa si ya hay una entrada */}
+                <div
+                  className={`line ${entradaSeleccionada ? "active" : ""}`}
+                ></div>
+
+                {/* Paso 2: Segundo (Se activa solo si ya hay entrada) */}
+                <div
+                  className={`step ${segundoSeleccionado ? "active" : entradaSeleccionada ? "pending" : ""}`}
+                >
+                  2
+                </div>
+
+                {/* Línea 2: Se activa si ya hay segundo */}
+                <div
+                  className={`line ${segundoSeleccionado ? "active" : ""}`}
+                ></div>
+
+                {/* Paso 3: Bebida (Se activa si hay segundo) */}
+                <div
+                  className={`step ${bebidaSeleccionada ? "active" : segundoSeleccionado ? "pending" : ""}`}
+                >
+                  3
+                </div>
+              </div>
               <ul className="lista-resumen-menu">
                 <li>
                   <strong>• Entrada:</strong>{" "}
