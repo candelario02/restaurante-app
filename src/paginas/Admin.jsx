@@ -41,12 +41,13 @@ import {
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
 import { doc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
+
 // 🔐 MATRIZ DE PERMISOS Y CONFIGURACIÓN DE INTERFAZ POR ROL
-export const CONFIGURACION_ROLES = {
+export const PERMISOS_ROLES = {
   mozo: {
     verPedidos: true,
     verCaja: false,
-    verInventario: false, // El mozo usualmente no gestiona inventario
+    verInventario: false,
     seccionDefault: "pedidos",
   },
   cajero: {
@@ -60,7 +61,7 @@ export const CONFIGURACION_ROLES = {
     verUsuarios: true,
     verPedidos: true,
     verCaja: true,
-    verInventario: true, // Acceso concedido
+    verInventario: true,
     seccionDefault: "menu",
   },
   superadmin: {
@@ -68,7 +69,7 @@ export const CONFIGURACION_ROLES = {
     verUsuarios: true,
     verPedidos: true,
     verCaja: true,
-    verInventario: true, // Acceso concedido
+    verInventario: true,
     seccionDefault: "menu",
   },
 };
