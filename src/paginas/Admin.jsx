@@ -102,6 +102,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     stock_minimo: 0,
     unidad_medida: "",
   });
+  const [busquedaInsumo, setBusquedaInsumo] = useState("");
+  const [operacionStock, setOperacionStock] = useState({});
+
   //estados opara el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
@@ -278,6 +281,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         categoria,
         imagenUrl: urlFinal || "",
         cloudinaryId: nuevoPublicId,
+        insumoId: insumoSeleccionado,
       };
 
       if (editandoId) {
@@ -522,9 +526,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   // 📦 PEDIDOS
-  const cambiarEstado = async (id, nuevoEstado) => {
+  const cambiarEstado = async (id, nuevoEstado, itemsPedido = []) => {
     try {
-      await actualizarEstadoPedido(restauranteId, id, nuevoEstado);
+      await actualizarEstadoPedido(restauranteId, id, nuevoEstado, itemsPedido);
 
       Swal.fire({
         icon: "success",
@@ -535,7 +539,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "No se pudo cambiar el estado", "error");
+      Swal.fire("Error", "No se pudo actualizar el estado", "error");
     }
   };
   //funcion de caja
@@ -974,7 +978,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">Control de Insumos</h2>
 
-          {/* Formulario de creación */}
+          {/* Formulario de creación (Inalterado) */}
           <div className="admin-form-inventario">
             <input
               placeholder="Nombre del insumo"
@@ -1025,6 +1029,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </button>
           </div>
 
+          {/* 🔍 BUSCADOR DE INSUMOS */}
+          <div className="buscador-inventario-container">
+            <input
+              type="text"
+              className="input-busqueda-insumo"
+              placeholder="🔍 Buscar insumo por nombre..."
+              value={busquedaInsumo}
+              onChange={(e) => setBusquedaInsumo(e.target.value)}
+            />
+          </div>
+
           {/* Tabla de insumos */}
           <table className="tabla-insumos">
             <thead>
@@ -1032,43 +1047,127 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 <th>INSUMO</th>
                 <th>STOCK ACTUAL</th>
                 <th>MÍNIMO</th>
-                <th>ACCIONES</th>
+                <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
             </thead>
             <tbody>
-              {insumos.map((i) => {
-                const esCritico = i.stock_actual <= i.stock_minimo;
-                return (
-                  <tr key={i.id}>
-                    <td>{i.nombre}</td>
-                    <td className={esCritico ? "stock-alerta" : ""}>
-                      {i.stock_actual} {i.unidad_medida}
-                    </td>
-                    <td>
-                      {i.stock_minimo} {i.unidad_medida}
-                    </td>
-                    <td>
-                      <button
-                        className="btn-stock-control"
-                        onClick={() =>
-                          i.stock_actual > 0 &&
-                          actualizarStockInsumo(restauranteId, i.id, -1)
-                        }
-                      >
-                        -
-                      </button>
-                      <button
-                        className="btn-stock-control"
-                        onClick={() =>
-                          actualizarStockInsumo(restauranteId, i.id, 1)
-                        }
-                      >
-                        +
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {insumos
+                .filter((i) =>
+                  i.nombre.toLowerCase().includes(busquedaInsumo.toLowerCase()),
+                )
+                .map((i) => {
+                  const esCritico = i.stock_actual <= i.stock_minimo;
+
+                  // Obtener el estado local de operación para esta fila específica o usar el por defecto
+                  const estadoFila = operacionStock[i.id] || {
+                    cantidad: "",
+                    tipo: "entrada",
+                  };
+
+                  const ejecutarMovimiento = async () => {
+                    const cant = Number(estadoFila.cantidad);
+                    if (!cant || cant <= 0) {
+                      return Swal.fire(
+                        "Atención",
+                        "Ingresa una cantidad mayor a 0",
+                        "warning",
+                      );
+                    }
+
+                    // Multiplicamos por -1 si es salida a cocina o transferencia para restar la cantidad
+                    const multiplicador =
+                      estadoFila.tipo === "entrada" ? 1 : -1;
+                    const cantidadFinal = cant * multiplicador;
+
+                    try {
+                      // LLAMADA DIRECTA A TU SERVICIO ORIGINAL
+                      await actualizarStockInsumo(
+                        restauranteId,
+                        i.id,
+                        cantidadFinal,
+                      );
+
+                      // Limpiar el input de la fila tras el éxito
+                      setOperacionStock({
+                        ...operacionStock,
+                        [i.id]: { cantidad: "", tipo: "entrada" },
+                      });
+
+                      Swal.fire({
+                        icon: "success",
+                        title: "Movimiento Registrado",
+                        text: `Se aplicó la ${estadoFila.tipo} correctamente.`,
+                        timer: 1500,
+                        showConfirmButton: false,
+                      });
+                    } catch (err) {
+                      Swal.fire(
+                        "Error",
+                        "No se pudo procesar el cambio de stock",
+                        "error",
+                      );
+                    }
+                  };
+
+                  return (
+                    <tr key={i.id}>
+                      <td>{i.nombre}</td>
+                      <td className={esCritico ? "stock-alerta" : ""}>
+                        {i.stock_actual} {i.unidad_medida}
+                      </td>
+                      <td>
+                        {i.stock_minimo} {i.unidad_medida}
+                      </td>
+                      <td>
+                        <div className="contenedor-acciones-stock">
+                          {/* Selector del tipo de operación */}
+                          <select
+                            className="select-movimiento-tipo"
+                            value={estadoFila.tipo}
+                            onChange={(e) =>
+                              setOperacionStock({
+                                ...operacionStock,
+                                [i.id]: { ...estadoFila, tipo: e.target.value },
+                              })
+                            }
+                          >
+                            <option value="entrada">📥 Entrada</option>
+                            <option value="salida">🍳 Salida Cocina</option>
+                            <option value="transferencia">
+                              📦 Transferencia
+                            </option>
+                          </select>
+
+                          {/* Input de cantidad manual */}
+                          <input
+                            type="number"
+                            className="input-movimiento-cantidad"
+                            placeholder="Cant."
+                            min="1"
+                            value={estadoFila.cantidad}
+                            onChange={(e) =>
+                              setOperacionStock({
+                                ...operacionStock,
+                                [i.id]: {
+                                  ...estadoFila,
+                                  cantidad: e.target.value,
+                                },
+                              })
+                            }
+                          />
+
+                          {/* Botón único de ejecución */}
+                          <button
+                            className="btn-aplicar-movimiento"
+                            onClick={ejecutarMovimiento}
+                          >
+                            Aplicar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
@@ -1193,32 +1292,37 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                     {/* Botones de acción inferiores */}
                     <div className="acciones-pedido">
+                      {/* Botón Preparar */}
                       {p.estado === "pendiente" && (
                         <button
                           className="btn-primary"
                           disabled={cargando}
-                          onClick={() => cambiarEstado(p.id, "cocinando")}
+                          onClick={() => cambiarEstado(p.id, "cocinando")} // No necesita items
                         >
                           👨‍🍳 Preparar
                         </button>
                       )}
 
+                      {/* Botón Finalizar y Cobrar */}
                       {p.estado === "cocinando" && (
                         <button
                           className="btn-success"
                           disabled={cargando}
-                          onClick={() => cambiarEstado(p.id, "entregado")}
+                          onClick={() =>
+                            cambiarEstado(p.id, "entregado", p.items)
+                          } // AQUÍ ESTÁ EL CAMBIO
                         >
                           ✅ Finalizar y Cobrar
                         </button>
                       )}
 
+                      {/* Botón Revertir */}
                       {p.estado === "cocinando" && (
                         <button
                           className="btn-revertir"
                           disabled={cargando}
                           style={{ marginLeft: "8px" }}
-                          onClick={() => cambiarEstado(p.id, "pendiente")}
+                          onClick={() => cambiarEstado(p.id, "pendiente")} // No necesita items
                         >
                           🔃 Revertir
                         </button>

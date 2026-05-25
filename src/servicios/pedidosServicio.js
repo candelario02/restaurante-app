@@ -7,6 +7,8 @@ import {
   updateDoc,
   serverTimestamp,
   getDoc,
+  increment,
+  writeBatch,
 } from "firebase/firestore";
 // SOLUCIÓN ÚNICA: Maneja creación y actualización
 export const gestionarPedido = async (
@@ -23,12 +25,10 @@ export const gestionarPedido = async (
         "pedidos",
         pedidoId,
       );
-
       await setDoc(pedidoRef, {
         ...datosPedido,
         fechaActualizacion: serverTimestamp(),
       });
-
       return pedidoId;
     } else {
       const pedidosRef = collection(
@@ -46,15 +46,16 @@ export const gestionarPedido = async (
       return docRef.id;
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error en gestionarPedido:", error);
     throw error;
   }
 };
-// Mantener para el Admin (Cambiar a Cocinando/Entregado)
+// ACTUALIZACIÓN DE ESTADO
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
   nuevoEstado,
+  itemsPedido = [],
 ) => {
   try {
     const pedidoRef = doc(
@@ -64,16 +65,32 @@ export const actualizarEstadoPedido = async (
       "pedidos",
       pedidoId,
     );
+    const batch = writeBatch(db);
 
-    const actualizacion = { estado: nuevoEstado };
-
+    // Si es entregado, descuenta inventario usando batch
     if (nuevoEstado === "entregado") {
-      actualizacion.fechaEntrega = serverTimestamp();
+      itemsPedido.forEach((item) => {
+        if (item.insumoId) {
+          const insumoRef = doc(
+            db,
+            "restaurantes",
+            restauranteId,
+            "insumos",
+            item.insumoId,
+          );
+          batch.update(insumoRef, { stock_actual: increment(-item.cantidad) });
+        }
+      });
     }
 
-    await updateDoc(pedidoRef, actualizacion);
+    const actualizacion = { estado: nuevoEstado };
+    if (nuevoEstado === "entregado")
+      actualizacion.fechaEntrega = serverTimestamp();
+
+    batch.update(pedidoRef, actualizacion);
+    await batch.commit(); // Ejecuta todo junto
   } catch (error) {
-    console.error("Error al actualizar estado:", error);
+    console.error("Error al actualizar estado e inventario:", error);
     throw error;
   }
 };
