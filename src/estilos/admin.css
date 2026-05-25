@@ -1097,48 +1097,13 @@
   transform: scale(0.96);
 }
 /* =============================================
-   6. SECCIÓN gestion de inventario de productos
+    6. SECCIÓN gestion de inventario de productos
    ============================================= */
 .inventario-container {
   padding: 20px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.tabla-insumos {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.tabla-insumos th,
-.tabla-insumos td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.stock-alerta {
-  color: #ef4444;
-  font-weight: bold;
-  background: #fef2f2;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.btn-stock-control {
-  background: #e2e8f0;
-  border: none;
-  padding: 5px 12px;
-  margin: 0 5px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-stock-control:hover {
-  background: #cbd5e1;
 }
 
 .admin-form-inventario {
@@ -1169,4 +1134,90 @@
 
 .btn-guardar-inventario:hover {
   background-color: #059669;
+}
+
+/* 🔍 BUSCADOR DE INSUMOS */
+.buscador-inventario-container {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.input-busqueda-insumo {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.95rem;
+}
+
+.input-busqueda-insumo:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+/* 📊 TABLA DE INSUMOS */
+.tabla-insumos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tabla-insumos th,
+.tabla-insumos td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.stock-alerta {
+  color: #ef4444;
+  font-weight: bold;
+  background: #fef2f2;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ⚙️ CONTENEDOR DE ACCIONES DE OPERACIÓN */
+.contenedor-acciones-stock {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.select-movimiento-tipo {
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.input-movimiento-cantidad {
+  width: 80px;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  text-align: center;
+}
+
+/* Quitar flechas por defecto en inputs numéricos */
+.input-movimiento-cantidad::-webkit-outer-spin-button,
+.input-movimiento-cantidad::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.btn-aplicar-movimiento {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-aplicar-movimiento:hover {
+  background-color: #4f46e5;
 }
