@@ -273,6 +273,41 @@
 /* =======================================================
    NUEVO: PANEL INTERACTIVO PARA ARMAR EL MENÚ DEL DÍA
    ======================================================= */
+.stepper-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px 0;
+  gap: 5px;
+}
+
+.step {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e0e0e0; /* Color gris pendiente */
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.step.active {
+  background: #4a90e2; /* Color azul cuando está seleccionado */
+}
+
+.line {
+  height: 2px;
+  width: 40px;
+  background: #e0e0e0;
+  transition: background 0.3s ease;
+}
+
+.line.active {
+  background: #4a90e2;
+}
 .seccion-armar-menu {
   margin-bottom: 20px;
   padding: 15px;
@@ -333,18 +368,19 @@
   border: 1px solid var(--primary);
   border-radius: var(--radius);
   /* Usamos tu variable de azul suave */
-  background-color: var(--primary-light); 
-  
+  background-color: var(--primary-light);
+
   /* Animación de palpito más suave */
   animation: palpitar 3s infinite ease-in-out;
 }
 
 @keyframes palpitar {
-  0%, 100% { 
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.2);
   }
-  50% { 
+  50% {
     transform: scale(1.01); /* Un leve aumento más sutil */
     box-shadow: 0 0 8px 2px rgba(99, 102, 241, 0.15); /* Añade un brillo suave */
   }
