@@ -35,7 +35,7 @@ import { subirImagen } from "../servicios/cloudinaryServicio";
 import {
   escucharProductosAdmin,
   escucharPedidos,
-  escucharInsumos,
+  escucharInsumosAdmin,
 } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
