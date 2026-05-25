@@ -1097,8 +1097,8 @@
   transform: scale(0.96);
 }
 /* =============================================
-    6. SECCIÓN gestion de inventario de productos
-   ============================================= */
+    6. SECCIÓN GESTIÓN DE INVENTARIO DE PRODUCTOS
+  ============================================= */
 .inventario-container {
   padding: 20px;
   background: white;
@@ -1107,12 +1107,8 @@
 }
 
 .admin-form-inventario {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
   gap: 10px;
-  background: #f8fafc;
-  padding: 15px;
-  border-radius: 8px;
   margin-bottom: 20px;
 }
 
@@ -1120,6 +1116,7 @@
   padding: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
+  flex: 1;
 }
 
 .btn-guardar-inventario {
@@ -1130,16 +1127,23 @@
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .btn-guardar-inventario:hover {
   background-color: #059669;
 }
 
-/* 🔍 BUSCADOR DE INSUMOS */
-.buscador-inventario-container {
-  margin-bottom: 15px;
-  width: 100%;
+/* 🎛️ CONTENEDOR DE FILTROS Y GRUPO DE BÚSQUEDA */
+.inventario-filtros-grupo {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.buscador-inventario-subcontainer {
+  flex: 1;
 }
 
 .input-busqueda-insumo {
@@ -1151,6 +1155,26 @@
 }
 
 .input-busqueda-insumo:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.selector-filtro-container {
+  display: flex;
+  align-items: center;
+}
+
+.select-filtro-tabla {
+  height: 42px;
+  padding: 0 15px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.select-filtro-tabla:focus {
   outline: none;
   border-color: #6366f1;
 }
@@ -1169,12 +1193,45 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.celda-nombre-elemento {
+  font-weight: 500;
+}
+
+.celda-stock-valor {
+  font-weight: 600;
+}
+
+/* 🏷️ BADGES DE TIPO DE ELEMENTO */
+.badge-categoria {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.badge-categoria.insumo {
+  background-color: #e2f8f0;
+  color: #059669;
+}
+
+.badge-categoria.producto {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+/* 🚨 SECCIÓN DE ALERTAS INTELIGENTES (MENOR O IGUAL A 4) */
 .stock-alerta {
   color: #ef4444;
   font-weight: bold;
   background: #fef2f2;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
+}
+
+.texto-alerta-bajo {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-left: 6px;
 }
 
 /* ⚙️ CONTENEDOR DE ACCIONES DE OPERACIÓN */
@@ -1193,7 +1250,7 @@
 }
 
 .input-movimiento-cantidad {
-  width: 80px;
+  width: 130px; /* Se amplió para dar espacio al placeholder 'Ingresar cantidad' */
   padding: 6px;
   border-radius: 4px;
   border: 1px solid #cbd5e1;
@@ -1207,8 +1264,9 @@
   margin: 0;
 }
 
+/* El botón de aplicar ahora es Verde Profesional por defecto */
 .btn-aplicar-movimiento {
-  background-color: #6366f1;
+  background-color: #10b981;
   color: white;
   border: none;
   padding: 6px 12px;
@@ -1219,5 +1277,5 @@
 }
 
 .btn-aplicar-movimiento:hover {
-  background-color: #4f46e5;
+  background-color: #059669;
 }

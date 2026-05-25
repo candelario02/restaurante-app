@@ -978,239 +978,266 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">Control de Inventario Global</h2>
 
-          {/* Formulario de creación (Solo visible si estás en la pestaña de Insumos) */}
-          {tipoFiltroInventario === "insumos" && (
-            <div className="admin-form-inventario">
-              <input
-                placeholder="Nombre del insumo"
-                value={nuevoInsumo.nombre}
-                onChange={(e) =>
-                  setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
-                }
-              />
-              <input
-                type="number"
-                min="0"
-                placeholder="Stock inicial"
-                value={nuevoInsumo.stock_actual}
-                onChange={(e) =>
-                  setNuevoInsumo({
-                    ...nuevoInsumo,
-                    stock_actual: Math.max(0, Number(e.target.value)),
-                  })
-                }
-              />
-              <input
-                type="number"
-                min="0"
-                placeholder="Stock mínimo"
-                value={nuevoInsumo.stock_minimo}
-                onChange={(e) =>
-                  setNuevoInsumo({
-                    ...nuevoInsumo,
-                    stock_minimo: Math.max(0, Number(e.target.value)),
-                  })
-                }
-              />
-              <input
-                placeholder="Unidad (kg, gr, und)"
-                value={nuevoInsumo.unidad_medida}
-                onChange={(e) =>
-                  setNuevoInsumo({
-                    ...nuevoInsumo,
-                    unidad_medida: e.target.value,
-                  })
-                }
-              />
-              <button
-                className="btn-guardar-inventario"
-                onClick={registrarNuevoInsumo}
-              >
-                Registrar Insumo
-              </button>
-            </div>
-          )}
-
-          {/* 🎛️ SELECTOR DE VISTA: INSUMOS VS PRODUCTOS */}
-          <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-            <button
-              type="button"
-              className={`btn-guardar-inventario ${tipoFiltroInventario === "insumos" ? "" : "btn-secundario-apagado"}`}
-              style={{
-                backgroundColor:
-                  tipoFiltroInventario === "insumos" ? "#10b981" : "#cbd5e1",
-              }}
-              onClick={() => setTipoFiltroInventario("insumos")}
-            >
-              🥕 Ver Insumos Cocina
-            </button>
-            <button
-              type="button"
-              className={`btn-guardar-inventario ${tipoFiltroInventario === "productos" ? "" : "btn-secundario-apagado"}`}
-              style={{
-                backgroundColor:
-                  tipoFiltroInventario === "productos" ? "#6366f1" : "#cbd5e1",
-              }}
-              onClick={() => setTipoFiltroInventario("productos")}
-            >
-              🍺 Ver Productos Menú (Unidades)
-            </button>
-          </div>
-
-          {/* 🔍 BUSCADOR DE INVENTARIO */}
-          <div className="buscador-inventario-container">
+          {/* Formulario de creación limpio (Solo registra Insumos con Kg/Unidades directo) */}
+          <div className="admin-form-inventario">
             <input
               type="text"
-              className="input-busqueda-insumo"
-              placeholder={`🔍 Buscar en ${tipoFiltroInventario}...`}
-              value={busquedaInsumo}
-              onChange={(e) => setBusquedaInsumo(e.target.value)}
+              placeholder="Nombre del insumo (Ej: Cebolla)"
+              value={nuevoInsumo.nombre || ""}
+              onChange={(e) =>
+                setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+              }
             />
+            <input
+              type="number"
+              onKeyDown={(e) =>
+                ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()
+              }
+              placeholder="Stock Inicial (Cantidad)"
+              value={nuevoInsumo.stock_actual || ""}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "");
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  stock_actual: val ? parseInt(val, 10) : "",
+                });
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Unidad de medida (Ej: kg, und, lt)"
+              value={nuevoInsumo.unidad_medida || ""}
+              onChange={(e) =>
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  unidad_medida: e.target.value,
+                })
+              }
+            />
+            <button
+              type="button"
+              className="btn-guardar-inventario"
+              onClick={registrarNuevoInsumo}
+            >
+              Registrar Insumo
+            </button>
           </div>
 
-          {/* Tabla de Control de Stock Única */}
+          {/* 🎛️ FILTROS Y BUSQUEDA UNIFICADA */}
+          <div className="inventario-filtros-grupo">
+            <div className="buscador-inventario-subcontainer">
+              <input
+                type="text"
+                className="input-busqueda-insumo"
+                placeholder="🔍 Buscar por nombre de insumo o producto..."
+                value={busquedaInsumo}
+                onChange={(e) => setBusquedaInsumo(e.target.value)}
+              />
+            </div>
+
+            <div className="selector-filtro-container">
+              <select
+                className="select-filtro-tabla"
+                value={tipoFiltroInventario}
+                onChange={(e) => setTipoFiltroInventario(e.target.value)}
+              >
+                <option value="todos">📋 Mostrar Todo el Inventario</option>
+                <option value="insumos">🥕 Solo Insumos de Cocina</option>
+                <option value="Comidas">🍳 Platos / Comidas</option>
+                <option value="Bebidas">🍺 Bebidas / Líquidos</option>
+                <option value="Entradas">🥗 Entradas</option>
+                <option value="Cafeteria">☕ Cafetería</option>
+                <option value="Postres">🍰 Postres</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tabla de Control Única con Alertas Inteligentes */}
           <table className="tabla-insumos">
             <thead>
               <tr>
-                <th>ELEMENTO</th>
+                <th>ELEMENTO O PRODUCTO</th>
+                <th>TIPO / ORIGEN</th>
                 <th>STOCK ACTUAL</th>
-                {tipoFiltroInventario === "insumos" && <th>MÍNIMO</th>}
                 <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
             </thead>
             <tbody>
-              {(tipoFiltroInventario === "insumos" ? insumos : productosAdmin)
-                .filter((item) =>
-                  item.nombre
-                    .toLowerCase()
-                    .includes(busquedaInsumo.toLowerCase()),
-                )
-                .map((item) => {
-                  const esCritico =
-                    tipoFiltroInventario === "insumos" &&
-                    item.stock_actual <= item.stock_minimo;
-                  const estadoFila = operacionStock[item.id] || {
-                    cantidad: "",
-                    tipo: "entrada",
-                  };
+              {(() => {
+                // 1. Unificamos ambas listas agregando una bandera para saber qué tipo es cada fila
+                const listaInsumosMapeada = (insumos || []).map((i) => ({
+                  ...i,
+                  esInsumo: true,
+                  categoria: "insumos",
+                }));
+                const listaProductosMapeada = (productos || []).map((p) => ({
+                  ...p,
+                  esInsumo: false,
+                }));
+                const inventarioGlobal = [
+                  ...listaInsumosMapeada,
+                  ...listaProductosMapeada,
+                ];
 
-                  const ejecutarMovimiento = async () => {
-                    const cant = Number(estadoFila.cantidad);
-                    if (!cant || cant <= 0) {
-                      return Swal.fire(
-                        "Atención",
-                        "Ingresa una cantidad mayor a 0",
-                        "warning",
-                      );
-                    }
+                // 2. Filtramos en tiempo real por el buscador y por el selector de categorías
+                return inventarioGlobal
+                  .filter((item) => {
+                    const cumpleBusqueda = item.nombre
+                      .toLowerCase()
+                      .includes(busquedaInsumo.toLowerCase());
+                    if (tipoFiltroInventario === "todos") return cumpleBusqueda;
+                    if (tipoFiltroInventario === "insumos")
+                      return cumpleBusqueda && item.esInsumo;
+                    return (
+                      cumpleBusqueda &&
+                      !item.esInsumo &&
+                      item.categoria === tipoFiltroInventario
+                    );
+                  })
+                  .map((item) => {
+                    // 🚨 ALERTA INTELIGENTE AUTOMÁTICA: Si es menor o igual a 4 se evalúa crítico
+                    const stockNumerico = Number(item.stock_actual) || 0;
+                    const esCritico = stockNumerico <= 4;
 
-                    const multiplicador =
-                      estadoFila.tipo === "entrada" ? 1 : -1;
-                    const cantidadFinal = cant * multiplicador;
+                    const estadoFila = operacionStock[item.id] || {
+                      cantidad: "",
+                      tipo: "entrada",
+                    };
 
-                    try {
-                      if (tipoFiltroInventario === "insumos") {
-                        // Actualiza la colección 'insumos'
-                        await actualizarStockInsumo(
-                          restauranteId,
-                          item.id,
-                          cantidadFinal,
-                        );
-                      } else {
-                        // Actualiza la colección 'productos' usando tu lógica del servicio
-                        await actualizarProducto(
-                          item.id,
-                          { stock_actual: increment(cantidadFinal) },
-                          restauranteId,
+                    const ejecutarMovimiento = async () => {
+                      const cant = parseInt(estadoFila.cantidad, 10);
+                      if (!cant || cant <= 0) {
+                        return Swal.fire(
+                          "Atención",
+                          "Ingresa una cantidad válida mayor a 0",
+                          "warning",
                         );
                       }
 
-                      setOperacionStock({
-                        ...operacionStock,
-                        [item.id]: { cantidad: "", tipo: "entrada" },
-                      });
+                      const multiplicador =
+                        estadoFila.tipo === "entrada" ? 1 : -1;
+                      const cantidadFinal = cant * multiplicador;
 
-                      Swal.fire({
-                        icon: "success",
-                        title: "Movimiento Aplicado",
-                        text: `Se registró la ${estadoFila.tipo} correctamente.`,
-                        timer: 1500,
-                        showConfirmButton: false,
-                      });
-                    } catch (err) {
-                      Swal.fire(
-                        "Error",
-                        "No se pudo procesar el cambio en la base de datos",
-                        "error",
-                      );
-                    }
-                  };
+                      try {
+                        if (item.esInsumo) {
+                          await actualizarStockInsumo(
+                            restauranteId,
+                            item.id,
+                            cantidadFinal,
+                          );
+                        } else {
+                          await actualizarProducto(
+                            item.id,
+                            { stock_actual: increment(cantidadFinal) },
+                            restauranteId,
+                          );
+                        }
 
-                  return (
-                    <tr key={item.id}>
-                      <td>{item.nombre}</td>
-                      <td className={esCritico ? "stock-alerta" : ""}>
-                        {item.stock_actual !== undefined
-                          ? item.stock_actual
-                          : 0}{" "}
-                        {item.unidad_medida || "und"}
-                      </td>
-                      {tipoFiltroInventario === "insumos" && (
+                        setOperacionStock({
+                          ...operacionStock,
+                          [item.id]: { cantidad: "", tipo: "entrada" },
+                        });
+
+                        Swal.fire({
+                          icon: "success",
+                          title: "Movimiento Aplicado",
+                          text: `Se registró la ${estadoFila.tipo} de manera exitosa.`,
+                          timer: 1500,
+                          showConfirmButton: false,
+                        });
+                      } catch (err) {
+                        Swal.fire(
+                          "Error",
+                          "Hubo un fallo al sincronizar con la base de datos.",
+                          "error",
+                        );
+                      }
+                    };
+
+                    return (
+                      <tr key={item.id}>
+                        <td className="celda-nombre-elemento">{item.nombre}</td>
                         <td>
-                          {item.stock_minimo} {item.unidad_medida}
+                          <span
+                            className={`badge-categoria ${item.esInsumo ? "insumo" : "producto"}`}
+                          >
+                            {item.esInsumo
+                              ? "Materia Prima"
+                              : `Menú (${item.categoria})`}
+                          </span>
                         </td>
-                      )}
-                      <td>
-                        <div className="contenedor-acciones-stock">
-                          <select
-                            className="select-movimiento-tipo"
-                            value={estadoFila.tipo}
-                            onChange={(e) =>
-                              setOperacionStock({
-                                ...operacionStock,
-                                [item.id]: {
-                                  ...estadoFila,
-                                  tipo: e.target.value,
-                                },
-                              })
-                            }
-                          >
-                            <option value="entrada">📥 Entrada</option>
-                            <option value="salida">🍳 Salida Cocina</option>
-                            <option value="transferencia">
-                              📦 Transferencia
-                            </option>
-                          </select>
+                        <td
+                          className={
+                            esCritico
+                              ? "stock-alerta celda-stock-valor"
+                              : "celda-stock-valor"
+                          }
+                        >
+                          {stockNumerico} {item.unidad_medida || "und"}
+                          {esCritico && (
+                            <span className="texto-alerta-bajo">⚠️ ¡Bajo!</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="contenedor-acciones-stock">
+                            <select
+                              className="select-movimiento-tipo"
+                              value={estadoFila.tipo}
+                              onChange={(e) =>
+                                setOperacionStock({
+                                  ...operacionStock,
+                                  [item.id]: {
+                                    ...estadoFila,
+                                    tipo: e.target.value,
+                                  },
+                                })
+                              }
+                            >
+                              <option value="entrada">📥 Entrada</option>
+                              <option value="salida">🍳 Salida Cocina</option>
+                              <option value="transferencia">
+                                📦 Transferencia
+                              </option>
+                            </select>
 
-                          <input
-                            type="number"
-                            className="input-movimiento-cantidad"
-                            placeholder="Cant."
-                            min="1"
-                            value={estadoFila.cantidad}
-                            onChange={(e) =>
-                              setOperacionStock({
-                                ...operacionStock,
-                                [item.id]: {
-                                  ...estadoFila,
-                                  cantidad: e.target.value,
-                                },
-                              })
-                            }
-                          />
+                            <input
+                              type="number"
+                              className="input-movimiento-cantidad"
+                              placeholder="Ingresar cantidad"
+                              min="1"
+                              onKeyDown={(e) =>
+                                ["e", "E", "+", "-", "."].includes(e.key) &&
+                                e.preventDefault()
+                              }
+                              value={estadoFila.cantidad}
+                              onChange={(e) => {
+                                const valorLimpio = e.target.value.replace(
+                                  /[^0-9]/g,
+                                  "",
+                                );
+                                setOperacionStock({
+                                  ...operacionStock,
+                                  [item.id]: {
+                                    ...estadoFila,
+                                    cantidad: valorLimpio,
+                                  },
+                                });
+                              }}
+                            />
 
-                          <button
-                            type="button"
-                            className="btn-aplicar-movimiento"
-                            onClick={ejecutarMovimiento}
-                          >
-                            Aplicar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                            <button
+                              type="button"
+                              className="btn-aplicar-movimiento"
+                              onClick={ejecutarMovimiento}
+                            >
+                              Aplicar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  });
+              })()}
             </tbody>
           </table>
         </div>
