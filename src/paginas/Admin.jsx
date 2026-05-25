@@ -21,6 +21,7 @@ import {
   eliminarProducto,
   cambiarDisponibilidad,
   obtenerProductos,
+  actualizarStockInsumo,
 } from "../servicios/productosServicio";
 import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
 import {
@@ -31,7 +32,11 @@ import {
 import { subirImagen } from "../servicios/cloudinaryServicio";
 
 // 🔥 HOOKS
-import { escucharProductosAdmin, escucharPedidos } from "../hooks/useProductos";
+import {
+  escucharProductosAdmin,
+  escucharPedidos,
+  escucharInsumos,
+} from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
@@ -84,6 +89,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [pedidoDetalle, setPedidoDetalle] = useState(null);
   const [publicIdExistente, setPublicIdExistente] = useState(null);
   const [descripcion, setDescripcion] = useState("");
+  //estados para inventario
+  const [insumos, setInsumos] = useState([]);
+  const [nuevoInsumo, setNuevoInsumo] = useState({
+    nombre: "",
+    stock_actual: 0,
+    stock_minimo: 0,
+    unidad_medida: "",
+  });
   //estados opara el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
@@ -104,6 +117,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     );
 
     let unsubProd = () => {};
+    let unsubInsumos = () => {};
     let unsubPed = () => {};
     let unsubUser = () => {};
     let unsubConfig = () => {};
@@ -116,16 +130,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       } else {
         unsubProd = obtenerProductos(restauranteId, categoria, setProductos);
       }
+      // 2. inventario
+      if (isAdmin) {
+        unsubInsumos = escucharInsumosAdmin(restauranteId, setInsumos);
+      }
 
-      // 2. PEDIDOS
+      // 3. PEDIDOS
       unsubPed = escucharPedidos(restauranteId, setPedidos);
 
-      // 3. USUARIOS (Admin)
+      // 4. USUARIOS (Admin)
       if (isAdmin) {
         unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
 
-      // 4. CONFIGURACIÓN MENÚ DEL DÍA
+      // 5. CONFIGURACIÓN MENÚ DEL DÍA
       const configRef = doc(
         db,
         "restaurantes",
@@ -141,7 +159,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         }
       });
 
-      // 5. 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO) - ¡AHORA ADENTRO PROTEGIDO!
+      // 6. 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO) - ¡AHORA ADENTRO PROTEGIDO!
       const datosRef = doc(
         db,
         "restaurantes",
@@ -160,6 +178,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
     return () => {
       unsubProd();
+      unsubInsumos();
       unsubPed();
       unsubUser();
       unsubConfig();
@@ -294,6 +313,28 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     } finally {
       setCargando(false);
+    }
+  };
+  //Funcion insumos
+  const registrarNuevoInsumo = async () => {
+    // Validación profesional
+    if (!nuevoInsumo.nombre.trim() || !nuevoInsumo.unidad_medida.trim()) {
+      alert("Por favor, completa el nombre y la unidad de medida.");
+      return;
+    }
+
+    try {
+      await crearInsumo(restauranteId, nuevoInsumo);
+      // Resetear formulario tras éxito
+      setNuevoInsumo({
+        nombre: "",
+        stock_actual: 0,
+        stock_minimo: 0,
+        unidad_medida: "",
+      });
+    } catch (error) {
+      console.error("Error al registrar insumo:", error);
+      alert("Hubo un error al guardar el insumo. Inténtalo de nuevo.");
     }
   };
   //funcion cabcelar edidcion
@@ -923,7 +964,110 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </div>
         </div>
       )}
+      {/* SECCIÓN INVENTARIO */}
+      {seccion === "inventario" && (
+        <div className="admin-section inventario-container">
+          <h2 className="titulo-seccion">Control de Insumos</h2>
 
+          {/* Formulario de creación */}
+          <div className="admin-form-inventario">
+            <input
+              placeholder="Nombre del insumo"
+              value={nuevoInsumo.nombre}
+              onChange={(e) =>
+                setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+              }
+            />
+            <input
+              type="number"
+              min="0"
+              placeholder="Stock inicial"
+              value={nuevoInsumo.stock_actual}
+              onChange={(e) =>
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  stock_actual: Math.max(0, Number(e.target.value)),
+                })
+              }
+            />
+            <input
+              type="number"
+              min="0"
+              placeholder="Stock mínimo"
+              value={nuevoInsumo.stock_minimo}
+              onChange={(e) =>
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  stock_minimo: Math.max(0, Number(e.target.value)),
+                })
+              }
+            />
+            <input
+              placeholder="Unidad (kg, gr, und)"
+              value={nuevoInsumo.unidad_medida}
+              onChange={(e) =>
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  unidad_medida: e.target.value,
+                })
+              }
+            />
+            <button
+              className="btn-guardar-inventario"
+              onClick={registrarNuevoInsumo}
+            >
+              Registrar Insumo
+            </button>
+          </div>
+
+          {/* Tabla de insumos */}
+          <table className="tabla-insumos">
+            <thead>
+              <tr>
+                <th>INSUMO</th>
+                <th>STOCK ACTUAL</th>
+                <th>MÍNIMO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              {insumos.map((i) => {
+                const esCritico = i.stock_actual <= i.stock_minimo;
+                return (
+                  <tr key={i.id}>
+                    <td>{i.nombre}</td>
+                    <td className={esCritico ? "stock-alerta" : ""}>
+                      {i.stock_actual} {i.unidad_medida}
+                    </td>
+                    <td>
+                      {i.stock_minimo} {i.unidad_medida}
+                    </td>
+                    <td>
+                      <button
+                        className="btn-stock-control"
+                        onClick={() =>
+                          i.stock_actual > 0 &&
+                          actualizarStockInsumo(restauranteId, i.id, -1)
+                        }
+                      >
+                        -
+                      </button>
+                      <button
+                        className="btn-stock-control"
+                        onClick={() =>
+                          actualizarStockInsumo(restauranteId, i.id, 1)
+                        }
+                      >
+                        +
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
       {/* SECCIÓN PEDIDOS*/}
       {seccion === "pedidos" && (
         <div className="admin-section">

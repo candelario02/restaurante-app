@@ -4,8 +4,8 @@
 .admin-container {
   padding: 20px;
   animation: fadeIn 0.4s ease;
-  width: 100%;      
-  box-sizing: border-box; 
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-section {
@@ -29,13 +29,23 @@
 
 /* Animaciones y responsive base */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {
-  .form-admin { flex-direction: column; }
-  .grid-admin { grid-template-columns: 1fr; }
+  .form-admin {
+    flex-direction: column;
+  }
+  .grid-admin {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =============================================
@@ -56,14 +66,15 @@
   border-radius: 4px;
   margin-top: 2px;
   /* 🌟 Quitamos el margin-left: 24px para que no se desalinee */
-  margin-left: 0px; 
+  margin-left: 0px;
   border-left: 3px solid var(--primary);
   /* 🌟 Control de texto para mantener consistencia */
   max-width: 350px;
   white-space: normal;
   word-break: break-word;
 }
-.input-pro, .select-pro {
+.input-pro,
+.select-pro {
   width: 100%;
   padding: 14px;
   border-radius: 10px;
@@ -171,7 +182,7 @@
 .tabla-admin-pro td {
   padding: 15px;
   border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle; 
+  vertical-align: middle;
 }
 
 /* 🌟 CORRECCIÓN 2: Quitamos el flex directo del td y manejamos sus hijos de forma alineada */
@@ -201,8 +212,8 @@
   font-weight: 700;
   color: #64748b;
   display: block;
-  max-width: 350px;       /* Evita que se estire infinitamente a la derecha */
-  white-space: normal;    /* Permite saltos de línea automáticos hacia abajo */
+  max-width: 350px; /* Evita que se estire infinitamente a la derecha */
+  white-space: normal; /* Permite saltos de línea automáticos hacia abajo */
   word-break: break-word; /* Rompe palabras ultra largas si es necesario */
   line-height: 1.4;
 }
@@ -268,8 +279,12 @@
   color: #ef4444;
 }
 
-.btn-edit:hover { background: #e2e8f0; }
-.btn-delete:hover { background: #fee2e2; }
+.btn-edit:hover {
+  background: #e2e8f0;
+}
+.btn-delete:hover {
+  background: #fee2e2;
+}
 /* Fila que mezcla Guardar y Buscar */
 .admin-acciones-mix {
   display: flex;
@@ -281,7 +296,7 @@
 }
 
 .btn-guardar-pro-compacto {
-  flex: 0.6; 
+  flex: 0.6;
   background: #6366f1;
   color: white;
   padding: 14px 10px;
@@ -317,7 +332,7 @@
   border-color: #6366f1;
 }
 .filtro-container-pro {
-  flex: 0.8; 
+  flex: 0.8;
 }
 .select-filtro-tabla {
   width: 100%;
@@ -372,7 +387,6 @@
   border-color: #6366f1;
 }
 
-
 .info-plato-columna {
   display: flex;
   flex-direction: column;
@@ -396,12 +410,12 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap; /* Esto permite que se acomode en móviles */
-  gap: 15px;      /* Espacio entre elementos */
+  gap: 15px; /* Espacio entre elementos */
   background-color: #f8f9fa;
   padding: 15px 20px;
   border-radius: 12px;
   margin: 0 auto 25px auto; /* Centra la tarjeta en la página */
-  max-width: 600px;         /* Limita el ancho para que no se vea estirada */
+  max-width: 600px; /* Limita el ancho para que no se vea estirada */
   border: 1px solid #e2e8f0;
 }
 /* Nueva clase para el mensaje flotante centrado bonito */
@@ -411,7 +425,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   /* 🌟 Fondo azul suave/morado a juego con la paleta de tu sistema */
-  background-color: #5c60f5; 
+  background-color: #5c60f5;
   color: #ffffff;
   padding: 14px 28px;
   border-radius: 12px;
@@ -567,7 +581,7 @@
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center; 
+  align-items: center;
   width: 100%;
 }
 
@@ -594,7 +608,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: #25D366;
+  background-color: #25d366;
   color: #ffffff;
   border: none;
   border-radius: 4px;
@@ -663,8 +677,8 @@
 /* Estilo para los textos de Delivery o Mesa */
 .texto-tipo-entrega {
   font-size: 0.85rem !important;
-  color: #1e293b !important; 
-  font-weight: 600 !important; 
+  color: #1e293b !important;
+  font-weight: 600 !important;
   margin: 0 !important;
 }
 
@@ -684,45 +698,45 @@
 }
 
 .acciones-pedido {
-  display: flex !important; 
-  gap: 8px;                
+  display: flex !important;
+  gap: 8px;
   width: 100%;
   align-items: center;
 }
 .btn-success {
-  background: #10b981; 
+  background: #10b981;
   color: white;
-  padding: 10px 5px;       
+  padding: 10px 5px;
   border-radius: 8px;
   border: none;
-  font-weight: 700; 
+  font-weight: 700;
   cursor: pointer;
-  flex: 2;                
+  flex: 2;
   transition: background 0.2s ease;
-  white-space: nowrap;    
-  font-size: 13px;         
+  white-space: nowrap;
+  font-size: 13px;
 }
 
 .btn-success:hover {
-  background: #059669; 
+  background: #059669;
 }
 
 .btn-revertir {
-  background: #64748b; 
+  background: #64748b;
   color: white;
-  padding: 10px 5px; 
+  padding: 10px 5px;
   border-radius: 8px;
   border: none;
-  font-weight: 700; 
+  font-weight: 700;
   cursor: pointer;
-  flex: 1; 
+  flex: 1;
   transition: background 0.2s ease;
-  margin-left: 0 !important; 
-  font-size: 13px; 
+  margin-left: 0 !important;
+  font-size: 13px;
 }
 
 .btn-revertir:hover {
-  background: #475569; 
+  background: #475569;
 }
 
 /* =============================================
@@ -736,7 +750,7 @@
   table-layout: fixed; /* Fuerza a las columnas a no moverse */
 }
 
-.tabla-admin-caja th, 
+.tabla-admin-caja th,
 .tabla-admin-caja td {
   padding: 12px 8px;
   vertical-align: middle;
@@ -748,11 +762,21 @@
 }
 
 /* Anchos porcentuales para que sea profesional */
-.tabla-admin-caja th:nth-child(1) { width: 15%; } /* FECHA */
-.tabla-admin-caja th:nth-child(2) { width: 30%; } /* CLIENTE */
-.tabla-admin-caja th:nth-child(3) { width: 15%; } /* TOTAL */
-.tabla-admin-caja th:nth-child(4) { width: 25%; } /* RESEÑA */
-.tabla-admin-caja th:nth-child(5) { width: 15%; } /* ACCIÓN */
+.tabla-admin-caja th:nth-child(1) {
+  width: 15%;
+} /* FECHA */
+.tabla-admin-caja th:nth-child(2) {
+  width: 30%;
+} /* CLIENTE */
+.tabla-admin-caja th:nth-child(3) {
+  width: 15%;
+} /* TOTAL */
+.tabla-admin-caja th:nth-child(4) {
+  width: 25%;
+} /* RESEÑA */
+.tabla-admin-caja th:nth-child(5) {
+  width: 15%;
+} /* ACCIÓN */
 .txt-cancelado {
   color: #dc3545;
   font-weight: bold;
@@ -890,8 +914,14 @@
 }
 
 @keyframes modalEmerger {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -980,7 +1010,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #1d6f42; 
+  background-color: #1d6f42;
   color: white;
   border: none;
   padding: 10px 18px;
@@ -1052,15 +1082,91 @@
   padding: 4px 0;
   font-size: 0.8rem;
   font-weight: 500;
-  transition: color 0.2s ease, transform 0.1s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.1s ease;
   user-select: none;
   margin-top: 8px;
 }
 
 .btn-ojito-detalleydatos:hover {
-  color: #4f46e5; 
+  color: #4f46e5;
 }
 
 .btn-ojito-detalleydatos:active {
-  transform: scale(0.96); 
+  transform: scale(0.96);
+}
+/* =============================================
+   6. SECCIÓN gestion de inventario de productos
+   ============================================= */
+.inventario-container {
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.tabla-insumos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tabla-insumos th,
+.tabla-insumos td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.stock-alerta {
+  color: #ef4444;
+  font-weight: bold;
+  background: #fef2f2;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.btn-stock-control {
+  background: #e2e8f0;
+  border: none;
+  padding: 5px 12px;
+  margin: 0 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-stock-control:hover {
+  background: #cbd5e1;
+}
+
+.admin-form-inventario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.admin-form-inventario input {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.btn-guardar-inventario {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-guardar-inventario:hover {
+  background-color: #059669;
 }

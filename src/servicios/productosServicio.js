@@ -9,6 +9,7 @@ import {
   where,
   onSnapshot,
   getDoc,
+  increment,
 } from "firebase/firestore";
 
 // 🍔 CREAR PRODUCTO
@@ -31,6 +32,28 @@ export const actualizarProducto = async (id, datos, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId");
   const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
   await updateDoc(docRef, datos);
+};
+// ➕ CREAR INSUMO
+export const crearInsumo = async (restauranteId, datos) => {
+  if (!restauranteId) throw new Error("ID de restaurante no proporcionado");
+  const colRef = collection(db, "restaurantes", restauranteId, "insumos");
+  await addDoc(colRef, {
+    ...datos,
+    fechaCreacion: new Date(),
+  });
+};
+// 📦 ACTUALIZAR STOCK INSUMO
+export const actualizarStockInsumo = async (
+  restauranteId,
+  insumoId,
+  cantidad,
+) => {
+  if (!restauranteId || !insumoId)
+    throw new Error("Faltan datos para actualizar stock");
+  const insumoRef = doc(db, "restaurantes", restauranteId, "insumos", insumoId);
+  await updateDoc(insumoRef, {
+    stock_actual: increment(cantidad),
+  });
 };
 
 // 🗑️ ELIMINAR PRODUCTO

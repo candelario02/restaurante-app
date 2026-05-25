@@ -48,6 +48,19 @@ export const escucharProductosAdmin = (restauranteId, callback) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
+// ==========================================
+// 🥕 INSUMOS (VISTA ADMIN - GESTIÓN)
+// ==========================================
+export const escucharInsumosAdmin = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+
+  // Apuntamos a la nueva colección 'insumos' que creaste
+  const q = query(collection(db, "restaurantes", restauranteId, "insumos"));
+
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  });
+};
 
 // 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
 export const escucharPedidos = (restauranteId, callback) => {
