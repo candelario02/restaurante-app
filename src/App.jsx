@@ -234,11 +234,10 @@ function App() {
                 </span>
               )}
             </div>
-            {/* 🚀 DEJAMOS SOLO ESTE BLOQUE CENTRALIZADO Y LIMPIO */}
+               {/* 👑 ADMINISTRADORES: Menú, Usuarios e Inventario */}
             {user && restauranteId && isAdmin && operador && (
               <div className="nav-admin-tabs-horizontal">
-                {/* 👑 ADMINISTRADORES: Menú y Usuarios */}
-                {PERMISOS_ROLES[operador.rol]?.verUsuarios && (
+                  {PERMISOS_ROLES[operador.rol]?.verUsuarios && (
                   <>
                     <button
                       className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
@@ -251,6 +250,12 @@ function App() {
                       onClick={() => setSeccion("usuarios")}
                     >
                       Usuarios
+                    </button>
+                    <button
+                      className={`btn-nav-tab ${seccion === "inventario" ? "active" : ""}`}
+                      onClick={() => setSeccion("inventario")}
+                    >
+                      Inventario
                     </button>
                   </>
                 )}
