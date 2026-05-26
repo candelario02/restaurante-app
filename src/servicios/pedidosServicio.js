@@ -145,3 +145,11 @@ export const enviarResenaPedido = async (
     throw error;
   }
 };
+//escuchra insumos
+export const escucharInsumosAdmin = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+  const q = query(collection(db, "restaurantes", restauranteId, "insumos"));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  });
+};

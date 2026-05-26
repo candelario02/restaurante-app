@@ -81,3 +81,17 @@ export const escucharPedidos = (restauranteId, callback) => {
     callback(pedidos);
   });
 };
+// escuchar insumos
+export const useInsumos = (restauranteId) => {
+  const [insumos, setInsumos] = useState([]);
+
+  useEffect(() => {
+    // Aquí es donde usas la función del servicio
+    const unsubscribe = escucharInsumosAdmin(restauranteId, (data) => {
+      setInsumos(data);
+    });
+    return () => unsubscribe();
+  }, [restauranteId]);
+
+  return insumos;
+};
