@@ -1441,7 +1441,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             type="button"
                             className="editarinsumo-btn"
                             title="Editar parámetros del insumo"
-                            onClick={() => editarInsumo(item)}
+                            onClick={() => iniciarEdicionInsumo(item)}
                           >
                             ✏️
                           </button>
