@@ -25,6 +25,8 @@ import {
 import {
   actualizarEstadoPedido,
   actualizarStockInventario,
+  actualizarDatosInsumo,
+  eliminarInsumoInventario,
   crearInsumo,
   gestionarPedido,
   realizarMovimientoInventario,
@@ -437,14 +439,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setValoresEditadosInsumo({
       nombre: item.nombre,
       stock_actual: Number(item.stock_actual) || 0,
-      precio: Number(item.precio || item.precio_unitario) || 0,
+      precio_unitario: Number(item.precio_unitario || item.precio) || 0, // ¡Corregido nombre!
       unidad_medida: item.unidad_medida || "und",
     });
   };
   //funcion de guardar cambios insumos
   const guardarCambiosInsumo = async (insumoId) => {
     try {
-      // Asegúrate de que restauranteId esté disponible en el alcance de tu componente
+      // Enviamos el estado con la propiedad exacta que espera Firebase
       await actualizarDatosInsumo(
         restauranteId,
         insumoId,
@@ -457,8 +459,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             ? {
                 ...ins,
                 nombre: valoresEditadosInsumo.nombre,
-                precio: Number(valoresEditadosInsumo.precio),
-                precio_unitario: Number(valoresEditadosInsumo.precio),
+                precio_unitario: Number(valoresEditadosInsumo.precio_unitario), // Homologado
                 stock_actual: Number(valoresEditadosInsumo.stock_actual),
                 unidad_medida: valoresEditadosInsumo.unidad_medida,
               }
@@ -468,7 +469,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
       setEditandoInsumoId(null);
 
-      // Alerta de éxito elegante usando SweetAlert2
       Swal.fire({
         icon: "success",
         title: "¡Actualizado!",
@@ -492,8 +492,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       text: "Este insumo se eliminará permanentemente del inventario.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#ef4444", // Rojo
-      cancelButtonColor: "#6b7280", // Gris
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
@@ -1200,9 +1200,18 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <input
               type="text"
               placeholder="Nombre del insumo (Ej: Cebolla)"
-              value={nuevoInsumo.nombre || ""}
+              value={
+                editandoInsumoId
+                  ? valoresEditadosInsumo.nombre || ""
+                  : nuevoInsumo.nombre || ""
+              }
               onChange={(e) =>
-                setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+                editandoInsumoId
+                  ? setValoresEditadosInsumo({
+                      ...valoresEditadosInsumo,
+                      nombre: e.target.value,
+                    })
+                  : setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
               }
             />
             <input
@@ -1212,13 +1221,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
               }
               placeholder="Stock Inicial"
-              value={nuevoInsumo.stock_actual || ""}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  stock_actual: parseInt(e.target.value, 10) || "",
-                })
+              value={
+                editandoInsumoId
+                  ? (valoresEditadosInsumo.stock_actual ?? "")
+                  : (nuevoInsumo.stock_actual ?? "")
               }
+              onChange={(e) => {
+                const val =
+                  e.target.value === ""
+                    ? ""
+                    : parseInt(e.target.value, 10) || 0;
+                editandoInsumoId
+                  ? setValoresEditadosInsumo({
+                      ...valoresEditadosInsumo,
+                      stock_actual: val,
+                    })
+                  : setNuevoInsumo({ ...nuevoInsumo, stock_actual: val });
+              }}
             />
             <input
               type="number"
@@ -1228,13 +1247,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
               }
               placeholder="Precio Unitario (S/.)"
-              value={nuevoInsumo.precio || ""}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  precio: parseFloat(e.target.value) || "",
-                })
+              value={
+                editandoInsumoId
+                  ? (valoresEditadosInsumo.precio_unitario ?? "")
+                  : (nuevoInsumo.precio ?? "")
               }
+              onChange={(e) => {
+                const val =
+                  e.target.value === "" ? "" : parseFloat(e.target.value) || 0;
+                editandoInsumoId
+                  ? setValoresEditadosInsumo({
+                      ...valoresEditadosInsumo,
+                      precio_unitario: val,
+                    })
+                  : setNuevoInsumo({ ...nuevoInsumo, precio: val });
+              }}
             />
 
             <div className="selector-unidad-registro">
@@ -1243,12 +1270,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   type="radio"
                   name="unidad"
                   value="kg"
-                  checked={nuevoInsumo.unidad_medida === "kg"}
+                  checked={
+                    editandoInsumoId
+                      ? valoresEditadosInsumo.unidad_medida === "kg"
+                      : nuevoInsumo.unidad_medida === "kg"
+                  }
                   onChange={(e) =>
-                    setNuevoInsumo({
-                      ...nuevoInsumo,
-                      unidad_medida: e.target.value,
-                    })
+                    editandoInsumoId
+                      ? setValoresEditadosInsumo({
+                          ...valoresEditadosInsumo,
+                          unidad_medida: e.target.value,
+                        })
+                      : setNuevoInsumo({
+                          ...nuevoInsumo,
+                          unidad_medida: e.target.value,
+                        })
                   }
                 />{" "}
                 kg
@@ -1258,12 +1294,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   type="radio"
                   name="unidad"
                   value="und"
-                  checked={nuevoInsumo.unidad_medida === "und"}
+                  checked={
+                    editandoInsumoId
+                      ? valoresEditadosInsumo.unidad_medida === "und"
+                      : nuevoInsumo.unidad_medida === "und"
+                  }
                   onChange={(e) =>
-                    setNuevoInsumo({
-                      ...nuevoInsumo,
-                      unidad_medida: e.target.value,
-                    })
+                    editandoInsumoId
+                      ? setValoresEditadosInsumo({
+                          ...valoresEditadosInsumo,
+                          unidad_medida: e.target.value,
+                        })
+                      : setNuevoInsumo({
+                          ...nuevoInsumo,
+                          unidad_medida: e.target.value,
+                        })
                   }
                 />{" "}
                 und
@@ -1284,10 +1329,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   className="btn-guardar-inventario"
                   onClick={() => {
                     setEditandoInsumoId(null);
-                    setNuevoInsumo({
+                    setValoresEditadosInsumo({
                       nombre: "",
                       stock_actual: "",
-                      precio: "",
+                      precio_unitario: "",
                       unidad_medida: "kg",
                     });
                   }}

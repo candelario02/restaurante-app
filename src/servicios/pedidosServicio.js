@@ -274,10 +274,9 @@ export const actualizarDatosInsumo = async (
       "insumos",
       insumoId,
     );
-
     await updateDoc(insumoRef, {
       nombre: nuevosDatos.nombre.trim(),
-      precio_unitario: Number(nuevosDatos.precio_unitario) || 0,
+      precio_unitario: Number(nuevosDatos.precio_unitario) || 0, // Acoplado con el componente
       stock_actual: Number(nuevosDatos.stock_actual) || 0,
       ultimaModificacion: serverTimestamp(),
     });
