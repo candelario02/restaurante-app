@@ -404,11 +404,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
 
     try {
+      // 🎯 CORRECCIÓN: Validamos tanto 'precio' (insumos) como 'precio_unitario' (productos)
+      const precioReal = Number(item.precio || item.precio_unitario) || 0;
+
       // Llamada única al servicio profesional
       await realizarMovimientoInventario(restauranteId, item, {
         cantidad: cant,
         tipo: estadoFila.tipo,
-        precio: item.precio_unitario || 0,
+        precio: precioReal, // Arrastra el costo real detectado
       });
 
       // Limpieza de estado
