@@ -89,3 +89,17 @@ export const escucharInsumosAdmin = (restauranteId, callback) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
+//escucahr un histoarual de insumos
+export const escucharHistorialMovimientos = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+
+  const q = query(
+    collection(db, "restaurantes", restauranteId, "historial_movimientos"),
+    orderBy("fecha", "desc")
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(datos);
+  });
+};

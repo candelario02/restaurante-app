@@ -1279,3 +1279,43 @@
 .btn-aplicar-movimiento:hover {
   background-color: #059669;
 }
+/* =============================================
+    7. SECCIÓN GESTIÓN DE historial insumos
+  ============================================= */
+  .hinsumos-section {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.hinsumos-titulo {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.hinsumos-filtros {
+  margin-bottom: 15px;
+}
+
+.hinsumos-select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.hinsumos-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hinsumos-tabla th, .hinsumos-tabla td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.hinsumos-tabla th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}

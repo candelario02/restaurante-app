@@ -27,6 +27,7 @@ import {
   actualizarStockInsumo,
   crearInsumo,
   gestionarPedido,
+  realizarMovimientoInventario,
 } from "../servicios/pedidosServicio";
 import {
   registrarUsuario,
@@ -40,6 +41,7 @@ import {
   escucharProductosAdmin,
   escucharPedidos,
   escucharInsumosAdmin,
+  escucharHistorialMovimientos,
 } from "../hooks/useProductos";
 
 // 🔥 CONFIGURACIÓN
@@ -109,7 +111,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [busquedaInsumo, setBusquedaInsumo] = useState("");
   const [operacionStock, setOperacionStock] = useState({});
   const [tipoFiltroInventario, setTipoFiltroInventario] = useState("insumos");
-  //estados opara el menu
+  const [historial, setHistorial] = useState([]);
+  const inventarioConsolidado = useMemo(() => {
+    const prods = productos.map((p) => ({
+      ...p,
+      tipoItem: "producto",
+      esInsumo: false,
+    }));
+    const ins = insumos.map((i) => ({
+      ...i,
+      tipoItem: "insumo",
+      esInsumo: true,
+    }));
+    return [...prods, ...ins];
+  }, [productos, insumos]);
+  //estados para el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
   const fileInputRef = useRef(null);
@@ -120,28 +136,19 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [nombreLocal, setNombreLocal] = useState("");
 
   // cargar datos de bd
-
   useEffect(() => {
     if (!restauranteId || !rolUsuario) return;
-
     const isAdmin = rolUsuario === "admin" || rolUsuario === "superadmin";
-
     console.log(
       `[Firebase] Conectando a: ${restauranteId} (Admin: ${isAdmin})`,
     );
-
     let unsubProd = () => {};
-
     let unsubInsumos = () => {};
-
+    let unsubHistorial = () => {};
     let unsubPed = () => {};
-
     let unsubUser = () => {};
-
     let unsubConfig = () => {};
-
     let unsubDatos = () => {};
-
     try {
       // 1. PRODUCTOS
 
@@ -150,43 +157,31 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       } else {
         unsubProd = obtenerProductos(restauranteId, categoria, setProductos);
       }
-
       // 2. inventario
-
       if (isAdmin) {
         unsubInsumos = escucharInsumosAdmin(restauranteId, setInsumos);
+        unsubHistorial = escuchahinsumosadmin(restauranteId, setHistorial);
       }
-
       // 3. PEDIDOS
-
       unsubPed = escucharPedidos(restauranteId, setPedidos);
-
       // 4. USUARIOS (Admin)
-
       if (isAdmin) {
         unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
 
       // 5. CONFIGURACIÓN MENÚ DEL DÍA
-
       const configRef = doc(
         db,
-
         "restaurantes",
-
         restauranteId,
-
         "configuraciones",
-
         "menu_dia",
       );
 
       unsubConfig = onSnapshot(configRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data();
-
           setMenuDiaPrecio(data.precio ?? 15);
-
           setMenuDiaActivo(data.activo ?? false);
         }
       });
@@ -213,19 +208,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     } catch (error) {
       console.error("Error al suscribirse a Firebase:", error);
     }
-
     return () => {
       unsubProd();
-
       unsubInsumos();
-
       unsubPed();
-
       unsubUser();
-
       unsubConfig();
-
       unsubDatos();
+      unsubHistorial();
     };
   }, [restauranteId, rolUsuario, categoria]);
 
@@ -361,50 +351,51 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   };
   //Funcion insumos
   const registrarNuevoInsumo = async () => {
+    // Validación básica de UI
     if (!nuevoInsumo.nombre || !nuevoInsumo.stock_actual) {
-      return Swal.fire({
-        title: "Campos Vacíos",
-        text: "Por favor, completa el nombre y la cantidad inicial.",
-        icon: "warning",
-        confirmButtonText: "OK",
-      });
+      return Swal.fire("Campos Vacíos", "Completa nombre y stock.", "warning");
     }
 
     try {
-      // 1. Verificamos que se haya importado correctamente la función del servicio
-      if (typeof crearInsumo !== "function") {
-        throw new ReferenceError(
-          "crearInsumo no está importada en la cabecera del archivo.",
-        );
-      }
+      await crearInsumo(restauranteId, nuevoInsumo);
 
-      // 2. Ejecuta la inserción en la base de datos
-      await crearInsumo(restauranteId, {
-        nombre: nuevoInsumo.nombre,
-        stock_actual: parseInt(nuevoInsumo.stock_actual, 10),
-        unidad_medida: nuevoInsumo.unidad_medida || "kg",
-      });
-
-      // 3. Limpia el formulario
       setNuevoInsumo({ nombre: "", stock_actual: "", unidad_medida: "kg" });
-
-      // 4. Mensaje de éxito centrado
       Swal.fire({
         icon: "success",
-        title: "Insumo Registrado",
-        text: "El insumo se guardó correctamente.",
-        timer: 2000,
+        title: "¡Insumo Registrado!",
+        timer: 1500,
         showConfirmButton: false,
       });
     } catch (error) {
-      console.error("Error al registrar insumo:", error);
-      // 5. Reemplazo del alert() molesto de arriba por Swal centrado
-      Swal.fire({
-        title: "Error",
-        text: "Hubo un error al guardar el insumo. Inténtalo de nuevo.",
-        icon: "error",
-        confirmButtonText: "OK",
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+  // Funcion de movimenitos
+  const ejecutarMovimiento = async (item, estadoFila) => {
+    const cant = parseInt(estadoFila.cantidad, 10);
+
+    // Validaciones básicas de interfaz
+    if (!cant || cant <= 0)
+      return Swal.fire("Atención", "Cantidad no válida", "warning");
+    if (estadoFila.tipo === "salida" && cant > Number(item.stock_actual)) {
+      return Swal.fire("Error", "Stock insuficiente", "error");
+    }
+
+    try {
+      // Llamada única al servicio profesional
+      await realizarMovimientoInventario(restauranteId, item, {
+        cantidad: cant,
+        tipo: estadoFila.tipo,
       });
+
+      // Limpieza de estado
+      setOperacionStock((prev) => ({
+        ...prev,
+        [item.id]: { cantidad: "", tipo: estadoFila.tipo },
+      }));
+      Swal.fire("Éxito", "Movimiento aplicado", "success");
+    } catch (err) {
+      Swal.fire("Error", "Fallo al sincronizar: " + err.message, "error");
     }
   };
   //funcion cabcelar edidcion
@@ -1086,34 +1077,56 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             />
             <input
               type="number"
-              onKeyDown={(e) =>
-                ["e", "E", "+", "-", "."].includes(e.key) && e.preventDefault()
-              }
               placeholder="Stock Inicial (Cantidad)"
               value={nuevoInsumo.stock_actual || ""}
-              onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9]/g, "");
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  stock_actual: val ? parseInt(val, 10) : "",
-                });
-              }}
-            />
-
-            {/* 🔄 Selector Spinner/Drop-down: Estricto de 2 opciones */}
-            <select
-              className="select-filtro-tabla"
-              value={nuevoInsumo.unidad_medida || "kg"}
               onChange={(e) =>
                 setNuevoInsumo({
                   ...nuevoInsumo,
-                  unidad_medida: e.target.value,
+                  stock_actual: parseInt(e.target.value) || "",
                 })
               }
+            />
+
+            <div
+              className="selector-unidad-registro"
+              style={{
+                display: "flex",
+                gap: "15px",
+                alignItems: "center",
+                marginBottom: "10px",
+              }}
             >
-              <option value="kg">Kilogramos (kg)</option>
-              <option value="und">Unidades (und)</option>
-            </select>
+              <label>
+                <input
+                  type="radio"
+                  name="unidad"
+                  value="kg"
+                  checked={nuevoInsumo.unidad_medida === "kg"}
+                  onChange={(e) =>
+                    setNuevoInsumo({
+                      ...nuevoInsumo,
+                      unidad_medida: e.target.value,
+                    })
+                  }
+                />{" "}
+                kg
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="unidad"
+                  value="und"
+                  checked={nuevoInsumo.unidad_medida === "und"}
+                  onChange={(e) =>
+                    setNuevoInsumo({
+                      ...nuevoInsumo,
+                      unidad_medida: e.target.value,
+                    })
+                  }
+                />{" "}
+                und
+              </label>
+            </div>
 
             <button
               type="button"
@@ -1123,37 +1136,30 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               Registrar Insumo
             </button>
           </div>
-
-          {/* 🎛️ FILTROS Y BUSQUEDA UNIFICADA */}
+          {/* FILTROS Y BUSQUEDA */}
           <div className="inventario-filtros-grupo">
-            <div className="buscador-inventario-subcontainer">
-              <input
-                type="text"
-                className="input-busqueda-insumo"
-                placeholder="🔍 Buscar por nombre de insumo o producto..."
-                value={busquedaInsumo}
-                onChange={(e) => setBusquedaInsumo(e.target.value)}
-              />
-            </div>
-
-            <div className="selector-filtro-container">
-              <select
-                className="select-filtro-tabla"
-                value={tipoFiltroInventario}
-                onChange={(e) => setTipoFiltroInventario(e.target.value)}
-              >
-                <option value="todos">📋 Mostrar Todo el Inventario</option>
-                <option value="insumos">🥕 Solo Insumos de Cocina</option>
-                <option value="Comidas">🍳 Platos / Comidas</option>
-                <option value="Bebidas">🍺 Bebidas / Líquidos</option>
-                <option value="Entradas">🥗 Entradas</option>
-                <option value="Cafeteria">☕ Cafetería</option>
-                <option value="Postres">🍰 Postres</option>
-              </select>
-            </div>
+            <input
+              type="text"
+              className="input-busqueda-insumo"
+              placeholder="🔍 Buscar por nombre..."
+              value={busquedaInsumo}
+              onChange={(e) => setBusquedaInsumo(e.target.value)}
+            />
+            <select
+              className="select-filtro-tabla"
+              value={tipoFiltroInventario}
+              onChange={(e) => setTipoFiltroInventario(e.target.value)}
+            >
+              <option value="todos">📋 Mostrar Todo el Inventario</option>
+              <option value="insumos">🥕 Solo Insumos de Cocina</option>
+              <option value="Comidas">🍳 Platos / Comidas</option>
+              <option value="Bebidas">🍺 Bebidas / Líquidos</option>
+              <option value="Entradas">🥗 Entradas</option>
+              <option value="Cafeteria">☕ Cafetería</option>
+              <option value="Postres">🍰 Postres</option>
+            </select>
           </div>
 
-          {/* Tabla de Control Única con Títulos  */}
           <table className="tabla-insumos">
             <thead>
               <tr>
@@ -1164,202 +1170,109 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               </tr>
             </thead>
             <tbody>
-              {(() => {
-                const listaInsumosMapeada = (insumos || []).map((i) => ({
-                  ...i,
-                  esInsumo: true,
-                  categoria: "insumos",
-                }));
+              {inventarioConsolidado
+                .filter((item) => {
+                  const coincideBusqueda = item.nombre
+                    .toLowerCase()
+                    .includes(busquedaInsumo.toLowerCase());
+                  const coincideFiltro =
+                    tipoFiltroInventario === "todos" ||
+                    (tipoFiltroInventario === "insumos"
+                      ? item.esInsumo
+                      : item.categoria === tipoFiltroInventario);
+                  return coincideBusqueda && coincideFiltro;
+                })
+                .map((item) => {
+                  const estadoFila = operacionStock[item.id] || {
+                    cantidad: "",
+                    tipo: item.esInsumo ? "entrada" : "salida",
+                  };
+                  const stockNumerico = Number(item.stock_actual) || 0;
 
-                const listaProductosMapeada = (productos || []).map((p) => ({
-                  ...p,
-                  esInsumo: false,
-                }));
-
-                const inventarioGlobal = [
-                  ...listaInsumosMapeada,
-                  ...listaProductosMapeada,
-                ];
-
-                return inventarioGlobal
-                  .filter((item) => {
-                    if (!item.nombre) return false;
-                    const cumpleBusqueda = item.nombre
-                      .toLowerCase()
-                      .includes(busquedaInsumo.toLowerCase());
-                    if (tipoFiltroInventario === "todos") return cumpleBusqueda;
-                    if (tipoFiltroInventario === "insumos")
-                      return cumpleBusqueda && item.esInsumo;
-                    return (
-                      cumpleBusqueda &&
-                      !item.esInsumo &&
-                      item.categoria === tipoFiltroInventario
-                    );
-                  })
-                  .map((item) => {
-                    const stockNumerico = Number(item.stock_actual) || 0;
-                    const esCritico = stockNumerico <= 4;
-
-                    const estadoFila = operacionStock[item.id] || {
-                      cantidad: "",
-                      tipo: item.esInsumo ? "entrada" : "salida",
-                    };
-
-                    const ejecutarMovimiento = async () => {
-                      const cant = parseInt(estadoFila.cantidad, 10);
-                      if (!cant || cant <= 0) {
-                        return Swal.fire({
-                          title: "Atención",
-                          text: "Ingresa una cantidad válida mayor a 0",
-                          icon: "warning",
-                          confirmButtonText: "OK",
-                        });
-                      }
-
-                      const multiplicador =
-                        estadoFila.tipo === "entrada" ? 1 : -1;
-                      const cantidadFinal = cant * multiplicador;
-
-                      try {
-                        if (item.esInsumo) {
-                          if (typeof actualizarStockInsumo === "function") {
-                            // 🛠️ CORREGIDO: Enviamos directamente el valor numérico final a Firebase sin callbacks extraños
-                            await actualizarStockInsumo(
-                              restauranteId,
-                              item.id,
-                              cantidadFinal,
-                            );
-                          } else {
-                            throw new ReferenceError(
-                              "actualizarStockInsumo no está definida o importada correctamente.",
-                            );
-                          }
-                        } else {
-                          if (typeof actualizarProducto === "function") {
-                            await actualizarProducto(
-                              item.id,
-                              { stock_actual: increment(cantidadFinal) },
-                              restauranteId,
-                            );
-                          } else {
-                            throw new ReferenceError(
-                              "actualizarProducto no está definida o importada correctamente.",
-                            );
-                          }
-                        }
-
-                        setOperacionStock({
-                          ...operacionStock,
-                          [item.id]: {
-                            cantidad: "",
-                            tipo: item.esInsumo ? "entrada" : "salida",
-                          },
-                        });
-
-                        Swal.fire({
-                          icon: "success",
-                          title: "Movimiento Aplicado",
-                          text: `Se registró la ${estadoFila.tipo} de manera exitosa.`,
-                          timer: 1500,
-                          showConfirmButton: false,
-                        });
-                      } catch (err) {
-                        console.error(err);
-                        Swal.fire({
-                          title: "Error",
-                          text: "Hubo un fallo al sincronizar con la base de datos.",
-                          icon: "error",
-                          confirmButtonText: "OK",
-                        });
-                      }
-                    };
-
-                    return (
-                      <tr key={item.id}>
-                        <td className="celda-nombre-elemento">{item.nombre}</td>
-                        <td>
-                          <span
-                            className={`badge-categoria ${item.esInsumo ? "insumo" : "producto"}`}
+                  return (
+                    <tr key={item.id}>
+                      <td>{item.nombre}</td>
+                      <td>
+                        {item.esInsumo ? "Materia Prima" : item.categoria}
+                      </td>
+                      <td>
+                        {stockNumerico} {item.unidad_medida || "und"}
+                      </td>
+                      <td>
+                        <div className="contenedor-acciones-stock">
+                          <select
+                            value={estadoFila.tipo}
+                            onChange={(e) =>
+                              setOperacionStock({
+                                ...operacionStock,
+                                [item.id]: {
+                                  ...estadoFila,
+                                  tipo: e.target.value,
+                                },
+                              })
+                            }
                           >
-                            {item.esInsumo
-                              ? "Materia Prima"
-                              : `${item.categoria}`}
-                          </span>
-                        </td>
-                        <td
-                          className={
-                            esCritico
-                              ? "stock-alerta celda-stock-valor"
-                              : "celda-stock-valor"
-                          }
-                        >
-                          {stockNumerico} {item.unidad_medida || "und"}
-                          {esCritico && (
-                            <span className="texto-alerta-bajo">⚠️ ¡Bajo!</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="contenedor-acciones-stock">
-                            <select
-                              className="select-movimiento-tipo"
-                              value={estadoFila.tipo}
-                              onChange={(e) =>
-                                setOperacionStock({
-                                  ...operacionStock,
-                                  [item.id]: {
-                                    ...estadoFila,
-                                    tipo: e.target.value,
-                                  },
-                                })
-                              }
-                            >
-                              {item.esInsumo && (
-                                <option value="entrada">📥 Entrada</option>
-                              )}
-                              <option value="salida">🍳 Salida Cocina</option>
-                              <option value="transferencia">
-                                📦 Transferencia
-                              </option>
-                            </select>
+                            {item.esInsumo && (
+                              <option value="entrada">📥 Entrada</option>
+                            )}
+                            <option value="salida">🍳 Salida</option>
+                          </select>
 
-                            <input
-                              type="number"
-                              className="input-movimiento-cantidad"
-                              placeholder="Cantidad"
-                              min="1"
-                              onKeyDown={(e) =>
-                                ["e", "E", "+", "-", "."].includes(e.key) &&
-                                e.preventDefault()
-                              }
-                              value={estadoFila.cantidad}
-                              onChange={(e) => {
-                                const valorLimpio = e.target.value.replace(
-                                  /[^0-9]/g,
-                                  "",
-                                );
-                                setOperacionStock({
-                                  ...operacionStock,
-                                  [item.id]: {
-                                    ...estadoFila,
-                                    cantidad: valorLimpio,
-                                  },
-                                });
-                              }}
-                            />
+                          <input
+                            type="number"
+                            value={estadoFila.cantidad}
+                            placeholder="Cant."
+                            onChange={(e) =>
+                              setOperacionStock({
+                                ...operacionStock,
+                                [item.id]: {
+                                  ...estadoFila,
+                                  cantidad: e.target.value,
+                                },
+                              })
+                            }
+                          />
 
-                            <button
-                              type="button"
-                              className="btn-aplicar-movimiento"
-                              onClick={ejecutarMovimiento}
-                            >
-                              Aplicar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  });
-              })()}
+                          <button
+                            onClick={() => ejecutarMovimiento(item, estadoFila)}
+                          >
+                            Aplicar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {/* SECCIÓN historial de insumos */}
+      {seccion === "historial" && (
+        <div className="admin-section">
+          <h2 className="titulo-seccion">Historial de Insumos Usados</h2>
+          <table className="tabla-insumos">
+            <thead>
+              <tr>
+                <th>FECHA</th>
+                <th>ITEM</th>
+                <th>TIPO</th>
+                <th>CANTIDAD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historial.map((mov) => (
+                <tr key={mov.id}>
+                  <td>
+                    {mov.fecha?.seconds
+                      ? new Date(mov.fecha.seconds * 1000).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td>{mov.item_nombre}</td>
+                  <td>{mov.tipo}</td>
+                  <td>{mov.cantidad}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

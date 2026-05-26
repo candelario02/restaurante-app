@@ -145,28 +145,61 @@ export const enviarResenaPedido = async (
     throw error;
   }
 };
-//escuchra insumos
-export const escucharInsumosAdmin = (restauranteId, callback) => {
-  if (!restauranteId) return () => {};
-  const q = query(collection(db, "restaurantes", restauranteId, "insumos"));
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  });
-};
 //cerar insumo
 export const crearInsumo = async (restauranteId, datosInsumo) => {
   try {
     const insumosRef = collection(db, "restaurantes", restauranteId, "insumos");
-    const docRef = await addDoc(insumosRef, {
-      ...datosInsumo,
+
+    // Normalizamos los datos AQUÍ, no en el componente
+    const payload = {
+      nombre: datosInsumo.nombre.trim(),
+      stock_actual: parseInt(datosInsumo.stock_actual, 10) || 0,
+      unidad_medida: datosInsumo.unidad_medida || "kg",
       fechaCreacion: serverTimestamp(),
-    });
+    };
+
+    const docRef = await addDoc(insumosRef, payload);
     return docRef.id;
   } catch (error) {
     console.error("Error en crearInsumo:", error);
-    throw error;
+    throw new Error("No se pudo registrar el insumo");
   }
 };
+
+// registar hitorial de insumos
+export const realizarMovimientoInventario = async (
+  restauranteId,
+  item,
+  datosMovimiento,
+) => {
+  const { id, esInsumo, nombre } = item;
+  const { cantidad, tipo } = datosMovimiento;
+
+  // 1. Calculamos el valor de incremento
+  const valor = tipo === "entrada" ? cantidad : -cantidad;
+
+  // 2. Ejecutamos la actualización según el tipo (Insumo vs Producto)
+  // Nota: Esto simplifica la lógica del if/else que tenías en el componente
+  if (esInsumo) {
+    await actualizarStockInsumo(restauranteId, id, valor);
+  } else {
+    // Si tu servicio de productos ya maneja esto, excelente.
+    await actualizarProducto(
+      id,
+      { stock_actual: increment(valor) },
+      restauranteId,
+    );
+  }
+
+  // 3. Registramos el historial (esto siempre sucede, así que el servicio lo hace por ti)
+  await registrarMovimientoHistorial(restauranteId, {
+    item_nombre: nombre,
+    cantidad: cantidad,
+    tipo: tipo,
+    fecha: serverTimestamp(),
+  });
+};
+
 // actualizarStockInsumo
 export const actualizarStockInsumo = async (
   restauranteId,
