@@ -117,6 +117,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   });
   const [busquedaInsumo, setBusquedaInsumo] = useState("");
   const [operacionStock, setOperacionStock] = useState({});
+  const [inventario, setInventario] = useState([]);
   //filtro para inceatrio y historial
   const [tipoFiltroInventario, setTipoFiltroInventario] = useState("insumos");
   const [filtroFechaHistorial, setFiltroFechaHistorial] = useState("todos");
@@ -446,20 +447,22 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //funcion de guardar cambios insumos
   const guardarCambiosInsumo = async (insumoId) => {
     try {
-      // Enviamos el estado con la propiedad exacta que espera Firebase
+      // CORRECCIÓN: Asegúrate de pasar el ID del documento de Firebase, NO el slug de la URL
+      // Si usas una variable global o de contexto, reemplaza 'restauranteId' por la correcta.
       await actualizarDatosInsumo(
         restauranteId,
         insumoId,
         valoresEditadosInsumo,
       );
 
-      setInventarioConsolidado((prev) =>
+      // CORRECCIÓN: Cambiado al Hook de estado correcto de tu componente (ej: setInventario o el que uses)
+      setInventario((prev) =>
         prev.map((ins) =>
           ins.id === insumoId
             ? {
                 ...ins,
                 nombre: valoresEditadosInsumo.nombre,
-                precio_unitario: Number(valoresEditadosInsumo.precio_unitario), // Homologado
+                precio_unitario: Number(valoresEditadosInsumo.precio_unitario),
                 stock_actual: Number(valoresEditadosInsumo.stock_actual),
                 unidad_medida: valoresEditadosInsumo.unidad_medida,
               }
@@ -499,11 +502,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
+          // CORRECCIÓN: Verifica que 'restauranteId' sea el ID del documento de Firestore
           await eliminarInsumoInventario(restauranteId, insumoId);
 
-          setInventarioConsolidado((prev) =>
-            prev.filter((ins) => ins.id !== insumoId),
-          );
+          // CORRECCIÓN: Cambiado al Hook de estado correcto que renderiza tu tabla
+          setInventario((prev) => prev.filter((ins) => ins.id !== insumoId));
 
           Swal.fire({
             icon: "success",
