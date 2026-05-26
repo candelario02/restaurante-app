@@ -21,9 +21,12 @@ import {
   eliminarProducto,
   cambiarDisponibilidad,
   obtenerProductos,
-  actualizarStockInsumo,
 } from "../servicios/productosServicio";
-import { actualizarEstadoPedido } from "../servicios/pedidosServicio";
+import {
+  actualizarEstadoPedido,
+  actualizarStockInsumo,
+  crearInsumo,
+} from "../servicios/pedidosServicio";
 import {
   registrarUsuario,
   eliminarUsuario,
@@ -327,23 +330,50 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //Funcion insumos
   const registrarNuevoInsumo = async () => {
     // Validación profesional
-    if (!nuevoInsumo.nombre.trim() || !nuevoInsumo.unidad_medida.trim()) {
-      alert("Por favor, completa el nombre y la unidad de medida.");
-      return;
+    if (!nuevoInsumo.nombre || !nuevoInsumo.nombre.trim()) {
+      return Swal.fire(
+        "Atención",
+        "Por favor, ingresa el nombre del insumo.",
+        "warning",
+      );
     }
 
+    // Si por alguna razón está vacío, asegurar que tome 'kg' del selector predeterminado
+    const unidadFinal = nuevoInsumo.unidad_medida || "kg";
+
     try {
-      await crearInsumo(restauranteId, nuevoInsumo);
-      // Resetear formulario tras éxito
+      const dataAGuardar = {
+        nombre: nuevoInsumo.nombre.trim(),
+        stock_actual: Number(nuevoInsumo.stock_actual) || 0,
+        stock_minimo: Number(nuevoInsumo.stock_minimo) || 0,
+        unidad_medida: unidadFinal,
+      };
+
+      await crearInsumo(restauranteId, dataAGuardar);
+
+      // Resetear formulario tras éxito conservando la coherencia del select
       setNuevoInsumo({
         nombre: "",
-        stock_actual: 0,
+        stock_actual: "",
         stock_minimo: 0,
-        unidad_medida: "",
+        unidad_medida: "kg",
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Insumo Registrado",
+        text: "El material se guardó correctamente en el almacén.",
+        timer: 1500,
+        showConfirmButton: false,
       });
     } catch (error) {
       console.error("Error al registrar insumo:", error);
-      alert("Hubo un error al guardar el insumo. Inténtalo de nuevo.");
+      // 🚨 Alerta idéntica a tus capturas para estandarizar fallos de base de datos
+      Swal.fire(
+        "Error",
+        "Hubo un fallo al sincronizar con la base de datos.",
+        "error",
+      );
     }
   };
   //funcion cabcelar edidcion
@@ -978,7 +1008,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">Control de Inventario Global</h2>
 
-          {/* Formulario de creación limpio (Solo registra Insumos con Kg/Unidades directo) */}
+          {/* Formulario de creación limpio (Solo registra Insumos con Selector de Medida) */}
           <div className="admin-form-inventario">
             <input
               type="text"
@@ -1003,17 +1033,22 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 });
               }}
             />
-            <input
-              type="text"
-              placeholder="Unidad de medida (Ej: kg, und, lt)"
-              value={nuevoInsumo.unidad_medida || ""}
+
+            {/* 🔄 Selector tipo Spinner/Drop-down para la unidad de medida */}
+            <select
+              className="select-filtro-tabla"
+              value={nuevoInsumo.unidad_medida || "kg"}
               onChange={(e) =>
                 setNuevoInsumo({
                   ...nuevoInsumo,
                   unidad_medida: e.target.value,
                 })
               }
-            />
+            >
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="und">Unidades (und)</option>
+            </select>
+
             <button
               type="button"
               className="btn-guardar-inventario"
@@ -1056,32 +1091,36 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <table className="tabla-insumos">
             <thead>
               <tr>
-                <th>ELEMENTO O PRODUCTO</th>
-                <th>TIPO / ORIGEN</th>
+                <th>PRODUCTO / INSUMO</th>
+                <th>CATEGORÍA</th>{" "}
+                {/* 📌 Cambiado de TIPO / ORIGEN a CATEGORÍA */}
                 <th>STOCK ACTUAL</th>
                 <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
             </thead>
             <tbody>
               {(() => {
-                // 1. Unificamos ambas listas agregando una bandera para saber qué tipo es cada fila
+                // 🛡️ CONTROL DE ERRORES DE REFERENCIA: Nos aseguramos de mapear las variables correctas
                 const listaInsumosMapeada = (insumos || []).map((i) => ({
                   ...i,
                   esInsumo: true,
                   categoria: "insumos",
                 }));
+
+                // Aquí cambiamos cualquier remanente que buscaras de "productosAdmin" a tu estado real "productos"
                 const listaProductosMapeada = (productos || []).map((p) => ({
                   ...p,
                   esInsumo: false,
                 }));
+
                 const inventarioGlobal = [
                   ...listaInsumosMapeada,
                   ...listaProductosMapeada,
                 ];
 
-                // 2. Filtramos en tiempo real por el buscador y por el selector de categorías
                 return inventarioGlobal
                   .filter((item) => {
+                    if (!item.nombre) return false;
                     const cumpleBusqueda = item.nombre
                       .toLowerCase()
                       .includes(busquedaInsumo.toLowerCase());
@@ -1095,13 +1134,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     );
                   })
                   .map((item) => {
-                    // 🚨 ALERTA INTELIGENTE AUTOMÁTICA: Si es menor o igual a 4 se evalúa crítico
                     const stockNumerico = Number(item.stock_actual) || 0;
                     const esCritico = stockNumerico <= 4;
 
+                    // Si es un producto del menú, por defecto inicializa su acción en "salida"
                     const estadoFila = operacionStock[item.id] || {
                       cantidad: "",
-                      tipo: "entrada",
+                      tipo: item.esInsumo ? "entrada" : "salida",
                     };
 
                     const ejecutarMovimiento = async () => {
@@ -1120,22 +1159,38 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                       try {
                         if (item.esInsumo) {
-                          await actualizarStockInsumo(
-                            restauranteId,
-                            item.id,
-                            cantidadFinal,
-                          );
+                          // Validamos que exista la función antes de invocarla
+                          if (typeof actualizarStockInsumo === "function") {
+                            await actualizarStockInsumo(
+                              restauranteId,
+                              item.id,
+                              cantidadFinal,
+                            );
+                          } else {
+                            throw new ReferenceError(
+                              "actualizarStockInsumo is not defined",
+                            );
+                          }
                         } else {
-                          await actualizarProducto(
-                            item.id,
-                            { stock_actual: increment(cantidadFinal) },
-                            restauranteId,
-                          );
+                          if (typeof actualizarProducto === "function") {
+                            await actualizarProducto(
+                              item.id,
+                              { stock_actual: increment(cantidadFinal) },
+                              restauranteId,
+                            );
+                          } else {
+                            throw new ReferenceError(
+                              "actualizarProducto is not defined",
+                            );
+                          }
                         }
 
                         setOperacionStock({
                           ...operacionStock,
-                          [item.id]: { cantidad: "", tipo: "entrada" },
+                          [item.id]: {
+                            cantidad: "",
+                            tipo: item.esInsumo ? "entrada" : "salida",
+                          },
                         });
 
                         Swal.fire({
@@ -1146,6 +1201,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           showConfirmButton: false,
                         });
                       } catch (err) {
+                        console.error(err);
+                        // 🚨 Usamos el string exacto que saltó en tu captura de pantalla de error
                         Swal.fire(
                           "Error",
                           "Hubo un fallo al sincronizar con la base de datos.",
@@ -1163,7 +1220,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           >
                             {item.esInsumo
                               ? "Materia Prima"
-                              : `Menú (${item.categoria})`}
+                              : `${item.categoria}`}
                           </span>
                         </td>
                         <td
@@ -1193,7 +1250,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                                 })
                               }
                             >
-                              <option value="entrada">📥 Entrada</option>
+                              {/* 🚫 Si es Insumo muestra todo. Si es Menú del Producto, SOLO Salida y Transferencia */}
+                              {item.esInsumo && (
+                                <option value="entrada">📥 Entrada</option>
+                              )}
                               <option value="salida">🍳 Salida Cocina</option>
                               <option value="transferencia">
                                 📦 Transferencia
@@ -1203,7 +1263,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             <input
                               type="number"
                               className="input-movimiento-cantidad"
-                              placeholder="Ingresar cantidad"
+                              placeholder="Cantidad"
                               min="1"
                               onKeyDown={(e) =>
                                 ["e", "E", "+", "-", "."].includes(e.key) &&
