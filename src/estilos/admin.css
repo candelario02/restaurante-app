@@ -1279,8 +1279,8 @@
 }
 /* =============================================
     7. SECCIÓN GESTIÓN DE historial insumos
-  ============================================= */
-  .hinsumos-section {
+============================================= */
+.hinsumos-section {
   padding: 20px;
   background: #fff;
   border-radius: 8px;
@@ -1300,6 +1300,8 @@
   padding: 8px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 14px;
 }
 
 .hinsumos-tabla {
@@ -1316,4 +1318,23 @@
 .hinsumos-tabla th {
   background-color: #f8f9fa;
   font-weight: 600;
+}
+
+/* Clases de apoyo extraídas del JSX */
+.hinsumos-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.hinsumos-tag.entrada {
+  background-color: #e2f8f0;
+  color: #059669;
+}
+
+.hinsumos-tag.salida {
+  background-color: #fff7ed;
+  color: #ea580c;
 }

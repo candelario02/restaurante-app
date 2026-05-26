@@ -1308,32 +1308,110 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </table>
         </div>
       )}
-      {/* SECCIÓN historial de insumos */}
+      {/* SECCIÓN HISTORIAL DE INSUMOS */}
       {seccion === "historial" && (
-        <div className="admin-section">
-          <h2 className="titulo-seccion">Historial de Insumos Usados</h2>
-          <table className="tabla-insumos">
+        <div className="admin-section hinsumos-section">
+          <h2 className="titulo-seccion hinsumos-titulo">
+            Historial de Insumos Usados
+          </h2>
+
+          {/* Filtros de listado basados en tiempo */}
+          <div className="hinsumos-filtros">
+            <select
+              className="hinsumos-select"
+              value={filtroFechaHistorial}
+              onChange={(e) => setFiltroFechaHistorial(e.target.value)}
+            >
+              <option value="todos">📅 Mostrar Todo</option>
+              <option value="hoy">📆 Hoy</option>
+              <option value="semana">🗓️ Esta Semana</option>
+              <option value="mes">📊 Este Mes</option>
+              <option value="ano">🏢 Este Año</option>
+            </select>
+          </div>
+
+          <table className="hinsumos-tabla">
             <thead>
               <tr>
                 <th>FECHA</th>
                 <th>ITEM</th>
                 <th>TIPO</th>
                 <th>CANTIDAD</th>
+                <th>PRECIO UNIT.</th>
+                <th>TOTAL</th>
               </tr>
             </thead>
             <tbody>
-              {historial.map((mov) => (
-                <tr key={mov.id}>
-                  <td>
-                    {mov.fecha?.seconds
-                      ? new Date(mov.fecha.seconds * 1000).toLocaleDateString()
-                      : "N/A"}
-                  </td>
-                  <td>{mov.item_nombre}</td>
-                  <td>{mov.tipo}</td>
-                  <td>{mov.cantidad}</td>
-                </tr>
-              ))}
+              {historial
+                .filter((mov) => {
+                  if (!mov.fecha?.seconds) return true;
+                  if (filtroFechaHistorial === "todos") return true;
+
+                  const fechaMov = new Date(mov.fecha.seconds * 1000);
+                  const ahora = new Date();
+
+                  // Normalizar horas para comparar solo fechas puras
+                  const hoy = new Date(
+                    ahora.getFullYear(),
+                    ahora.getMonth(),
+                    ahora.getDate(),
+                  );
+                  const registroDia = new Date(
+                    fechaMov.getFullYear(),
+                    fechaMov.getMonth(),
+                    fechaMov.getDate(),
+                  );
+
+                  if (filtroFechaHistorial === "hoy") {
+                    return registroDia.getTime() === hoy.getTime();
+                  }
+                  if (filtroFechaHistorial === "semana") {
+                    const unaSemanaAtras = new Date(
+                      hoy.getTime() - 7 * 24 * 60 * 60 * 1000,
+                    );
+                    return registroDia >= unaSemanaAtras;
+                  }
+                  if (filtroFechaHistorial === "mes") {
+                    return (
+                      fechaMov.getMonth() === ahora.getMonth() &&
+                      fechaMov.getFullYear() === ahora.getFullYear()
+                    );
+                  }
+                  if (filtroFechaHistorial === "ano") {
+                    return fechaMov.getFullYear() === ahora.getFullYear();
+                  }
+                  return true;
+                })
+                .map((mov) => {
+                  // Evaluamos las propiedades que vengan del registro del inventario
+                  const cantidad = Number(mov.cantidad) || 0;
+                  const precioUnitario =
+                    Number(mov.precio_unitario || mov.precio) || 0;
+                  const total = cantidad * precioUnitario;
+
+                  return (
+                    <tr key={mov.id}>
+                      <td>
+                        {mov.fecha?.seconds
+                          ? new Date(
+                              mov.fecha.seconds * 1000,
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>{mov.item_nombre || mov.nombre}</td>
+                      <td>
+                        <span className={`hinsumos-tag ${mov.tipo}`}>
+                          {mov.tipo}
+                        </span>
+                      </td>
+                      <td>
+                        {cantidad} {mov.unidad_medida || "und"}
+                      </td>
+                      <td>S/. {precioUnitario.toFixed(2)}</td>
+                      <td>S/. {total.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
