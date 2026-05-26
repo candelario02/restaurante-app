@@ -8,6 +8,7 @@ import {
   updateDoc,
   serverTimestamp,
   getDoc,
+  increment,
 } from "firebase/firestore";
 
 // SOLUCIÓN ÚNICA: Maneja creación y actualización

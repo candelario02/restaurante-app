@@ -46,7 +46,7 @@ import {
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
-import { doc, setDoc, updateDoc, onSnapshot, increment} from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot} from "firebase/firestore";
 
 // 🔐 MATRIZ DE PERMISOS Y CONFIGURACIÓN DE INTERFAZ POR ROL
 export const PERMISOS_ROLES = {
@@ -164,7 +164,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       // 2. inventario
       if (isAdmin) {
         unsubInsumos = escucharInsumosAdmin(restauranteId, setInsumos);
-        unsubHistorial = escuchahinsumosadmin(restauranteId, setHistorial);
+        unsubHistorial = escucharHistorialMovimientos(restauranteId, setHistorial);
       }
       // 3. PEDIDOS
       unsubPed = escucharPedidos(restauranteId, setPedidos);

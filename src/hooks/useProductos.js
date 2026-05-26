@@ -15,9 +15,7 @@ import {
 } from "firebase/firestore";
 
 // ==========================================
-
 // 🧾 PRODUCTOS (VISTA CLIENTE - CON FILTRO)
-
 // ==========================================
 
 export const useProductos = (restauranteId, categoria) => {
@@ -43,13 +41,9 @@ export const useProductos = (restauranteId, categoria) => {
 
   return productos;
 };
-
 // ==========================================
-
 // 🛠️ PRODUCTOS (VISTA ADMIN - TODA LA LISTA)
-
 // ==========================================
-
 export const escucharProductosAdmin = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
@@ -59,9 +53,7 @@ export const escucharProductosAdmin = (restauranteId, callback) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
-
 // 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
-
 export const escucharPedidos = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
