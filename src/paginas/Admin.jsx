@@ -1086,7 +1086,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </div>
           </div>
 
-          {/* Tabla de Control Única con Títulos Recomendados */}
+          {/* Tabla de Control Única con Títulos  */}
           <table className="tabla-insumos">
             <thead>
               <tr>
