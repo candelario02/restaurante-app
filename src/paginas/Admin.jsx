@@ -26,6 +26,7 @@ import {
   actualizarEstadoPedido,
   actualizarStockInsumo,
   crearInsumo,
+  gestionarPedido,
 } from "../servicios/pedidosServicio";
 import {
   registrarUsuario,
@@ -1007,7 +1008,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">Control de Inventario Global</h2>
 
-          {/* Formulario de creación limpio (Solo registra Insumos con Selector de Medida Estricto) */}
+          {/* Formulario de creación (Con Selector Drop-down corregido de 2 opciones) */}
           <div className="admin-form-inventario">
             <input
               type="text"
@@ -1033,7 +1034,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               }}
             />
 
-            {/* 🔄 Selector tipo Spinner/Drop-down corregido: Solo KG y UND */}
+            {/* 🔄 Selector Spinner/Drop-down: Estricto de 2 opciones */}
             <select
               className="select-filtro-tabla"
               value={nuevoInsumo.unidad_medida || "kg"}
@@ -1086,7 +1087,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </div>
           </div>
 
-          {/* Tabla de Control Única con Alertas Inteligentes */}
+          {/* Tabla de Control Única con Títulos Recomendados */}
           <table className="tabla-insumos">
             <thead>
               <tr>
@@ -1098,7 +1099,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </thead>
             <tbody>
               {(() => {
-                // 🛡️ CONTROL DE ERRORES DE REFERENCIA
                 const listaInsumosMapeada = (insumos || []).map((i) => ({
                   ...i,
                   esInsumo: true,
@@ -1157,14 +1157,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       try {
                         if (item.esInsumo) {
                           if (typeof actualizarStockInsumo === "function") {
+                            // 🛠️ CORREGIDO: Enviamos directamente el valor numérico final a Firebase sin callbacks extraños
                             await actualizarStockInsumo(
                               restauranteId,
                               item.id,
-                              (amount) => cantidadFinal, // Pasa la cantidad para la actualización
+                              cantidadFinal,
                             );
                           } else {
                             throw new ReferenceError(
-                              "actualizarStockInsumo is not defined",
+                              "actualizarStockInsumo no está definida o importada correctamente.",
                             );
                           }
                         } else {
@@ -1176,7 +1177,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             );
                           } else {
                             throw new ReferenceError(
-                              "actualizarProducto is not defined",
+                              "actualizarProducto no está definida o importada correctamente.",
                             );
                           }
                         }

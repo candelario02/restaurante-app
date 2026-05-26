@@ -3,171 +3,97 @@ import {
   collection,
   addDoc,
   doc,
-  setDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
-  getDoc,
-  increment,
-  writeBatch,
 } from "firebase/firestore";
 
-// SOLUCIÓN ÚNICA: Maneja creación y actualización de pedidos
-export const gestionarPedido = async (
-  restauranteId,
-  datosPedido,
-  pedidoId = null,
-) => {
-  try {
-    if (pedidoId) {
-      const pedidoRef = doc(
-        db,
-        "restaurantes",
-        restauranteId,
-        "pedidos",
-        pedidoId,
-      );
-      await setDoc(pedidoRef, {
-        ...datosPedido,
-        fechaActualizacion: serverTimestamp(),
-      });
-      return pedidoId;
-    } else {
-      const pedidosRef = collection(
-        db,
-        "restaurantes",
-        restauranteId,
-        "pedidos",
-      );
-      const docRef = await addDoc(pedidosRef, {
-        ...datosPedido,
-        restauranteId,
-        fecha: serverTimestamp(),
-        estado: "pendiente",
-      });
-      return docRef.id;
-    }
-  } catch (error) {
-    console.error("Error en gestionarPedido:", error);
-    throw error;
-  }
-};
-
-// ACTUALIZACIÓN DE ESTADO Y DESCUENTO AUTOMÁTICO EN PEDIDOS DEL CLIENTE
-export const actualizarEstadoPedido = async (
-  restauranteId,
-  pedidoId,
-  nuevoEstado,
-  itemsPedido = [],
-) => {
-  try {
-    const pedidoRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "pedidos",
-      pedidoId,
-    );
-    const batch = writeBatch(db);
-
-    // Si el pedido cambia a entregado, descuenta insumos automáticamente
-    if (nuevoEstado === "entregado") {
-      itemsPedido.forEach((item) => {
-        if (item.insumoId) {
-          const insumoRef = doc(
-            db,
-            "restaurantes",
-            restauranteId,
-            "insumos",
-            item.insumoId,
-          );
-          batch.update(insumoRef, { stock_actual: increment(-item.cantidad) });
-        }
-      });
-    }
-
-    const actualizacion = { estado: nuevoEstado };
-    if (nuevoEstado === "entregado")
-      actualizacion.fechaEntrega = serverTimestamp();
-
-    batch.update(pedidoRef, actualizacion);
-    await batch.commit();
-  } catch (error) {
-    console.error("Error al actualizar estado e inventario:", error);
-    throw error;
-  }
-};
-
-// Registra la calificación y comentario del cliente
-export const enviarResenaPedido = async (
-  restauranteId,
-  pedidoId,
-  calificacion,
-  comentario,
-) => {
-  try {
-    const pedidoRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "pedidos",
-      pedidoId,
-    );
-
-    await updateDoc(pedidoRef, {
-      rating: calificacion,
-      resena: comentario,
-      fechaResena: serverTimestamp(),
-      finalizadoCliente: true,
-    });
-  } catch (error) {
-    console.error("Error al enviar reseña:", error);
-    throw error;
-  }
-};
-
-// ========================================================
-// 🥕 NUEVAS FUNCIONES: GESTIÓN DIRECTA DE LA TABLA INVENTARIO
-// ========================================================
-
 /**
- * Crea un insumo o materia prima en la subcolección correspondiente del restaurante
+ * Agrega un nuevo plato o producto a la carta
  */
-export const crearInsumo = async (restauranteId, datosInsumo) => {
+export const crearProducto = async (restauranteId, datosProducto) => {
   try {
-    const insumosRef = collection(db, "restaurantes", restauranteId, "insumos");
-    const docRef = await addDoc(insumosRef, {
-      ...datosInsumo,
+    const productosRef = collection(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+    );
+    const docRef = await addDoc(productosRef, {
+      ...datosProducto,
       fechaCreacion: serverTimestamp(),
     });
     return docRef.id;
   } catch (error) {
-    console.error("Error en crearInsumo:", error);
+    console.error("Error en crearProducto:", error);
     throw error;
   }
 };
 
 /**
- * Actualiza el stock de un insumo usando incrementos atómicos (entradas, mermas o salidas manuales)
+ * Modifica datos o stock general del producto final del menú
  */
-export const actualizarStockInsumo = async (
+export const actualizarProducto = async (
+  productoId,
+  datosActualizados,
   restauranteId,
-  insumoId,
-  cantidad,
 ) => {
   try {
-    const insumoRef = doc(
+    const productoRef = doc(
       db,
       "restaurantes",
       restauranteId,
-      "insumos",
-      insumoId,
+      "productos",
+      productoId,
     );
-    await updateDoc(insumoRef, {
-      stock_actual: increment(cantidad),
+    await updateDoc(productoRef, {
+      ...datosActualizados,
       ultimaModificacion: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error en actualizarStockInsumo:", error);
+    console.error("Error en actualizarProducto:", error);
+    throw error;
+  }
+};
+
+/**
+ * Elimina físicamente un producto de la base de datos
+ */
+export const eliminarProducto = async (productoId, restauranteId) => {
+  try {
+    const productoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+      productoId,
+    );
+    await deleteDoc(productoRef);
+  } catch (error) {
+    console.error("Error en eliminarProducto:", error);
+    throw error;
+  }
+};
+
+/**
+ * Cambia de forma rápida si un producto está disponible para la venta o no
+ */
+export const cambiarDisponibilidad = async (
+  productoId,
+  disponible,
+  restauranteId,
+) => {
+  try {
+    const productoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+      productoId,
+    );
+    await updateDoc(productoRef, { disponible });
+  } catch (error) {
+    console.error("Error en cambiarDisponibilidad:", error);
     throw error;
   }
 };

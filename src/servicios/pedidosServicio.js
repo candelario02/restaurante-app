@@ -6,11 +6,17 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
-  getDoc,
   increment,
   writeBatch,
 } from "firebase/firestore";
-// SOLUCIÓN ÚNICA: Maneja creación y actualización
+
+// ========================================================
+// 📦 GESTIÓN DE PEDIDOS
+// ========================================================
+
+/**
+ * Crea o actualiza un pedido de manera unificada
+ */
 export const gestionarPedido = async (
   restauranteId,
   datosPedido,
@@ -39,7 +45,7 @@ export const gestionarPedido = async (
       );
       const docRef = await addDoc(pedidosRef, {
         ...datosPedido,
-        restauranteId,
+        restaurantesId: restauranteId, // Mantenemos compatibilidad con tu esquema
         fecha: serverTimestamp(),
         estado: "pendiente",
       });
@@ -50,7 +56,10 @@ export const gestionarPedido = async (
     throw error;
   }
 };
-// ACTUALIZACIÓN DE ESTADO
+
+/**
+ * Actualiza el estado del pedido y descuenta insumos automáticamente si pasa a 'entregado'
+ */
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
@@ -67,7 +76,6 @@ export const actualizarEstadoPedido = async (
     );
     const batch = writeBatch(db);
 
-    // Si es entregado, descuenta inventario usando batch
     if (nuevoEstado === "entregado") {
       itemsPedido.forEach((item) => {
         if (item.insumoId) {
@@ -84,17 +92,21 @@ export const actualizarEstadoPedido = async (
     }
 
     const actualizacion = { estado: nuevoEstado };
-    if (nuevoEstado === "entregado")
+    if (nuevoEstado === "entregado") {
       actualizacion.fechaEntrega = serverTimestamp();
+    }
 
     batch.update(pedidoRef, actualizacion);
-    await batch.commit(); // Ejecuta todo junto
+    await batch.commit();
   } catch (error) {
     console.error("Error al actualizar estado e inventario:", error);
     throw error;
   }
 };
-// Registra la calificación y comentario del cliente
+
+/**
+ * Registra la calificación y reseña del cliente final
+ */
 export const enviarResenaPedido = async (
   restauranteId,
   pedidoId,
@@ -109,7 +121,6 @@ export const enviarResenaPedido = async (
       "pedidos",
       pedidoId,
     );
-
     await updateDoc(pedidoRef, {
       rating: calificacion,
       resena: comentario,
@@ -118,6 +129,53 @@ export const enviarResenaPedido = async (
     });
   } catch (error) {
     console.error("Error al enviar reseña:", error);
+    throw error;
+  }
+};
+
+// ========================================================
+// 🥕 GESTIÓN DE INVENTARIO E INSUMOS
+// ========================================================
+
+/**
+ * Crea una materia prima en la subcolección del restaurante
+ */
+export const crearInsumo = async (restauranteId, datosInsumo) => {
+  try {
+    const insumosRef = collection(db, "restaurantes", restauranteId, "insumos");
+    const docRef = await addDoc(insumosRef, {
+      ...datosInsumo,
+      fechaCreacion: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error en crearInsumo:", error);
+    throw error;
+  }
+};
+
+/**
+ * Ajusta el inventario de un insumo mediante incrementos atómicos positivos o negativos
+ */
+export const actualizarStockInsumo = async (
+  restauranteId,
+  insumoId,
+  cantidad,
+) => {
+  try {
+    const insumoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "insumos",
+      insumoId,
+    );
+    await updateDoc(insumoRef, {
+      stock_actual: increment(cantidad),
+      ultimaModificacion: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error en actualizarStockInsumo:", error);
     throw error;
   }
 };
