@@ -103,3 +103,4 @@ export const escucharHistorialMovimientos = (restauranteId, callback) => {
     callback(datos);
   });
 };
+

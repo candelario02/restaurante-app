@@ -170,38 +170,30 @@ export const crearInsumo = async (restauranteId, datosInsumo) => {
 export const realizarMovimientoInventario = async (
   restauranteId,
   item,
-  datosMovimiento,
+  movimiento,
 ) => {
-  const { id, esInsumo, nombre } = item;
-  const { cantidad, tipo } = datosMovimiento;
+  const ajuste =
+    movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
 
-  // 1. Calculamos el valor de incremento
-  const valor = tipo === "entrada" ? cantidad : -cantidad;
+  await actualizarStockInventario(restauranteId, item.id, ajuste);
 
-  // 2. Ejecutamos la actualización según el tipo (Insumo vs Producto)
-  // Nota: Esto simplifica la lógica del if/else que tenías en el componente
-  if (esInsumo) {
-    await actualizarStockInsumo(restauranteId, id, valor);
-  } else {
-    // Si tu servicio de productos ya maneja esto, excelente.
-    await actualizarProducto(
-      id,
-      { stock_actual: increment(valor) },
-      restauranteId,
-    );
-  }
-
-  // 3. Registramos el historial (esto siempre sucede, así que el servicio lo hace por ti)
-  await registrarMovimientoHistorial(restauranteId, {
-    item_nombre: nombre,
-    cantidad: cantidad,
-    tipo: tipo,
+  const historialRef = collection(
+    db,
+    "restaurantes",
+    restauranteId,
+    "historial_movimientos",
+  );
+  await addDoc(historialRef, {
+    item_id: item.id,
+    item_nombre: item.nombre,
+    tipo: movimiento.tipo,
+    cantidad: movimiento.cantidad,
     fecha: serverTimestamp(),
   });
 };
 
 // actualizarStockInsumo
-export const actualizarStockInsumo = async (
+export const actualizarStockInventario = async (
   restauranteId,
   insumoId,
   cantidad,
@@ -219,7 +211,7 @@ export const actualizarStockInsumo = async (
       ultimaModificacion: serverTimestamp(),
     });
   } catch (error) {
-    console.error("Error en actualizarStockInsumo:", error);
+    console.error("Error en actualizarStockInventario:", error);
     throw error;
   }
 };

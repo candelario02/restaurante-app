@@ -24,7 +24,7 @@ import {
 } from "../servicios/productosServicio";
 import {
   actualizarEstadoPedido,
-  actualizarStockInsumo,
+  actualizarStockInventario,
   crearInsumo,
   gestionarPedido,
   realizarMovimientoInventario,
@@ -46,7 +46,7 @@ import {
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
-import { doc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot, increment} from "firebase/firestore";
 
 // 🔐 MATRIZ DE PERMISOS Y CONFIGURACIÓN DE INTERFAZ POR ROL
 export const PERMISOS_ROLES = {
