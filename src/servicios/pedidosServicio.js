@@ -6,6 +6,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   getDoc,
   getDocs,
@@ -255,6 +256,48 @@ export const actualizarStockInventario = async (
     });
   } catch (error) {
     console.error("Error en actualizarStockInventario:", error);
+    throw error;
+  }
+};
+//actualizar inventario
+export const actualizarDatosInsumo = async (
+  restauranteId,
+  insumoId,
+  nuevosDatos,
+) => {
+  try {
+    const insumoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "insumos",
+      insumoId,
+    );
+
+    await updateDoc(insumoRef, {
+      nombre: nuevosDatos.nombre.trim(),
+      precio_unitario: Number(nuevosDatos.precio_unitario) || 0,
+      stock_actual: Number(nuevosDatos.stock_actual) || 0,
+      ultimaModificacion: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error en actualizarDatosInsumo:", error);
+    throw error;
+  }
+};
+//eliminar insumos
+export const eliminarInsumoInventario = async (restauranteId, insumoId) => {
+  try {
+    const insumoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "insumos",
+      insumoId,
+    );
+    await deleteDoc(insumoRef);
+  } catch (error) {
+    console.error("Error en eliminarInsumoInventario:", error);
     throw error;
   }
 };

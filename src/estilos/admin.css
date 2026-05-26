@@ -1277,6 +1277,52 @@
 .btn-aplicar-movimiento:active {
   transform: scale(0.97);
 }
+.editarinsumo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.editarinsumo-btn:hover {
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.eliminarinsumo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.eliminarinsumo-btn:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+}
+
+/* Ajuste fino al contenedor inline para evitar saltos de línea */
+.contenedor-acciones-stock {
+    display: flex;
+    align-items: center;
+    gap: 6px !important;
+}
 /* =============================================
     7. SECCIÓN GESTIÓN DE historial insumos
 ============================================= */

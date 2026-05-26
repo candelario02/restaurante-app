@@ -132,6 +132,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }));
     return [...prods, ...ins];
   }, [productos, insumos]);
+  const [editandoId, setEditandoId] = useState(null);
+  const [valoresEditados, setValoresEditados] = useState({
+    nombre: "",
+    precio_unitario: 0,
+    stock_actual: 0,
+  });
   //estados para el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
   const [menuDiaActivo, setMenuDiaActivo] = useState(true);
@@ -422,6 +428,38 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Éxito", "Movimiento aplicado", "success");
     } catch (err) {
       Swal.fire("Error", "Fallo al sincronizar: " + err.message, "error");
+    }
+  };
+  //funcion de editar
+  const editarInsumo = (item) => {
+    setEditandoId(item.id);
+    setNuevoInsumo({
+      nombre: item.nombre,
+      stock_actual: Number(item.stock_actual) || 0,
+      precio: Number(item.precio || item.precio_unitario) || 0,
+      unidad_medida: item.unidad_medida || "und",
+    });
+  };
+  // Eliminar insumo definitivo con confirmación
+  const eliminarInsumo = async (insumoId) => {
+    if (
+      window.confirm(
+        "¿Estás seguro de que deseas eliminar este insumo? Esta acción no se puede deshacer.",
+      )
+    ) {
+      try {
+        // 1. Eliminar en Firebase
+        await eliminarInsumoInventario(restauranteId, insumoId);
+
+        // 2. Limpiar del estado local (usa el set correspondiente de tu lista, Ej: setInventarioConsolidado o setInsumos)
+        setInventarioConsolidado((prev) =>
+          prev.filter((ins) => ins.id !== insumoId),
+        );
+
+        alert("Insumo eliminado del inventario");
+      } catch (error) {
+        alert("Error al eliminar el insumo");
+      }
     }
   };
   //funcion cabcelar edidcion
@@ -1087,239 +1125,269 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </div>
         </div>
       )}
-      {/* SECCIÓN INVENTARIO */}
-      {seccion === "inventario" && (
-        <div className="admin-section inventario-container">
-          <h2 className="titulo-seccion">Control de Inventario Global</h2>
+     {/* SECCIÓN INVENTARIO */}
+{seccion === "inventario" && (
+  <div className="admin-section inventario-container">
+    <h2 className="titulo-seccion">
+      {editandoId ? "📝 Editando Insumo / Materia Prima" : "Control de Inventario Global"}
+    </h2>
 
-          <div className="admin-form-inventario">
-            <input
-              type="text"
-              placeholder="Nombre del insumo (Ej: Cebolla)"
-              value={nuevoInsumo.nombre || ""}
-              onChange={(e) =>
-                setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
-              }
-            />
-            <input
-              type="number"
-              min="0"
-              onKeyDown={(e) =>
-                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
-              }
-              placeholder="Stock Inicial"
-              value={nuevoInsumo.stock_actual || ""}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  stock_actual: parseInt(e.target.value, 10) || "",
-                })
-              }
-            />
-            {/* 🟢 NUEVO CAMPO PRECIO CON RESTRICCIÓN DE NÚMEROS */}
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              onKeyDown={(e) =>
-                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
-              }
-              placeholder="Precio Unitario (S/.)"
-              value={nuevoInsumo.precio || ""}
-              onChange={(e) =>
-                setNuevoInsumo({
-                  ...nuevoInsumo,
-                  precio: parseFloat(e.target.value) || "",
-                })
-              }
-            />
+    <div className="admin-form-inventario">
+      <input
+        type="text"
+        placeholder="Nombre del insumo (Ej: Cebolla)"
+        value={nuevoInsumo.nombre || ""}
+        onChange={(e) =>
+          setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+        }
+      />
+      <input
+        type="number"
+        min="0"
+        onKeyDown={(e) =>
+          ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+        }
+        placeholder="Stock Inicial"
+        value={nuevoInsumo.stock_actual || ""}
+        onChange={(e) =>
+          setNuevoInsumo({
+            ...nuevoInsumo,
+            stock_actual: parseInt(e.target.value, 10) || "",
+          })
+        }
+      />
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        onKeyDown={(e) =>
+          ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+        }
+        placeholder="Precio Unitario (S/.)"
+        value={nuevoInsumo.precio || ""}
+        onChange={(e) =>
+          setNuevoInsumo({
+            ...nuevoInsumo,
+            precio: parseFloat(e.target.value) || "",
+          })
+        }
+      />
 
-            <div className="selector-unidad-registro">
-              <label>
-                <input
-                  type="radio"
-                  name="unidad"
-                  value="kg"
-                  checked={nuevoInsumo.unidad_medida === "kg"}
-                  onChange={(e) =>
-                    setNuevoInsumo({
-                      ...nuevoInsumo,
-                      unidad_medida: e.target.value,
-                    })
-                  }
-                />{" "}
-                kg
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="unidad"
-                  value="und"
-                  checked={nuevoInsumo.unidad_medida === "und"}
-                  onChange={(e) =>
-                    setNuevoInsumo({
-                      ...nuevoInsumo,
-                      unidad_medida: e.target.value,
-                    })
-                  }
-                />{" "}
-                und
-              </label>
-            </div>
+      <div className="selector-unidad-registro">
+        <label>
+          <input
+            type="radio"
+            name="unidad"
+            value="kg"
+            checked={nuevoInsumo.unidad_medida === "kg"}
+            onChange={(e) =>
+              setNuevoInsumo({
+                ...nuevoInsumo,
+                unidad_medida: e.target.value,
+              })
+            }
+          />{" "}
+          kg
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="unidad"
+            value="und"
+            checked={nuevoInsumo.unidad_medida === "und"}
+            onChange={(e) =>
+              setNuevoInsumo({
+                ...nuevoInsumo,
+                unidad_medida: e.target.value,
+              })
+            }
+          />{" "}
+          und
+        </label>
+      </div>
 
-            <button
-              type="button"
-              className="btn-guardar-inventario"
-              onClick={registrarNuevoInsumo}
-            >
-              Registrar Insumo
-            </button>
-          </div>
+      {editandoId ? (
+  <div className="contenedor-botones-edicion-inventario">
+    <button
+      type="button"
+      className="btn-guardar-inventario"
+      onClick={() => handleGuardarCambios(editandoId)}
+    >
+      💾 Guardar Cambios
+    </button>
+    <button
+      type="button"
+      className="btn-guardar-inventario"
+      onClick={() => {
+        setEditandoId(null);
+        setNuevoInsumo({ nombre: "", stock_actual: "", precio: "", unidad_medida: "kg" });
+      }}
+    >
+      Cancelar
+    </button>
+  </div>
+) : (
+  <button
+    type="button"
+    className="btn-guardar-inventario"
+    onClick={registrarNuevoInsumo}
+  >
+    Registrar Insumo
+  </button>
+)}
+    </div>
 
-          {/* FILTROS Y BUSQUEDA */}
-          <div className="inventario-filtros-grupo">
-            <input
-              type="text"
-              className="input-busqueda-insumo"
-              placeholder="🔍 Buscar por nombre..."
-              value={busquedaInsumo}
-              onChange={(e) => setBusquedaInsumo(e.target.value)}
-            />
-            <select
-              className="select-filtro-tabla"
-              value={tipoFiltroInventario}
-              onChange={(e) => setTipoFiltroInventario(e.target.value)}
-            >
-              <option value="todos">📋 Mostrar Todo el Inventario</option>
-              <option value="insumos">🥕 Solo Insumos de Cocina</option>
-              <option value="Comidas">🍳 Platos / Comidas</option>
-              <option value="Bebidas">🍺 Bebidas / Líquidos</option>
-              <option value="Entradas">🥗 Entradas</option>
-              <option value="Cafeteria">☕ Cafetería</option>
-              <option value="Postres">🍰 Postres</option>
-            </select>
-          </div>
+    {/* FILTROS Y BUSQUEDA */}
+    <div className="inventario-filtros-grupo">
+      <input
+        type="text"
+        className="input-busqueda-insumo"
+        placeholder="🔍 Buscar por nombre..."
+        value={busquedaInsumo}
+        onChange={(e) => setBusquedaInsumo(e.target.value)}
+      />
+      <select
+        className="select-filtro-tabla"
+        value={tipoFiltroInventario}
+        onChange={(e) => setTipoFiltroInventario(e.target.value)}
+      >
+        <option value="todos">📋 Mostrar Todo el Inventario</option>
+        <option value="insumos">🥕 Solo Insumos de Cocina</option>
+        <option value="Comidas">🍳 Platos / Comidas</option>
+        <option value="Bebidas">🍺 Bebidas / Líquidos</option>
+        <option value="Entradas">🥗 Entradas</option>
+        <option value="Cafeteria">☕ Cafetería</option>
+        <option value="Postres">🍰 Postres</option>
+      </select>
+    </div>
 
-          <table className="tabla-insumos">
-            <thead>
-              <tr>
-                <th>PRODUCTO / INSUMO</th>
-                <th>CATEGORÍA</th>
-                <th>PRECIO UNITARIO</th> {/* 🎯 CORRECCIÓN: Nueva cabecera */}
-                <th>STOCK ACTUAL</th>
-                <th>ACCIONES DE MOVIMIENTO</th>
+    <table className="tabla-insumos">
+      <thead>
+        <tr>
+          <th>PRODUCTO / INSUMO</th>
+          <th>CATEGORÍA</th>
+          <th>PRECIO UNITARIO</th>
+          <th>STOCK ACTUAL</th>
+          <th>ACCIONES DE MOVIMIENTO</th>
+        </tr>
+      </thead>
+      <tbody>
+        {inventarioConsolidado
+          .filter((item) => {
+            const coincideBusqueda = item.nombre
+              .toLowerCase()
+              .includes(busquedaInsumo.toLowerCase());
+            const coincideFiltro =
+              tipoFiltroInventario === "todos" ||
+              (tipoFiltroInventario === "insumos"
+                ? item.esInsumo
+                : item.categoria === tipoFiltroInventario);
+            return coincideBusqueda && coincideFiltro;
+          })
+          .map((item) => {
+            const estadoFila = operacionStock[item.id] || {
+              cantidad: "",
+              tipo: item.esInsumo ? "entrada" : "salida",
+            };
+            const stockNumerico = Number(item.stock_actual) || 0;
+            const precioItem = Number(item.precio || item.precio_unitario) || 0;
+
+            return (
+              <tr key={item.id}>
+                <td className="celda-nombre-elemento">{item.nombre}</td>
+                <td>
+                  <span
+                    className={`badge-categoria ${item.esInsumo ? "insumo" : "producto"}`}
+                  >
+                    {item.esInsumo ? "Materia Prima" : item.categoria}
+                  </span>
+                </td>
+                <td>S/. {precioItem.toFixed(2)}</td>
+                <td className="celda-stock-valor">
+                  {stockNumerico} {item.unidad_medida || "und"}
+                </td>
+                <td>
+                  <div className="contenedor-acciones-stock">
+                    <select
+                      className="select-movimiento-tipo"
+                      value={estadoFila.tipo}
+                      onChange={(e) =>
+                        setOperacionStock({
+                          ...operacionStock,
+                          [item.id]: {
+                            ...estadoFila,
+                            tipo: e.target.value,
+                          },
+                        })
+                      }
+                    >
+                      {item.esInsumo ? (
+                        <>
+                          <option value="entrada">📥 Entrada</option>
+                          <option value="salida">🍳 Salida Cocina</option>
+                          <option value="transferencia">🚚 Transferencia</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="entrada">📥 Entrada</option>
+                          <option value="transferencia">🚚 Transferencia</option>
+                        </>
+                      )}
+                    </select>
+
+                    <input
+                      type="number"
+                      className="input-movimiento-cantidad"
+                      min="1"
+                      onKeyDown={(e) =>
+                        ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+                      }
+                      value={estadoFila.cantidad}
+                      placeholder="Cant."
+                      onChange={(e) =>
+                        setOperacionStock({
+                          ...operacionStock,
+                          [item.id]: {
+                            ...estadoFila,
+                            cantidad: e.target.value,
+                          },
+                        })
+                      }
+                    />
+
+                    <button
+                      className="btn-aplicar-movimiento"
+                      onClick={() => ejecutarMovimiento(item, estadoFila)}
+                    >
+                      Aplicar
+                    </button>
+
+                    {/* 🎯 NUEVAS ACCIONES: EDITAR Y ELIMINAR ESTILO MENÚ */}
+                    <button
+                      type="button"
+                      className="editarinsumo-btn"
+                      title="Editar parámetros del insumo"
+                      onClick={() => editarInsumo(item)}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      className="eliminarinsumo-btn"
+                      title="Eliminar insumo por completo"
+                      onClick={() => eliminarInsumo(item.id)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {inventarioConsolidado
-                .filter((item) => {
-                  const coincideBusqueda = item.nombre
-                    .toLowerCase()
-                    .includes(busquedaInsumo.toLowerCase());
-                  const coincideFiltro =
-                    tipoFiltroInventario === "todos" ||
-                    (tipoFiltroInventario === "insumos"
-                      ? item.esInsumo
-                      : item.categoria === tipoFiltroInventario);
-                  return coincideBusqueda && coincideFiltro;
-                })
-                .map((item) => {
-                  const estadoFila = operacionStock[item.id] || {
-                    cantidad: "",
-                    tipo: item.esInsumo ? "entrada" : "salida",
-                  };
-                  const stockNumerico = Number(item.stock_actual) || 0;
-
-                  // 🎯 CORRECCIÓN: Renderizar el precio dinámico de forma limpia
-                  const precioItem =
-                    Number(item.precio || item.precio_unitario) || 0;
-
-                  return (
-                    <tr key={item.id}>
-                      <td className="celda-nombre-elemento">{item.nombre}</td>
-                      <td>
-                        <span
-                          className={`badge-categoria ${item.esInsumo ? "insumo" : "producto"}`}
-                        >
-                          {item.esInsumo ? "Materia Prima" : item.categoria}
-                        </span>
-                      </td>
-                      {/* 🎯 CORRECCIÓN: Nueva Celda de precio mapeada en la fila */}
-                      <td>S/. {precioItem.toFixed(2)}</td>
-                      <td className="celda-stock-valor">
-                        {stockNumerico} {item.unidad_medida || "und"}
-                      </td>
-                      <td>
-                        <div className="contenedor-acciones-stock">
-                          {/* 🧠 SELECT INTELIGENTE SEGÚN EL TIPO DE ITEM */}
-                          <select
-                            className="select-movimiento-tipo"
-                            value={estadoFila.tipo}
-                            onChange={(e) =>
-                              setOperacionStock({
-                                ...operacionStock,
-                                [item.id]: {
-                                  ...estadoFila,
-                                  tipo: e.target.value,
-                                },
-                              })
-                            }
-                          >
-                            {item.esInsumo ? (
-                              <>
-                                <option value="entrada">📥 Entrada</option>
-                                <option value="salida">🍳 Salida Cocina</option>
-                                <option value="transferencia">
-                                  🚚 Transferencia
-                                </option>
-                              </>
-                            ) : (
-                              <>
-                                <option value="entrada">📥 Entrada</option>
-                                <option value="transferencia">
-                                  🚚 Transferencia
-                                </option>
-                              </>
-                            )}
-                          </select>
-
-                          <input
-                            type="number"
-                            className="input-movimiento-cantidad"
-                            min="1"
-                            onKeyDown={(e) =>
-                              ["e", "E", "+", "-"].includes(e.key) &&
-                              e.preventDefault()
-                            }
-                            value={estadoFila.cantidad}
-                            placeholder="Cant."
-                            onChange={(e) =>
-                              setOperacionStock({
-                                ...operacionStock,
-                                [item.id]: {
-                                  ...estadoFila,
-                                  cantidad: e.target.value,
-                                },
-                              })
-                            }
-                          />
-
-                          {/* 🟢 BOTÓN CON CLASE CORRECTA VERDE PROFESIONAL */}
-                          <button
-                            className="btn-aplicar-movimiento"
-                            onClick={() => ejecutarMovimiento(item, estadoFila)}
-                          >
-                            Aplicar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </table>
-        </div>
-      )}
+            );
+          })}
+      </tbody>
+    </table>
+  </div>
+)}
       {/* SECCIÓN HISTORIAL DE INSUMOS */}
       {seccion === "historial" && (
         <div className="admin-section hinsumos-section">
