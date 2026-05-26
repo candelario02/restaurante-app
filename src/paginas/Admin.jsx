@@ -115,7 +115,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   });
   const [busquedaInsumo, setBusquedaInsumo] = useState("");
   const [operacionStock, setOperacionStock] = useState({});
+  //filtro para inceatrio y historial
   const [tipoFiltroInventario, setTipoFiltroInventario] = useState("insumos");
+  const [filtroFechaHistorial, setFiltroFechaHistorial] = useState("todos");
   const [historial, setHistorial] = useState([]);
   const inventarioConsolidado = useMemo(() => {
     const prods = productos.map((p) => ({
