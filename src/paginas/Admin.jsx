@@ -54,12 +54,14 @@ export const PERMISOS_ROLES = {
     verPedidos: true,
     verCaja: false,
     verInventario: false,
+    verHistorial: false,
     seccionDefault: "pedidos",
   },
   cajero: {
     verPedidos: false,
     verCaja: true,
     verInventario: false,
+    verHistorial: false,
     seccionDefault: "caja",
   },
   admin: {
@@ -68,6 +70,7 @@ export const PERMISOS_ROLES = {
     verPedidos: true,
     verCaja: true,
     verInventario: true,
+    verHistorial: true,
     seccionDefault: "menu",
   },
   superadmin: {
@@ -76,6 +79,7 @@ export const PERMISOS_ROLES = {
     verPedidos: true,
     verCaja: true,
     verInventario: true,
+    verHistorial: true,
     seccionDefault: "menu",
   },
 };

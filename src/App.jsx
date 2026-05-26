@@ -234,10 +234,10 @@ function App() {
                 </span>
               )}
             </div>
-               {/* 👑 ADMINISTRADORES: Menú, Usuarios e Inventario */}
+            {/* 👑 ADMINISTRADORES: Menú, Usuarios e Inventario */}
             {user && restauranteId && isAdmin && operador && (
               <div className="nav-admin-tabs-horizontal">
-                  {PERMISOS_ROLES[operador.rol]?.verUsuarios && (
+                {PERMISOS_ROLES[operador.rol]?.verUsuarios && (
                   <>
                     <button
                       className={`btn-nav-tab ${seccion === "menu" ? "active" : ""}`}
@@ -256,6 +256,12 @@ function App() {
                       onClick={() => setSeccion("inventario")}
                     >
                       Inventario
+                    </button>
+                    <button
+                      className={`btn-nav-tab ${seccion === "historial" ? "active" : ""}`}
+                      onClick={() => setSeccion("historial")}
+                    >
+                      Historial
                     </button>
                   </>
                 )}
