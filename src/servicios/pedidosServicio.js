@@ -13,6 +13,7 @@ import {
   increment,
   query,
   where,
+  getFirestore,
 } from "firebase/firestore";
 
 // SOLUCIÓN ÚNICA: Maneja creación y actualización

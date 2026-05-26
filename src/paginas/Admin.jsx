@@ -133,11 +133,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     return [...prods, ...ins];
   }, [productos, insumos]);
   const [editandoInsumoId, setEditandoInsumoId] = useState(null);
-
-  const [valoresEditados, setValoresEditados] = useState({
+  const [valoresEditadosInsumo, setValoresEditadosInsumo] = useState({
     nombre: "",
-    precio_unitario: 0,
-    stock_actual: 0,
+    precio: "",
+    stock_actual: "",
+    unidad_medida: "kg",
   });
   //estados para el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
@@ -432,9 +432,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //funcion de editar
-  const editarInsumo = (item) => {
+  const iniciarEdicionInsumo = (item) => {
     setEditandoInsumoId(item.id);
-    setNuevoInsumo({
+    setValoresEditadosInsumo({
       nombre: item.nombre,
       stock_actual: Number(item.stock_actual) || 0,
       precio: Number(item.precio || item.precio_unitario) || 0,
@@ -444,60 +444,84 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //funcion de guardar cambios insumos
   const guardarCambiosInsumo = async (insumoId) => {
     try {
-      // 1. Persiste los cambios en Firebase usando tu servicio
-      await actualizarDatosInsumo(restauranteId, insumoId, nuevoInsumo);
+      // Asegúrate de que restauranteId esté disponible en el alcance de tu componente
+      await actualizarDatosInsumo(
+        restauranteId,
+        insumoId,
+        valoresEditadosInsumo,
+      );
 
-      // 2. Refresca la tabla local mapeando los nuevos valores del formulario
       setInventarioConsolidado((prev) =>
         prev.map((ins) =>
           ins.id === insumoId
             ? {
                 ...ins,
-                nombre: nuevoInsumo.nombre,
-                precio: Number(nuevoInsumo.precio),
-                precio_unitario: Number(nuevoInsumo.precio),
-                stock_actual: Number(nuevoInsumo.stock_actual),
-                unidad_medida: nuevoInsumo.unidad_medida,
+                nombre: valoresEditadosInsumo.nombre,
+                precio: Number(valoresEditadosInsumo.precio),
+                precio_unitario: Number(valoresEditadosInsumo.precio),
+                stock_actual: Number(valoresEditadosInsumo.stock_actual),
+                unidad_medida: valoresEditadosInsumo.unidad_medida,
               }
             : ins,
         ),
       );
 
-      // 3. Resetea el formulario y limpia el ID de edición
       setEditandoInsumoId(null);
-      setNuevoInsumo({
-        nombre: "",
-        stock_actual: "",
-        precio: "",
-        unidad_medida: "kg",
-      });
 
-      alert("Insumo actualizado con éxito");
+      // Alerta de éxito elegante usando SweetAlert2
+      Swal.fire({
+        icon: "success",
+        title: "¡Actualizado!",
+        text: "El insumo se ha modificado correctamente.",
+        confirmButtonColor: "#3085d6",
+      });
     } catch (error) {
-      alert("Error al actualizar el insumo");
+      console.error("Error al actualizar:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Hubo un fallo al guardar los cambios en la base de datos.",
+        confirmButtonColor: "#d33",
+      });
     }
   };
   // Eliminar insumo definitivo con confirmación
   const eliminarInsumo = async (insumoId) => {
-    if (
-      window.confirm(
-        "¿Estás seguro de que deseas eliminar este insumo? Esta acción no se puede deshacer.",
-      )
-    ) {
-      try {
-        // 1. Eliminar en Firebase
-        await eliminarInsumoInventario(restauranteId, insumoId);
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Este insumo se eliminará permanentemente del inventario.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444", // Rojo
+      cancelButtonColor: "#6b7280", // Gris
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await eliminarInsumoInventario(restauranteId, insumoId);
 
-        // 2. Limpiar del estado local (usa el set correspondiente de tu lista, Ej: setInventarioConsolidado o setInsumos)
-        setInventarioConsolidado((prev) =>
-          prev.filter((ins) => ins.id !== insumoId),
-        );
+          setInventarioConsolidado((prev) =>
+            prev.filter((ins) => ins.id !== insumoId),
+          );
 
-        alert("Insumo eliminado del inventario");
-      } catch (error) {
-        alert("Error al eliminar el insumo");
+          Swal.fire({
+            icon: "success",
+            title: "Eliminado",
+            text: "El insumo fue removido con éxito.",
+            confirmButtonColor: "#3085d6",
+          });
+        } catch (error) {
+          console.error("Error al eliminar:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error al eliminar",
+            text: "No se pudo retirar el insumo del servidor.",
+            confirmButtonColor: "#d33",
+          });
+        }
       }
-    }
+    });
   };
   //funcion cabcelar edidcion
   const cancelarEdicion = () => {
@@ -1166,7 +1190,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       {seccion === "inventario" && (
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">
-            {editandoId
+            {/* CORREGIDO: Ahora usa editandoInsumoId */}
+            {editandoInsumoId
               ? "📝 Editando Insumo / Materia Prima"
               : "Control de Inventario Global"}
           </h2>
@@ -1318,7 +1343,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <tbody>
               {inventarioConsolidado
                 .filter((item) => {
-                  const coincideBusqueda = item.nombre
+                  const coincideBusqueda = (item.nombre || "")
                     .toLowerCase()
                     .includes(busquedaInsumo.toLowerCase());
                   const coincideFiltro =
@@ -1412,7 +1437,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             Aplicar
                           </button>
 
-                          {/* 🎯 NUEVAS ACCIONES: EDITAR Y ELIMINAR ESTILO MENÚ */}
                           <button
                             type="button"
                             className="editarinsumo-btn"
