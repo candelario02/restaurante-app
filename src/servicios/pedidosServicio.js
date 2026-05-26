@@ -167,3 +167,26 @@ export const crearInsumo = async (restauranteId, datosInsumo) => {
     throw error;
   }
 };
+// actualizarStockInsumo
+export const actualizarStockInsumo = async (
+  restauranteId,
+  insumoId,
+  cantidad,
+) => {
+  try {
+    const insumoRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "insumos",
+      insumoId,
+    );
+    await updateDoc(insumoRef, {
+      stock_actual: increment(cantidad),
+      ultimaModificacion: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error en actualizarStockInsumo:", error);
+    throw error;
+  }
+};
