@@ -1205,6 +1205,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <tr>
                 <th>PRODUCTO / INSUMO</th>
                 <th>CATEGORÍA</th>
+                <th>PRECIO UNITARIO</th> {/* 🎯 CORRECCIÓN: Nueva cabecera */}
                 <th>STOCK ACTUAL</th>
                 <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
@@ -1229,6 +1230,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   };
                   const stockNumerico = Number(item.stock_actual) || 0;
 
+                  // 🎯 CORRECCIÓN: Renderizar el precio dinámico de forma limpia
+                  const precioItem =
+                    Number(item.precio || item.precio_unitario) || 0;
+
                   return (
                     <tr key={item.id}>
                       <td className="celda-nombre-elemento">{item.nombre}</td>
@@ -1239,6 +1244,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           {item.esInsumo ? "Materia Prima" : item.categoria}
                         </span>
                       </td>
+                      {/* 🎯 CORRECCIÓN: Nueva Celda de precio mapeada en la fila */}
+                      <td>S/. {precioItem.toFixed(2)}</td>
                       <td className="celda-stock-valor">
                         {stockNumerico} {item.unidad_medida || "und"}
                       </td>
@@ -1388,11 +1395,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   return true;
                 })
                 .map((mov) => {
-                  // Evaluamos las propiedades que vengan del registro del inventario
+                  // Aseguramos la lectura de la propiedad exacta guardada por el servicio
                   const cantidad = Number(mov.cantidad) || 0;
                   const precioUnitario =
                     Number(mov.precio_unitario || mov.precio) || 0;
-                  const total = cantidad * precioUnitario;
+
+                  // Si es transferencia el costo total es 0 según tu lógica de negocio
+                  const total =
+                    mov.tipo !== "transferencia"
+                      ? cantidad * precioUnitario
+                      : 0;
 
                   return (
                     <tr key={mov.id}>
@@ -1405,8 +1417,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </td>
                       <td>{mov.item_nombre || mov.nombre}</td>
                       <td>
+                        {/* Se mantiene la estructura CSS de etiquetas nativas */}
                         <span className={`hinsumos-tag ${mov.tipo}`}>
-                          {mov.tipo}
+                          {mov.tipo === "salida"
+                            ? "🍳 Salida Cocina"
+                            : mov.tipo === "entrada"
+                              ? "📥 Entrada"
+                              : "🚚 Transferencia"}
                         </span>
                       </td>
                       <td>

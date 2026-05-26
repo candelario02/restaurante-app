@@ -203,15 +203,19 @@ export const realizarMovimientoInventario = async (
     }
   });
 
+  // 🎯 CORRECCIÓN: Usamos movimiento.precio (el valor real calculado) en vez de item.precio_unitario
+  const precioUnitarioReal = movimiento.precio || 0;
+
   // 2. ACTUALIZAR O CREAR
   if (docExistente) {
     const data = docExistente.data();
     const nuevaCantidad = data.cantidad + movimiento.cantidad;
     await updateDoc(docExistente.ref, {
       cantidad: nuevaCantidad,
+      precio_unitario: precioUnitarioReal, // Agregamos el precio unitario para que el historial lo lea
       total_costo:
         movimiento.tipo !== "transferencia"
-          ? nuevaCantidad * (item.precio_unitario || 0)
+          ? nuevaCantidad * precioUnitarioReal
           : 0,
     });
   } else {
@@ -220,9 +224,10 @@ export const realizarMovimientoInventario = async (
       item_nombre: item.nombre,
       tipo: movimiento.tipo,
       cantidad: movimiento.cantidad,
+      precio_unitario: precioUnitarioReal, // Agregamos el precio unitario para que el historial lo lea
       total_costo:
         movimiento.tipo !== "transferencia"
-          ? movimiento.cantidad * (item.precio_unitario || 0)
+          ? movimiento.cantidad * precioUnitarioReal
           : 0,
       fecha: serverTimestamp(),
     });
