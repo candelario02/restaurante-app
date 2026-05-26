@@ -1008,7 +1008,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         <div className="admin-section inventario-container">
           <h2 className="titulo-seccion">Control de Inventario Global</h2>
 
-          {/* Formulario de creación (Con Selector Drop-down corregido de 2 opciones) */}
           <div className="admin-form-inventario">
             <input
               type="text"
