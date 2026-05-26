@@ -27,6 +27,13 @@ service cloud.firestore {
     match /insumos/{docId} {
         allow read, write: if esAdminDelRestaurante(restId);
     }
+    
+    // Reglas para el historial de movimientos
+    match /historial_movimientos/{docId} {
+        allow read, write: if esAdminDelRestaurante(restId);
+    }allow read, write: if esAdminDelRestaurante(restId);
+    }
+
 
       // 📝 PEDIDOS
       match /pedidos/{docId} {
