@@ -153,3 +153,17 @@ export const escucharInsumosAdmin = (restauranteId, callback) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
+//cerar insumo
+export const crearInsumo = async (restauranteId, datosInsumo) => {
+  try {
+    const insumosRef = collection(db, "restaurantes", restauranteId, "insumos");
+    const docRef = await addDoc(insumosRef, {
+      ...datosInsumo,
+      fechaCreacion: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error en crearInsumo:", error);
+    throw error;
+  }
+};
