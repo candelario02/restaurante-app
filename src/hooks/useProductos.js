@@ -1,6 +1,9 @@
 // src/hooks/useProductos.js
+
 import { useEffect, useState } from "react";
+
 import { db } from "../firebase/config";
+
 import {
   collection,
   query,
@@ -12,8 +15,11 @@ import {
 } from "firebase/firestore";
 
 // ==========================================
+
 // 🧾 PRODUCTOS (VISTA CLIENTE - CON FILTRO)
+
 // ==========================================
+
 export const useProductos = (restauranteId, categoria) => {
   const [productos, setProductos] = useState([]);
 
@@ -22,7 +28,9 @@ export const useProductos = (restauranteId, categoria) => {
 
     const q = query(
       collection(db, "restaurantes", restauranteId, "productos"),
+
       where("categoria", "==", categoria),
+
       where("disponible", "==", true),
     );
 
@@ -37,8 +45,11 @@ export const useProductos = (restauranteId, categoria) => {
 };
 
 // ==========================================
+
 // 🛠️ PRODUCTOS (VISTA ADMIN - TODA LA LISTA)
+
 // ==========================================
+
 export const escucharProductosAdmin = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
@@ -48,35 +59,25 @@ export const escucharProductosAdmin = (restauranteId, callback) => {
     callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
   });
 };
-// ==========================================
-// 🥕 INSUMOS (VISTA ADMIN - GESTIÓN)
-// ==========================================
-export const escucharInsumosAdmin = (restauranteId, callback) => {
-  if (!restauranteId) return () => {};
-
-  // Apuntamos a la nueva colección 'insumos' que creaste
-  const q = query(collection(db, "restaurantes", restauranteId, "insumos"));
-
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-  });
-};
-
 
 // 📦 PEDIDOS (VISTA ADMIN - TIEMPO REAL)
+
 export const escucharPedidos = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
   const q = query(
     collection(db, "restaurantes", restauranteId, "pedidos"),
+
     orderBy("fecha", "desc"),
   );
 
   return onSnapshot(q, (snapshot) => {
     const pedidos = snapshot.docs.map((doc) => ({
       id: doc.id,
+
       ...doc.data(),
     }));
+
     callback(pedidos);
   });
 };

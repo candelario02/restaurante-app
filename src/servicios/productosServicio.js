@@ -1,99 +1,135 @@
 import { db } from "../firebase/config";
+
 import {
   collection,
   addDoc,
-  doc,
   updateDoc,
   deleteDoc,
-  serverTimestamp,
+  doc,
+  query,
+  where,
+  onSnapshot,
+  getDoc,
 } from "firebase/firestore";
 
-/**
- * Agrega un nuevo plato o producto a la carta
- */
-export const crearProducto = async (restauranteId, datosProducto) => {
-  try {
-    const productosRef = collection(
-      db,
-      "restaurantes",
-      restauranteId,
-      "productos",
-    );
-    const docRef = await addDoc(productosRef, {
-      ...datosProducto,
-      fechaCreacion: serverTimestamp(),
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error en crearProducto:", error);
-    throw error;
-  }
+// 🍔 CREAR PRODUCTO
+
+export const crearProducto = async (datos, restauranteId) => {
+  if (!restauranteId) throw new Error("ID de restaurante no proporcionado");
+
+  const docRef = await addDoc(
+    collection(db, "restaurantes", restauranteId, "productos"),
+
+    {
+      ...datos,
+
+      disponible: true,
+
+      fechaCreacion: new Date(),
+    },
+  );
+
+  return docRef.id;
 };
 
-/**
- * Modifica datos o stock general del producto final del menú
- */
-export const actualizarProducto = async (
-  productoId,
-  datosActualizados,
-  restauranteId,
-) => {
-  try {
-    const productoRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "productos",
-      productoId,
-    );
-    await updateDoc(productoRef, {
-      ...datosActualizados,
-      ultimaModificacion: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error("Error en actualizarProducto:", error);
-    throw error;
-  }
+// 📝 ACTUALIZAR PRODUCTO
+
+export const actualizarProducto = async (id, datos, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId");
+
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+
+  await updateDoc(docRef, datos);
 };
 
-/**
- * Elimina físicamente un producto de la base de datos
- */
-export const eliminarProducto = async (productoId, restauranteId) => {
-  try {
-    const productoRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "productos",
-      productoId,
-    );
-    await deleteDoc(productoRef);
-  } catch (error) {
-    console.error("Error en eliminarProducto:", error);
-    throw error;
-  }
+// 🗑️ ELIMINAR PRODUCTO
+
+export const eliminarProducto = async (id, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId");
+
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+
+  await deleteDoc(docRef);
 };
 
-/**
- * Cambia de forma rápida si un producto está disponible para la venta o no
- */
-export const cambiarDisponibilidad = async (
-  productoId,
-  disponible,
-  restauranteId,
-) => {
+// ✅ CAMBIAR DISPONIBILIDAD
+
+export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
+  if (!restauranteId) throw new Error("Falta restauranteId");
+
+  const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
+
+  await updateDoc(docRef, { disponible: estado });
+};
+
+// 🕒 OBTENER PRODUCTOS
+
+export const obtenerProductos = (restauranteId, categoria, callback) => {
+  if (!restauranteId) return () => {};
+
+  const q = query(
+    collection(db, "restaurantes", restauranteId, "productos"),
+
+    where("categoria", "==", categoria),
+
+    where("disponible", "==", true),
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    callback(datos);
+  });
+};
+
+// 🛠️ PARA EL ADMINISTRADOR
+
+export const escucharProductosAdmin = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+
+  const q = query(collection(db, "restaurantes", restauranteId, "productos"));
+
+  return onSnapshot(q, (snapshot) => {
+    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    callback(datos);
+  });
+};
+
+// =============================
+
+//  ⚙️ CONFIG RESTAURANTE
+
+// =============================
+
+export const obtenerConfigRestaurante = async (restauranteId) => {
+  if (!restauranteId) return null;
+
   try {
-    const productoRef = doc(
+    const docRef = doc(
       db,
+
       "restaurantes",
+
       restauranteId,
-      "productos",
-      productoId,
+
+      "configuraciones",
+
+      "datos",
     );
-    await updateDoc(productoRef, { disponible });
+
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.warn("No se encontró el documento de configuración en Firebase");
+
+      return null;
+    }
   } catch (error) {
-    console.error("Error en cambiarDisponibilidad:", error);
-    throw error;
+    console.error("Error en obtenerConfigRestaurante:", error);
+
+    return null;
   }
 };

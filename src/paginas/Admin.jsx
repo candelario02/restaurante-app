@@ -120,65 +120,91 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [nombreLocal, setNombreLocal] = useState("");
 
   // cargar datos de bd
+
   useEffect(() => {
     if (!restauranteId || !rolUsuario) return;
 
     const isAdmin = rolUsuario === "admin" || rolUsuario === "superadmin";
+
     console.log(
       `[Firebase] Conectando a: ${restauranteId} (Admin: ${isAdmin})`,
     );
 
     let unsubProd = () => {};
+
     let unsubInsumos = () => {};
+
     let unsubPed = () => {};
+
     let unsubUser = () => {};
+
     let unsubConfig = () => {};
+
     let unsubDatos = () => {};
 
     try {
       // 1. PRODUCTOS
+
       if (isAdmin) {
         unsubProd = escucharProductosAdmin(restauranteId, setProductos);
       } else {
         unsubProd = obtenerProductos(restauranteId, categoria, setProductos);
       }
+
       // 2. inventario
+
       if (isAdmin) {
         unsubInsumos = escucharInsumosAdmin(restauranteId, setInsumos);
       }
 
       // 3. PEDIDOS
+
       unsubPed = escucharPedidos(restauranteId, setPedidos);
 
       // 4. USUARIOS (Admin)
+
       if (isAdmin) {
         unsubUser = escucharUsuarios(restauranteId, setUsuarios);
       }
 
       // 5. CONFIGURACIÓN MENÚ DEL DÍA
+
       const configRef = doc(
         db,
+
         "restaurantes",
+
         restauranteId,
+
         "configuraciones",
+
         "menu_dia",
       );
+
       unsubConfig = onSnapshot(configRef, (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.data();
+
           setMenuDiaPrecio(data.precio ?? 15);
+
           setMenuDiaActivo(data.activo ?? false);
         }
       });
 
       // 6. 🏦 NOMBRE DEL RESTAURANTE (MULTIPUNTO) - ¡AHORA ADENTRO PROTEGIDO!
+
       const datosRef = doc(
         db,
+
         "restaurantes",
+
         restauranteId,
+
         "configuraciones",
+
         "datos",
       );
+
       unsubDatos = onSnapshot(datosRef, (snapshot) => {
         if (snapshot.exists()) {
           setNombreLocal(snapshot.data().nombre || "");
@@ -190,10 +216,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
     return () => {
       unsubProd();
+
       unsubInsumos();
+
       unsubPed();
+
       unsubUser();
+
       unsubConfig();
+
       unsubDatos();
     };
   }, [restauranteId, rolUsuario, categoria]);
@@ -692,13 +723,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   return (
     <div className="admin-container">
       {/* SECCIÓN MENÚ */}
+
       {seccion === "menu" && (
         <div className="admin-section">
           <div className="tarjeta-control-menu-dia">
             <div className="menu-dia-info-grupo">
               <span className="menu-dia-icono">⚙️</span>
+
               <div>
                 <h4 className="menu-dia-titulo">Configuración Menú del Día</h4>
+
                 <p className="menu-dia-subtitulo">
                   Control global de disponibilidad y costo
                 </p>
@@ -707,43 +741,54 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
             <div className="menu-dia-controles-grupo">
               {/* Input Precio */}
+
               <div className="menu-dia-precio-box">
                 <span className="menu-dia-moneda">S/</span>
+
                 <input
                   type="number"
                   className="menu-dia-input-precio"
                   value={menuDiaPrecio}
                   onChange={(e) => {
                     const v = e.target.value;
+
                     setMenuDiaPrecio(v);
+
                     guardarConfigMenuDia(v, menuDiaActivo);
                   }}
                 />
               </div>
 
               {/* Switch Encendido/Apagado */}
+
               <div className="menu-dia-switch-box">
                 <span
                   className={`menu-dia-estado-texto ${menuDiaActivo ? "activo" : "apagado"}`}
                 >
                   {menuDiaActivo ? "ACTIVO" : "APAGADO"}
                 </span>
+
                 <button
                   type="button"
                   onClick={() => {
                     const nuevoEstado = !menuDiaActivo;
+
                     setMenuDiaActivo(nuevoEstado);
+
                     guardarConfigMenuDia(menuDiaPrecio, nuevoEstado);
 
                     // 🌟 Lanzamos el mensaje bonito usando el nuevo estado
+
                     setNotificacionMenu({
                       mostrar: true,
+
                       mensaje: nuevoEstado
                         ? "Menú activado correctamente"
                         : "Menú desactivado correctamente",
                     });
 
                     // ⏱️ Se limpia automáticamente a los 2 segundos sin trabar el switch
+
                     setTimeout(() => {
                       setNotificacionMenu({ mostrar: false, mensaje: "" });
                     }, 2000);
@@ -755,6 +800,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               </div>
 
               {/* 🌟 MENSAJE BONITO EN EL CENTRO CON LA NUEVA CLASE CSS */}
+
               {notificacionMenu.mostrar && (
                 <div className="menu-dia-notificacion-toast">
                   {notificacionMenu.mensaje}
@@ -766,6 +812,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           <h2 className="titulo-seccion">
             {editandoId ? "Editar Producto" : "Nuevo Plato"}
           </h2>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -773,11 +820,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               if (!editandoId && !archivo) {
                 Swal.fire({
                   title: "¡Imagen Obligatoria!",
+
                   text: "Debe subir una foto para registrar el plato. Use el botón 'Subir Imagen' de abajo.",
+
                   icon: "warning",
+
                   confirmButtonColor: "#10b981",
+
                   confirmButtonText: "OK",
                 });
+
                 return;
               }
 
@@ -804,9 +856,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               value={precio}
               onChange={(e) => {
                 const valor = e.target.value;
+
                 if (valor.split(".")[0].length > 3) {
                   return;
                 }
+
                 setPrecio(valor);
               }}
               placeholder="Precio (S/)"
@@ -844,8 +898,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 accept="image/*"
                 onChange={(e) => {
                   const file = e.target.files[0];
+
                   if (file) {
                     setArchivo(file);
+
                     setImgPreview(URL.createObjectURL(file));
                   }
                 }}
@@ -858,6 +914,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 disabled={cargando}
               >
                 {imgPreview ? <Check size={18} /> : <ImageIcon size={18} />}
+
                 {imgPreview ? " Imagen Cargada" : " Subir Imagen (Obligatorio)"}
               </button>
 
@@ -881,6 +938,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 ) : (
                   <Save size={18} />
                 )}
+
                 <span>{editandoId ? " Act." : " Guardar"}</span>
               </button>
 
@@ -900,8 +958,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               </div>
 
               {/* BUSCADOR */}
+
               <div className="buscador-container-pro">
                 <Search size={18} className="icon-search" />
+
                 <input
                   type="text"
                   placeholder="Buscar..."
@@ -933,6 +993,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <th>ACCIONES</th>
                 </tr>
               </thead>
+
               <tbody>
                 {productosFiltrados.map((p) => (
                   <tr key={p.id}>
@@ -942,10 +1003,12 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         alt={p.nombre}
                         className="img-mini-pro"
                       />
+
                       <span>{p.nombre}</span>
                     </td>
 
                     {/* Celda de Descripción */}
+
                     <td>
                       {p.descripcion ? (
                         <div className="td-descripcion">{p.descripcion}</div>
@@ -967,7 +1030,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         onClick={() =>
                           manejarDisponibilidad(
                             p.id,
+
                             p.disponible,
+
                             restauranteId,
                           )
                         }
@@ -980,6 +1045,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                     </td>
 
                     {/* 🌟 ENVOLVEMOS LOS BOTONES EN EL CONTAINER PARA ALINEACIÓN PERFECTA */}
+
                     <td className="acciones-pro">
                       <div className="acciones-pro-container">
                         <button
@@ -988,6 +1054,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         >
                           <Edit size={16} />
                         </button>
+
                         <button
                           className="btn-delete" /* Se mapea con tu clase de CSS */
                           onClick={() => manejarEliminar(p.id, p.cloudinaryId)}
