@@ -46,7 +46,7 @@ import {
 
 // 🔥 CONFIGURACIÓN
 import { auth, db } from "../firebase/config";
-import { doc, setDoc, updateDoc, onSnapshot} from "firebase/firestore";
+import { doc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 
 // 🔐 MATRIZ DE PERMISOS Y CONFIGURACIÓN DE INTERFAZ POR ROL
 export const PERMISOS_ROLES = {
@@ -109,6 +109,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [nuevoInsumo, setNuevoInsumo] = useState({
     nombre: "",
     stock_actual: 0,
+    precio: 0,
     stock_minimo: 0,
     unidad_medida: "",
   });
@@ -164,7 +165,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       // 2. inventario
       if (isAdmin) {
         unsubInsumos = escucharInsumosAdmin(restauranteId, setInsumos);
-        unsubHistorial = escucharHistorialMovimientos(restauranteId, setHistorial);
+        unsubHistorial = escucharHistorialMovimientos(
+          restauranteId,
+          setHistorial,
+        );
       }
       // 3. PEDIDOS
       unsubPed = escucharPedidos(restauranteId, setPedidos);
@@ -356,14 +360,26 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //Funcion insumos
   const registrarNuevoInsumo = async () => {
     // Validación básica de UI
-    if (!nuevoInsumo.nombre || !nuevoInsumo.stock_actual) {
-      return Swal.fire("Campos Vacíos", "Completa nombre y stock.", "warning");
+    if (
+      !nuevoInsumo.nombre ||
+      !nuevoInsumo.stock_actual ||
+      !nuevoInsumo.precio
+    ) {
+      return Swal.fire(
+        "Campos Vacíos",
+        "Completa nombre, stock y precio.",
+        "warning",
+      );
     }
 
     try {
       await crearInsumo(restauranteId, nuevoInsumo);
-
-      setNuevoInsumo({ nombre: "", stock_actual: "", unidad_medida: "kg" });
+      setNuevoInsumo({
+        nombre: "",
+        stock_actual: "",
+        precio: "",
+        unidad_medida: "kg",
+      });
       Swal.fire({
         icon: "success",
         title: "¡Insumo Registrado!",
@@ -390,6 +406,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       await realizarMovimientoInventario(restauranteId, item, {
         cantidad: cant,
         tipo: estadoFila.tipo,
+        precio: item.precio_unitario || 0,
       });
 
       // Limpieza de estado
@@ -1081,25 +1098,38 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             />
             <input
               type="number"
-              placeholder="Stock Inicial (Cantidad)"
+              min="0"
+              onKeyDown={(e) =>
+                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+              }
+              placeholder="Stock Inicial"
               value={nuevoInsumo.stock_actual || ""}
               onChange={(e) =>
                 setNuevoInsumo({
                   ...nuevoInsumo,
-                  stock_actual: parseInt(e.target.value) || "",
+                  stock_actual: parseInt(e.target.value, 10) || "",
+                })
+              }
+            />
+            {/* 🟢 NUEVO CAMPO PRECIO CON RESTRICCIÓN DE NÚMEROS */}
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              onKeyDown={(e) =>
+                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+              }
+              placeholder="Precio Unitario (S/.)"
+              value={nuevoInsumo.precio || ""}
+              onChange={(e) =>
+                setNuevoInsumo({
+                  ...nuevoInsumo,
+                  precio: parseFloat(e.target.value) || "",
                 })
               }
             />
 
-            <div
-              className="selector-unidad-registro"
-              style={{
-                display: "flex",
-                gap: "15px",
-                alignItems: "center",
-                marginBottom: "10px",
-              }}
-            >
+            <div className="selector-unidad-registro">
               <label>
                 <input
                   type="radio"
@@ -1140,6 +1170,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               Registrar Insumo
             </button>
           </div>
+
           {/* FILTROS Y BUSQUEDA */}
           <div className="inventario-filtros-grupo">
             <input
@@ -1195,16 +1226,22 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                   return (
                     <tr key={item.id}>
-                      <td>{item.nombre}</td>
+                      <td className="celda-nombre-elemento">{item.nombre}</td>
                       <td>
-                        {item.esInsumo ? "Materia Prima" : item.categoria}
+                        <span
+                          className={`badge-categoria ${item.esInsumo ? "insumo" : "producto"}`}
+                        >
+                          {item.esInsumo ? "Materia Prima" : item.categoria}
+                        </span>
                       </td>
-                      <td>
+                      <td className="celda-stock-valor">
                         {stockNumerico} {item.unidad_medida || "und"}
                       </td>
                       <td>
                         <div className="contenedor-acciones-stock">
+                          {/* 🧠 SELECT INTELIGENTE SEGÚN EL TIPO DE ITEM */}
                           <select
+                            className="select-movimiento-tipo"
                             value={estadoFila.tipo}
                             onChange={(e) =>
                               setOperacionStock({
@@ -1216,14 +1253,32 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                               })
                             }
                           >
-                            {item.esInsumo && (
-                              <option value="entrada">📥 Entrada</option>
+                            {item.esInsumo ? (
+                              <>
+                                <option value="entrada">📥 Entrada</option>
+                                <option value="salida">🍳 Salida Cocina</option>
+                                <option value="transferencia">
+                                  🚚 Transferencia
+                                </option>
+                              </>
+                            ) : (
+                              <>
+                                <option value="entrada">📥 Entrada</option>
+                                <option value="transferencia">
+                                  🚚 Transferencia
+                                </option>
+                              </>
                             )}
-                            <option value="salida">🍳 Salida</option>
                           </select>
 
                           <input
                             type="number"
+                            className="input-movimiento-cantidad"
+                            min="1"
+                            onKeyDown={(e) =>
+                              ["e", "E", "+", "-"].includes(e.key) &&
+                              e.preventDefault()
+                            }
                             value={estadoFila.cantidad}
                             placeholder="Cant."
                             onChange={(e) =>
@@ -1237,7 +1292,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             }
                           />
 
+                          {/* 🟢 BOTÓN CON CLASE CORRECTA VERDE PROFESIONAL */}
                           <button
+                            className="btn-aplicar-movimiento"
                             onClick={() => ejecutarMovimiento(item, estadoFila)}
                           >
                             Aplicar

@@ -150,19 +150,16 @@ export const enviarResenaPedido = async (
 export const crearInsumo = async (restauranteId, datosInsumo) => {
   try {
     const insumosRef = collection(db, "restaurantes", restauranteId, "insumos");
-
-    // Normalizamos los datos AQUÍ, no en el componente
     const payload = {
       nombre: datosInsumo.nombre.trim(),
       stock_actual: parseInt(datosInsumo.stock_actual, 10) || 0,
+      precio_unitario: parseFloat(datosInsumo.precio) || 0, // Nuevo campo
       unidad_medida: datosInsumo.unidad_medida || "kg",
       fechaCreacion: serverTimestamp(),
     };
-
     const docRef = await addDoc(insumosRef, payload);
     return docRef.id;
   } catch (error) {
-    console.error("Error en crearInsumo:", error);
     throw new Error("No se pudo registrar el insumo");
   }
 };
@@ -175,7 +172,6 @@ export const realizarMovimientoInventario = async (
 ) => {
   const ajuste =
     movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
-
   await actualizarStockInventario(restauranteId, item.id, ajuste);
 
   const historialRef = collection(
@@ -184,13 +180,51 @@ export const realizarMovimientoInventario = async (
     restauranteId,
     "historial_movimientos",
   );
-  await addDoc(historialRef, {
-    item_id: item.id,
-    item_nombre: item.nombre,
-    tipo: movimiento.tipo,
-    cantidad: movimiento.cantidad,
-    fecha: serverTimestamp(),
+
+  // Obtenemos fecha de hoy (sin hora para comparar días)
+  const hoy = new Date().toLocaleDateString();
+
+  // 1. BUSCAR si ya existe movimiento para este item hoy
+  const q = query(
+    historialRef,
+    where("item_id", "==", item.id),
+    where("tipo", "==", movimiento.tipo),
+  );
+
+  const querySnapshot = await getDocs(q);
+  let docExistente = null;
+
+  querySnapshot.forEach((doc) => {
+    const data = doc.data();
+    if (data.fecha?.toDate().toLocaleDateString() === hoy) {
+      docExistente = doc;
+    }
   });
+
+  // 2. ACTUALIZAR O CREAR
+  if (docExistente) {
+    const data = docExistente.data();
+    const nuevaCantidad = data.cantidad + movimiento.cantidad;
+    await updateDoc(docExistente.ref, {
+      cantidad: nuevaCantidad,
+      total_costo:
+        movimiento.tipo !== "transferencia"
+          ? nuevaCantidad * (item.precio_unitario || 0)
+          : 0,
+    });
+  } else {
+    await addDoc(historialRef, {
+      item_id: item.id,
+      item_nombre: item.nombre,
+      tipo: movimiento.tipo,
+      cantidad: movimiento.cantidad,
+      total_costo:
+        movimiento.tipo !== "transferencia"
+          ? movimiento.cantidad * (item.precio_unitario || 0)
+          : 0,
+      fecha: serverTimestamp(),
+    });
+  }
 };
 
 // actualizarStockInsumo

@@ -1098,7 +1098,7 @@
 }
 /* =============================================
     6. SECCIÓN GESTIÓN DE INVENTARIO DE PRODUCTOS
-  ============================================= */
+============================================= */
 .inventario-container {
   padding: 20px;
   background: white;
@@ -1110,6 +1110,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
+  align-items: center;
 }
 
 .admin-form-inventario input {
@@ -1117,6 +1118,7 @@
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   flex: 1;
+  font-size: 0.95rem;
 }
 
 .btn-guardar-inventario {
@@ -1128,6 +1130,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
+  height: 42px;
 }
 
 .btn-guardar-inventario:hover {
@@ -1142,12 +1145,8 @@
   align-items: center;
 }
 
-.buscador-inventario-subcontainer {
-  flex: 1;
-}
-
 .input-busqueda-insumo {
-  width: 100%;
+  flex: 1;
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #cbd5e1;
@@ -1159,11 +1158,6 @@
   border-color: #6366f1;
 }
 
-.selector-filtro-container {
-  display: flex;
-  align-items: center;
-}
-
 .select-filtro-tabla {
   height: 42px;
   padding: 0 15px;
@@ -1173,7 +1167,12 @@
   font-size: 0.95rem;
   cursor: pointer;
 }
-
+.selector-unidad-registro {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 10px;
+}
 .select-filtro-tabla:focus {
   outline: none;
   border-color: #6366f1;
@@ -1195,18 +1194,21 @@
 
 .celda-nombre-elemento {
   font-weight: 500;
+  text-transform: capitalize;
 }
 
 .celda-stock-valor {
   font-weight: 600;
+  color: #334155;
 }
 
 /* 🏷️ BADGES DE TIPO DE ELEMENTO */
 .badge-categoria {
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: bold;
+  font-weight: 600;
+  display: inline-block;
 }
 
 .badge-categoria.insumo {
@@ -1219,21 +1221,6 @@
   color: #4f46e5;
 }
 
-/* 🚨 SECCIÓN DE ALERTAS INTELIGENTES (MENOR O IGUAL A 4) */
-.stock-alerta {
-  color: #ef4444;
-  font-weight: bold;
-  background: #fef2f2;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.texto-alerta-bajo {
-  color: #ef4444;
-  font-size: 0.75rem;
-  margin-left: 6px;
-}
-
 /* ⚙️ CONTENEDOR DE ACCIONES DE OPERACIÓN */
 .contenedor-acciones-stock {
   display: flex;
@@ -1242,42 +1229,53 @@
 }
 
 .select-movimiento-tipo {
-  padding: 6px;
+  height: 36px;
+  padding: 0 8px;
   border: 1px solid #cbd5e1;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: #fff;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .input-movimiento-cantidad {
-  width: 130px; /* Se amplió para dar espacio al placeholder 'Ingresar cantidad' */
-  padding: 6px;
-  border-radius: 4px;
+  width: 100px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
   border: 1px solid #cbd5e1;
   text-align: center;
+  font-size: 0.9rem;
 }
 
 /* Quitar flechas por defecto en inputs numéricos */
 .input-movimiento-cantidad::-webkit-outer-spin-button,
-.input-movimiento-cantidad::-webkit-inner-spin-button {
+.input-movimiento-cantidad::-webkit-inner-spin-button,
+.admin-form-inventario input[type=number]::-webkit-inner-spin-button,
+.admin-form-inventario input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* El botón de aplicar ahora es Verde Profesional por defecto */
+/* 🟢 VERDE PROFESIONAL UNIFICADO PARA EL BOTÓN APLICAR */
 .btn-aplicar-movimiento {
   background-color: #10b981;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: 500;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 .btn-aplicar-movimiento:hover {
   background-color: #059669;
+}
+
+.btn-aplicar-movimiento:active {
+  transform: scale(0.97);
 }
 /* =============================================
     7. SECCIÓN GESTIÓN DE historial insumos
