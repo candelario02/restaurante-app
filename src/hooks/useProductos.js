@@ -82,16 +82,10 @@ export const escucharPedidos = (restauranteId, callback) => {
   });
 };
 // escuchar insumos
-export const useInsumos = (restauranteId) => {
-  const [insumos, setInsumos] = useState([]);
-
-  useEffect(() => {
-    // Aquí es donde usas la función del servicio
-    const unsubscribe = escucharInsumosAdmin(restauranteId, (data) => {
-      setInsumos(data);
-    });
-    return () => unsubscribe();
-  }, [restauranteId]);
-
-  return insumos;
+export const escucharInsumosAdmin = (restauranteId, callback) => {
+  if (!restauranteId) return () => {};
+  const q = query(collection(db, "restaurantes", restauranteId, "insumos"));
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+  });
 };
