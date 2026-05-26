@@ -10,6 +10,7 @@ import {
   getDoc,
   increment,
   query,
+  where,
 } from "firebase/firestore";
 
 // SOLUCIÓN ÚNICA: Maneja creación y actualización
