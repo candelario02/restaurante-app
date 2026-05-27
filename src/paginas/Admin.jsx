@@ -1673,12 +1673,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             </thead>
             <tbody>
               {historialFiltrado.map((mov) => {
+                // 1. Declaración y cálculo de variables al inicio del bucle
                 const cantidad = Number(mov.cantidad) || 0;
                 const precioUnitario =
                   Number(mov.precio_unitario || mov.precio) || 0;
                 const total =
                   mov.tipo !== "transferencia" ? cantidad * precioUnitario : 0;
 
+                // 2. Retorno único del componente visual
                 return (
                   <tr key={mov.id}>
                     <td>
@@ -1688,7 +1690,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           ).toLocaleDateString()
                         : "N/A"}
                     </td>
-                    <td>{mov.item_nombre || mov.nombre}</td>
+                    <td>
+                      {/* Contenedor unificado con el nombre y la alerta de auditoría si existe */}
+                      <div className="hinsumos-celda-nombre">
+                        <strong>{mov.item_nombre || mov.nombre}</strong>
+                        {mov.nota && (
+                          <span
+                            className="hinsumos-nota-auditoria"
+                            title={mov.nota}
+                          >
+                            ⚠️ {mov.nota}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <span className={`hinsumos-tag ${mov.tipo}`}>
                         {mov.tipo === "salida"
