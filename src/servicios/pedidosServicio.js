@@ -1,5 +1,5 @@
 import { db } from "../firebase/config";
-
+import { actualizarStockProductoMenu } from "./productosServicio"; // 👈 AGREGA ESTA LÍNEA AQUÍ
 import {
   collection,
   addDoc,
