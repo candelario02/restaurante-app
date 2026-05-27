@@ -186,8 +186,9 @@ export const realizarMovimientoInventario = async (
   operadorFirma,
 ) => {
   const ajuste =
-    movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
-
+    movimiento.tipo === "salida" || movimiento.tipo === "transferencia"
+      ? -movimiento.cantidad
+      : movimiento.cantidad;
   // 🛡️ FILTRO INTELIGENTE: ¿Es un producto directo de la carta o un insumo?
   if (item.esInsumo === false || item.tipoItem === "producto") {
     // Si es producto directo (como una Gas coca), actualiza directo el menú
@@ -279,7 +280,7 @@ export const realizarMovimientoInventario = async (
 };
 
 // actualizarStockInsumo
- export const actualizarStockInventario = async (
+export const actualizarStockInventario = async (
   restauranteId,
   insumoId,
   cantidad,
@@ -301,7 +302,8 @@ export const realizarMovimientoInventario = async (
     throw error;
   }
 };
-//actualizar inventario
+
+//actualizar inventario datos
 export const actualizarDatosInsumo = async (
   restauranteId,
   insumoId,
