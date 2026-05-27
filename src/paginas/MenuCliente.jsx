@@ -1342,6 +1342,23 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     <div className="item-info">
                       <h4>{item.nombre}</h4>
                       <span>S/ {Number(item.precio).toFixed(2)}</span>
+
+                      {/* Muestra la nota fija abajo del nombre si ya está en modo lectura */}
+                      {datosPedidoRealtime &&
+                        datosPedidoRealtime?.estado !== "pendiente" &&
+                        item.notaCliente && (
+                          <span
+                            className="item-nota-lectura"
+                            style={{
+                              display: "block",
+                              fontSize: "12px",
+                              color: "#666",
+                              fontStyle: "italic",
+                            }}
+                          >
+                            Nota: {item.notaCliente}
+                          </span>
+                        )}
                     </div>
 
                     <div className="item-controles">
@@ -1363,13 +1380,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                           </button>
                         </>
                       ) : (
+                        /* Encapsulado en un span con la misma clase estructural para conservar el ancho */
                         <span className="item-cantidad">
                           Cant: {item.cantidad}
                         </span>
                       )}
                     </div>
 
-                    {/* ✏️ CAMBIO AQUÍ: Input limpio sin estilos en línea, usando el comportamiento nativo */}
+                    {/* Input para redactar la nota (Solo disponible en estado pendiente) */}
                     {(!datosPedidoRealtime ||
                       datosPedidoRealtime?.estado === "pendiente") && (
                       <input

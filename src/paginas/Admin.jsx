@@ -1914,7 +1914,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       )}
                     </div>
 
-                    {/* Cuerpo del pedido: Items */}
                     <div className="items-pedido">
                       {p.items?.map((item, index) => {
                         const safeItem = {
@@ -1931,6 +1930,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                               <span className="nombre">{safeItem.nombre}</span>
                             </p>
 
+                            {/* ✏️ RENDERIZADO DE LA NOTA DEL CLIENTE EN LA COCINA */}
+                            {safeItem.notaCliente && (
+                              <span
+                                className="detalles-menu-admin"
+                                style={{
+                                  display: "block",
+                                  color: "#ff5722",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                📝 Nota: {safeItem.notaCliente}
+                              </span>
+                            )}
+
                             {!safeItem.detalles && safeItem.descripcion && (
                               <span className="detalles-menu-admin">
                                 {safeItem.descripcion}
@@ -1939,9 +1952,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                             {safeItem.detalles && (
                               <span className="detalles-menu-admin">
-                                🍲 E: {safeItem.detalles.entrada || "-"} | 🍛 S:{" "}
-                                {safeItem.detalles.segundo || "-"} | 🥤 B:{" "}
-                                {safeItem.detalles.bebida || "-"}
+                                {safeItem.detalles.entrada
+                                  ? `🍲 E: ${safeItem.detalles.entrada}`
+                                  : "🍲 E: -"}{" "}
+                                |
+                                {safeItem.detalles.segundo
+                                  ? ` 🍛 S: ${safeItem.detalles.segundo}`
+                                  : " 🍛 S: -"}{" "}
+                                |
+                                {safeItem.detalles.bebida
+                                  ? ` 🥤 B: ${safeItem.detalles.bebida}`
+                                  : " 🥤 B: -"}
                               </span>
                             )}
                           </div>
