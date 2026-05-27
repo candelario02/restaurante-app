@@ -21,6 +21,7 @@ import {
   eliminarProducto,
   cambiarDisponibilidad,
   obtenerProductos,
+  actualizarStockProductoMenu,
 } from "../servicios/productosServicio";
 import {
   actualizarEstadoPedido,
