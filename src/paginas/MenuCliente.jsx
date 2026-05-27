@@ -404,11 +404,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
       // 3. Mapear productos del carrito actual calculando precios dinámicos
       const nuevosItems = carrito.map((item) => {
-        // El precio base ya viene calculado de la selección, nos aseguramos de que sea Number
         const precioBase = Number(item.precioBase || item.precio || 0);
         let precioExtra = 0;
 
-        // Si es menú completo, sumamos los cargos extras de entrada o bebida seleccionada
         if (item.isMenuCompleto && item.detalles) {
           const extraEntrada = Number(item.detalles.entradaPrecioExtra || 0);
           const extraBebida = Number(item.detalles.bebidaPrecioExtra || 0);
@@ -428,22 +426,103 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
+          notaCliente: item.notaCliente || "", // ✏️ Req 4.1: Conservamos las notas/preferencias por plato
         };
       });
 
-      // 4. Lógica de Reemplazo Absoluto (Evita la duplicación y respeta borrados)
+      // ==========================================================================
+      // 🌟 PASO 4: FUSIÓN INTELIGENTE Y CÁLCULO DE ADICIONALES (ANTI-REEMPLAZO)
+      // ==========================================================================
+      let itemsFinales = [];
+
+      if (idExistente && datosPedidoRealtime) {
+        // 🔄 MODO ADICIÓN: Clonamos lo que ya está cocinándose en Firebase
+        itemsFinales = [...(datosPedidoRealtime.items || [])];
+
+        // Recorremos los ítems que el cliente tiene en su carrito local actual
+        nuevosItems.forEach((nuevo) => {
+          const index = itemsFinales.findIndex(
+            (f) => f.idUnico === nuevo.idUnico,
+          );
+          if (index !== -1) {
+            // Si el producto ya existía en la orden, incrementamos su cantidad de forma controlada
+            itemsFinales[index].cantidad += nuevo.cantidad;
+            itemsFinales[index].subtotal =
+              itemsFinales[index].cantidad * itemsFinales[index].precio;
+            // Marcamos el ítem existente para que el cocinero sepa que aumentó la comanda
+            itemsFinales[index].adicionado = true;
+          } else {
+            // Si es un antojo nuevo (ej: una gaseosa extra), lo inyectamos con la marca de adicional
+            itemsFinales.push({ ...nuevo, adicionado: true });
+          }
+        });
+      } else {
+        // 🍔 MODO NUEVO: El pedido arranca directamente con los platos del carrito local
+        itemsFinales = [...nuevosItems];
+      }
+
+      // 🥡 Req 4.2: LÓGICA DEL TÁPER (+ S/. 1.00 PARA LLEVAR / DELIVERY)
+      const requiereTaper =
+        tipoPedido === "delivery" || tipoPedido === "llevar";
+      const yaTieneTaper = itemsFinales.some(
+        (i) => i.id === "insumo_taper_envase",
+      );
+
+      if (requiereTaper && !yaTieneTaper) {
+        itemsFinales.push({
+          id: "insumo_taper_envase",
+          idUnico: "insumo_taper_envase_unico",
+          nombre: "Cargo por Empaque / Llevar",
+          descripcion: "Costo de envases descartables",
+          precio: 1.0,
+          cantidad: 1,
+          subtotal: 1.0,
+          detalles: null,
+        });
+      }
+
+      // 🧁 Req 6: LÓGICA DE POSTRE DE CORTESÍA (PRECIO 0.00 SI SUPERA LOS S/. 50.00)
+      // Calculamos el subtotal acumulado excluyendo cargos de empaque o cortesías previas
+      const subtotalParaCortesia = itemsFinales
+        .filter(
+          (i) => i.id !== "insumo_taper_envase" && i.id !== "postre_cortesia",
+        )
+        .reduce((acc, curr) => acc + curr.subtotal, 0);
+
+      const yaTieneCortesia = itemsFinales.some(
+        (i) => i.id === "postre_cortesia",
+      );
+
+      if (subtotalParaCortesia >= 50.0 && !yaTieneCortesia) {
+        itemsFinales.push({
+          id: "postre_cortesia",
+          idUnico: "postre_cortesia_unico",
+          nombre: "Postre de Cortesía (Regalo S/ 0.00)",
+          descripcion: "Obsequio automático por superar monto mínimo",
+          precio: 0.0,
+          cantidad: 1,
+          subtotal: 0.0,
+          detalles: null,
+        });
+      }
+
+      // Calculamos el gran total consolidado definitivo para la base de datos y la caja
+      const totalConsolidado = itemsFinales.reduce(
+        (acc, curr) => acc + curr.subtotal,
+        0,
+      );
+
+      // Ensamblamos el payload final respetando las dos realidades de Firebase
       let pedidoParaFirebase;
 
       if (idExistente && datosPedidoRealtime) {
-        // EN ACTUALIZACIÓN: El carrito local es la verdad absoluta. Reemplazamos la lista de ítems.
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
-          items: nuevosItems,
-          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
+          items: itemsFinales,
+          total: totalConsolidated,
           fechaActualizacion: new Date(),
         };
       } else {
-        // EN PEDIDO NUEVO
         pedidoParaFirebase = {
           cliente: {
             nombre: datosCliente?.nombre || "Cliente",
@@ -451,8 +530,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             referencia: datosCliente?.referencia || "",
             telefono: datosCliente?.telefono || "No provisto",
           },
-          items: nuevosItems,
-          total: nuevosItems.reduce((acc, curr) => acc + curr.subtotal, 0),
+          items: itemsFinales,
+          total: totalConsolidado,
           estado: "pendiente",
           fecha: new Date(),
           restauranteId: restauranteId,
@@ -477,12 +556,9 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       const esDelivery = pedidoParaFirebase.cliente.tipo === "Delivery";
 
       if (esDelivery) {
-        // 🛵 BLOQUE DELIVERY: Jalamos el número estrictamente de Firestore
-        // 🛵 BLOQUE DELIVERY: Llamamos a tu servicio importado para traer el número fresco
         const configData = await obtenerConfigRestaurante(restauranteId);
         const numeroWhatsApp = configData?.whatsapp;
 
-        // 🌟 CANDADO MULTIPUNTO: Si el local no tiene WhatsApp configurado en Firestore, frenamos el envío cruzado
         if (!numeroWhatsApp) {
           await Swal.fire({
             title: "Aviso del Restaurante",
@@ -492,33 +568,29 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             confirmButtonColor: "#6b7280",
           });
 
-          // Ejecutamos el cierre normal de tu interfaz para que el flujo web continúe limpio
           setVerCarrito(false);
           setMostrarFormulario(false);
           setCategoriaActual(null);
           setCarrito([]);
           window.scrollTo({ top: 0, behavior: "smooth" });
-          return; // Rompe la función aquí para que no intente abrir un WhatsApp inválido o cruzado
+          return;
         }
 
-        // Si el número existe en Firestore, el flujo continúa de forma perfecta y dinámica:
         const totalFinal = pedidoParaFirebase.total;
         const infoCliente = pedidoParaFirebase.cliente;
 
-        // Estructura limpia de ítems para el cuerpo del mensaje de texto
-        const listaPlatosTexto = nuevosItems
+        // Estructura limpia de ítems que ahora jala de "itemsFinales" garantizando cuadre con WhatsApp
+        const listaPlatosTexto = itemsFinales
           .map(
             (item) =>
-              `• ${item.cantidad}x ${item.nombre} (S/ ${item.precio.toFixed(2)})`,
+              `• ${item.cantidad}x ${item.nombre} ${item.notaCliente ? `[Nota: ${item.notaCliente}]` : ""} (S/ ${item.precio.toFixed(2)})`,
           )
           .join("\n");
 
-        // Evalúa dinámicamente el título del mensaje según si es actualización o nuevo
         const encabezadoTexto = idExistente
           ? `🔄 *¡PEDIDO ACTUALIZADO EN LA WEB!* 🔄`
           : `🍔 *¡NUEVO PEDIDO DESDE LA WEB!* 🍔`;
 
-        // Construcción del mensaje con formato nativo de WhatsApp
         const textoWhatsApp = encodeURIComponent(
           `${encabezadoTexto}\n\n` +
             `*Cliente:* ${infoCliente.nombre}\n` +
@@ -532,24 +604,21 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
         const linkWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${textoWhatsApp}`;
 
-        // Lanzamiento del Modal Híbrido interactivo de SweetAlert2 para Delivery
         await Swal.fire({
           title: idExistente ? "¡Pedido Actualizado!" : "¡Pedido Registrado!",
           text: "Los datos ya están guardados en cocina. ¿Deseas enviar el resumen detallado a nuestro WhatsApp para coordinar el motorizado?",
           icon: "success",
-          showCancelButton: true, // Renderiza el botón secundario (Omitir)
-          confirmButtonColor: "#10b981", // Color de confirmación verde WhatsApp
-          cancelButtonColor: "#6b7280", // Color de cancelación gris elegante
+          showCancelButton: true,
+          confirmButtonColor: "#10b981",
+          cancelButtonColor: "#6b7280",
           confirmButtonText: "Enviar a WhatsApp",
           cancelButtonText: "Omitir, ver en web",
         }).then((result) => {
           if (result.isConfirmed) {
-            // Dispara el enlace en una pestaña limpia si se decide notificar por WhatsApp
             window.open(linkWhatsApp, "_blank");
           }
         });
       } else {
-        // 🪑 BLOQUE MESA / LOCAL: Tu comportamiento original intacto (Rápido, automático y limpio sin WhatsApp)
         await Swal.fire({
           title: "¡Éxito!",
           text: idExistente
@@ -566,15 +635,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setMostrarFormulario(false);
       setCategoriaActual(null);
 
-      // Guardamos el ID si es un pedido nuevo
       if (!idExistente && idNuevo) {
         setPedidoActivoId(idNuevo);
         localStorage.setItem(`ultimoPedido_${restauranteId}`, idNuevo);
       }
 
-      // Vaciamos el carrito local al final de todo el proceso
       setCarrito([]);
-
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Error al enviar pedido:", error);
@@ -1302,6 +1368,26 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                         </span>
                       )}
                     </div>
+
+                    {/* ✏️ CAMBIO AQUÍ: Input limpio sin estilos en línea, usando el comportamiento nativo */}
+                    {(!datosPedidoRealtime ||
+                      datosPedidoRealtime?.estado === "pendiente") && (
+                      <input
+                        type="text"
+                        placeholder="¿Alguna especificación? (Ej: sin cebolla, bien frito...)"
+                        value={item.notaCliente || ""}
+                        onChange={(e) => {
+                          const nuevaNota = e.target.value;
+                          setCarrito((prevCarrito) =>
+                            prevCarrito.map((c) =>
+                              c.idUnico === item.idUnico
+                                ? { ...c, notaCliente: nuevaNota }
+                                : c,
+                            ),
+                          );
+                        }}
+                      />
+                    )}
                   </div>
                 ))
               )}
@@ -1414,7 +1500,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 onChange={(e) => setTipoPedido(e.target.value)}
               >
                 <option value="mesa">Comer en el local (Mesa)</option>
-                <option value="delivery">Para llevar / Delivery</option>
+                <option value="delivery">
+                  Despacho por Delivery (+ S/. 1.00 Envase)
+                </option>
+                <option value="llevar">
+                  Recoger para Llevar (+ S/. 1.00 Envase)
+                </option>
               </select>
 
               {tipoPedido === "mesa" ? (
