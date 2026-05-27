@@ -537,15 +537,55 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Error", "Fallo al sincronizar: " + err.message, "error");
     }
   };
-  //funcion de editar
-  const iniciarEdicionInsumo = (item) => {
-    setEditandoInsumoId(item.id);
-    setValoresEditadosInsumo({
-      nombre: item.nombre,
-      stock_actual: Number(item.stock_actual) || 0,
-      precio_unitario: Number(item.precio_unitario || item.precio) || 0, // ¡Corregido nombre!
-      unidad_medida: item.unidad_medida || "und",
-    });
+  //funcion de guardar cambios insumos
+  const guardarCambiosInsumo = async (insumoId) => {
+    try {
+      // 🎯 CAPTURAMOS LA FIRMA DEL OPERADOR ACTIVO
+      const emailOperador = auth.currentUser?.email || "Email Desconocido";
+      const firmaResponsable = `${emailOperador} (${rolUsuario || "Sin Rol"})`;
+
+      await actualizarDatosInsumo(
+        restauranteId,
+        insumoId,
+        valoresEditadosInsumo,
+        firmaResponsable, // 👈 Enviamos la firma como cuarto parámetro
+      );
+
+      // CORRECCIÓN: Usamos tu estado local 'setInsumos' para actualizar la tabla de forma reactiva
+      setInsumos((prev) =>
+        prev.map((ins) =>
+          ins.id === insumoId
+            ? {
+                ...ins,
+                nombre: valoresEditadosInsumo.nombre,
+                precio_unitario: Number(
+                  valoresEditadosInsumo.precio_unitario ||
+                    valoresEditadosInsumo.precio,
+                ),
+                stock_actual: Number(valoresEditadosInsumo.stock_actual),
+                unidad_medida: valoresEditadosInsumo.unidad_medida,
+              }
+            : ins,
+        ),
+      );
+
+      setEditandoInsumoId(null);
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Actualizado!",
+        text: "El insumo se ha modificado correctamente.",
+        confirmButtonColor: "#3085d6",
+      });
+    } catch (error) {
+      console.error("Error al actualizar:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Hubo un fallo al guardar los cambios en la base de datos.",
+        confirmButtonColor: "#d33",
+      });
+    }
   };
   //funcion de guardar cambios insumos
   const guardarCambiosInsumo = async (insumoId) => {

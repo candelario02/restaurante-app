@@ -261,11 +261,11 @@ export const actualizarStockInventario = async (
   }
 };
 //actualizar inventario
-
 export const actualizarDatosInsumo = async (
   restauranteId,
   insumoId,
   nuevosDatos,
+  operadorFirma, 
 ) => {
   try {
     const insumoRef = doc(
@@ -276,7 +276,7 @@ export const actualizarDatosInsumo = async (
       insumoId,
     );
 
-    // 1. OBTENER EL STOCK ACTUAL (Usando el import global de arriba)
+    // 1. OBTENER EL STOCK ACTUAL
     const snapshotOriginal = await getDoc(insumoRef);
 
     if (snapshotOriginal.exists()) {
@@ -284,7 +284,7 @@ export const actualizarDatosInsumo = async (
       const stockViejo = Number(datosOriginales.stock_actual) || 0;
       const stockNuevo = Number(nuevosDatos.stock_actual) || 0;
 
-      // 2. SI EL STOCK CAMBIÓ, REGISTRAMOS LA DIFERENCIA
+      // 2. SI EL STOCK CAMBIÓ, REGISTRAMOS LA DIFERENCIA CON LA FIRMA
       if (stockViejo !== stockNuevo) {
         const historialRef = collection(
           db,
@@ -310,7 +310,8 @@ export const actualizarDatosInsumo = async (
           total_costo:
             tipoMovimiento === "salida" ? cantidadAbsoluta * precioReal : 0,
           fecha: serverTimestamp(),
-          nota: "Ajuste manual desde edición de inventario",
+          // 🎯 NOTA CON FIRMA DINÁMICA: Ahora el dueño sabrá exactamente quién metió la mano
+          nota: `Ajuste manual por: ${operadorFirma || "Operador Anónimo"}`,
         });
       }
     }
