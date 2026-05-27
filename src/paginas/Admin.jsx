@@ -1614,27 +1614,35 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                           <button
                             className="btn-aplicar-movimiento"
+                            disabled={
+                              !estadoFila.cantidad ||
+                              estadoFila.cantidad.toString().trim() === ""
+                            } 
                             onClick={() => ejecutarMovimiento(item, estadoFila)}
                           >
                             Aplicar
                           </button>
 
-                          <button
-                            type="button"
-                            className="editarinsumo-btn"
-                            title="Editar parámetros del insumo"
-                            onClick={() => iniciarEdicionInsumo(item)}
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            type="button"
-                            className="eliminarinsumo-btn"
-                            title="Eliminar insumo por completo"
-                            onClick={() => eliminarInsumo(item.id)}
-                          >
-                            🗑️
-                          </button>
+                          {item.esInsumo && (
+                            <>
+                              <button
+                                type="button"
+                                className="editarinsumo-btn"
+                                title="Editar parámetros del insumo"
+                                onClick={() => iniciarEdicionInsumo(item)}
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                type="button"
+                                className="eliminarinsumo-btn"
+                                title="Eliminar insumo por completo"
+                                onClick={() => eliminarInsumo(item.id)}
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
