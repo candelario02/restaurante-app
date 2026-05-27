@@ -261,6 +261,7 @@ export const actualizarStockInventario = async (
   }
 };
 //actualizar inventario
+
 export const actualizarDatosInsumo = async (
   restauranteId,
   insumoId,
@@ -274,9 +275,50 @@ export const actualizarDatosInsumo = async (
       "insumos",
       insumoId,
     );
+
+    // 1. OBTENER EL STOCK ACTUAL (Usando el import global de arriba)
+    const snapshotOriginal = await getDoc(insumoRef);
+
+    if (snapshotOriginal.exists()) {
+      const datosOriginales = snapshotOriginal.data();
+      const stockViejo = Number(datosOriginales.stock_actual) || 0;
+      const stockNuevo = Number(nuevosDatos.stock_actual) || 0;
+
+      // 2. SI EL STOCK CAMBIÓ, REGISTRAMOS LA DIFERENCIA
+      if (stockViejo !== stockNuevo) {
+        const historialRef = collection(
+          db,
+          "restaurantes",
+          restauranteId,
+          "historial_movimientos",
+        );
+
+        const diferencia = stockNuevo - stockViejo;
+        const tipoMovimiento = diferencia > 0 ? "entrada" : "salida";
+        const cantidadAbsoluta = Math.abs(diferencia);
+        const precioReal =
+          Number(
+            nuevosDatos.precio_unitario || datosOriginales.precio_unitario,
+          ) || 0;
+
+        await addDoc(historialRef, {
+          item_id: insumoId,
+          item_nombre: nuevosDatos.nombre.trim() || datosOriginales.nombre,
+          tipo: tipoMovimiento,
+          cantidad: cantidadAbsoluta,
+          precio_unitario: precioReal,
+          total_costo:
+            tipoMovimiento === "salida" ? cantidadAbsoluta * precioReal : 0,
+          fecha: serverTimestamp(),
+          nota: "Ajuste manual desde edición de inventario",
+        });
+      }
+    }
+
+    // 3. ACTUALIZACIÓN NORMAL DEL INSUMO
     await updateDoc(insumoRef, {
       nombre: nuevosDatos.nombre.trim(),
-      precio_unitario: Number(nuevosDatos.precio_unitario) || 0, // Acoplado con el componente
+      precio_unitario: Number(nuevosDatos.precio_unitario) || 0,
       stock_actual: Number(nuevosDatos.stock_actual) || 0,
       ultimaModificacion: serverTimestamp(),
     });
