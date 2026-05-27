@@ -201,6 +201,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [publicIdExistente, setPublicIdExistente] = useState(null);
   const [descripcion, setDescripcion] = useState("");
   //estados para inventario
+  const [procesandoItemId, setProcesandoItemId] = useState(null);
   const [insumos, setInsumos] = useState([]);
   const [nuevoInsumo, setNuevoInsumo] = useState({
     nombre: "",
@@ -512,7 +513,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   // Funcion de movimenitos
   const ejecutarMovimiento = async (item, estadoFila) => {
     const cant = parseInt(estadoFila.cantidad, 10);
-
+    // 🛡️ Filtro de seguridad anti-clics locos
+    if (procesandoItemId === item.id) return;
     // Validaciones básicas de interfaz
     if (!cant || cant <= 0)
       return Swal.fire("Atención", "Cantidad no válida", "warning");
@@ -521,6 +523,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
 
     try {
+      setProcesandoItemId(item.id);
       const precioReal = Number(item.precio_unitario || item.precio) || 0;
 
       // 🎯 CAPTURAMOS LA FIRMA DEL OPERADOR LOGUEADO PARA LA SALIDA RAPIDA
@@ -548,6 +551,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     } catch (err) {
       Swal.fire("Error", "Fallo al sincronizar: " + err.message, "error");
     }
+    setProcesandoItemId(null);
   };
   //funcion de editar
   const iniciarEdicionInsumo = (item) => {
@@ -1616,11 +1620,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             className="btn-aplicar-movimiento"
                             disabled={
                               !estadoFila.cantidad ||
-                              estadoFila.cantidad.toString().trim() === ""
-                            } 
+                              estadoFila.cantidad.toString().trim() === "" ||
+                              procesandoItemId === item.id
+                            }
                             onClick={() => ejecutarMovimiento(item, estadoFila)}
                           >
-                            Aplicar
+                            {procesandoItemId === item.id
+                              ? "Procesando..."
+                              : "Aplicar"}
                           </button>
 
                           {item.esInsumo && (
