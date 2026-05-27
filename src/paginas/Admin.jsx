@@ -121,6 +121,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //filtro para inceatrio y historial
   const [tipoFiltroInventario, setTipoFiltroInventario] = useState("insumos");
   const [filtroFechaHistorial, setFiltroFechaHistorial] = useState("todos");
+  const [filtroTipoHistorial, setFiltroTipoHistorial] = useState("todos");
+  const [filtroCalendarioHistorial, setFiltroCalendarioHistorial] =
+    useState("");
   const [historial, setHistorial] = useState([]);
   const inventarioConsolidado = useMemo(() => {
     const prods = productos.map((p) => ({
@@ -1517,18 +1520,64 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             Historial de Insumos Usados
           </h2>
 
-          {/* Filtros de listado basados en tiempo */}
-          <div className="hinsumos-filtros">
+          {/* Contenedor de filtros con selectores adicionales */}
+          <div
+            className="hinsumos-filtros"
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              marginBottom: "15px",
+            }}
+          >
+            {/* Filtro por Rango de Tiempo Clásico */}
             <select
               className="hinsumos-select"
               value={filtroFechaHistorial}
-              onChange={(e) => setFiltroFechaHistorial(e.target.value)}
+              onChange={(e) => {
+                setFiltroFechaHistorial(e.target.value);
+                if (e.target.value !== "todos")
+                  setFiltroCalendarioHistorial(""); // Limpia el calendario si usa el combo
+              }}
             >
-              <option value="todos">📅 Mostrar Todo</option>
+              <option value="todos">📅 Rangos de Tiempo</option>
               <option value="hoy">📆 Hoy</option>
               <option value="semana">🗓️ Esta Semana</option>
               <option value="mes">📊 Este Mes</option>
               <option value="ano">🏢 Este Año</option>
+            </select>
+
+            {/* NUEVO FILTRADOR: Calendario Día por Día (Clase CSS propia) */}
+            <input
+              type="date"
+              className="hinsumos-filtro-fecha"
+              value={filtroCalendarioHistorial}
+              onChange={(e) => {
+                setFiltroCalendarioHistorial(e.target.value);
+                if (e.target.value) setFiltroFechaHistorial("todos"); // Desactiva el rango predeterminado si elige un día específico
+              }}
+              style={{
+                padding: "8px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+              }}
+            />
+
+            {/* NUEVO FILTRADOR: Tipo de Movimiento (Clase CSS propia) */}
+            <select
+              className="hinsumos-filtro-tipo"
+              value={filtroTipoHistorial}
+              onChange={(e) => setFiltroTipoHistorial(e.target.value)}
+              style={{
+                padding: "8px",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+              }}
+            >
+              <option value="todos">🔄 Todos los Tipos</option>
+              <option value="entrada">📥 Entradas</option>
+              <option value="salida">🍳 Salidas Cocina</option>
+              <option value="transferencia">🚚 Transferencias</option>
             </select>
           </div>
 
@@ -1546,13 +1595,37 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             <tbody>
               {historial
                 .filter((mov) => {
+                  // --- 1. FILTRADO POR TIPO DE MOVIMIENTO ---
+                  if (
+                    filtroTipoHistorial !== "todos" &&
+                    mov.tipo !== filtroTipoHistorial
+                  ) {
+                    return false;
+                  }
+
+                  // --- 2. FILTRADO POR FECHA ---
                   if (!mov.fecha?.seconds) return true;
-                  if (filtroFechaHistorial === "todos") return true;
 
                   const fechaMov = new Date(mov.fecha.seconds * 1000);
                   const ahora = new Date();
 
-                  // Normalizar horas para comparar solo fechas puras
+                  // Formatear fecha del registro para compararla con el Input Date (YYYY-MM-DD)
+                  const añoReg = fechaMov.getFullYear();
+                  const mesReg = String(fechaMov.getMonth() + 1).padStart(
+                    2,
+                    "0",
+                  );
+                  const diaReg = String(fechaMov.getDate()).padStart(2, "0");
+                  const fechaRegString = `${añoReg}-${mesReg}-${diaReg}`;
+
+                  // Si hay un día específico seleccionado en el calendario, manda sobre el rango clásico
+                  if (filtroCalendarioHistorial) {
+                    return fechaRegString === filtroCalendarioHistorial;
+                  }
+
+                  // Si no hay calendario, aplica tu filtro clásico por rango
+                  if (filtroFechaHistorial === "todos") return true;
+
                   const hoy = new Date(
                     ahora.getFullYear(),
                     ahora.getMonth(),
@@ -1585,12 +1658,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   return true;
                 })
                 .map((mov) => {
-                  // Aseguramos la lectura de la propiedad exacta guardada por el servicio
                   const cantidad = Number(mov.cantidad) || 0;
                   const precioUnitario =
                     Number(mov.precio_unitario || mov.precio) || 0;
 
-                  // Si es transferencia el costo total es 0 según tu lógica de negocio
                   const total =
                     mov.tipo !== "transferencia"
                       ? cantidad * precioUnitario
@@ -1607,7 +1678,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       </td>
                       <td>{mov.item_nombre || mov.nombre}</td>
                       <td>
-                        {/* Se mantiene la estructura CSS de etiquetas nativas */}
                         <span className={`hinsumos-tag ${mov.tipo}`}>
                           {mov.tipo === "salida"
                             ? "🍳 Salida Cocina"
