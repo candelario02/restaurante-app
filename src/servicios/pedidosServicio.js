@@ -78,7 +78,7 @@ export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
   nuevoEstado,
-  itemsPedido = []
+  itemsPedido = [],
 ) => {
   try {
     const pedidoRef = doc(
@@ -187,20 +187,27 @@ export const realizarMovimientoInventario = async (
 ) => {
   const ajuste =
     movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
-  await actualizarStockInventario(restauranteId, item.id, ajuste);
-  if (item.producto_menu_id) {
-    try {
-      const factorStockMenu =
-        movimiento.tipo === "entrada"
-          ? movimiento.cantidad
-          : -movimiento.cantidad;
-      await actualizarStockProductoMenu(
-        item.producto_menu_id,
-        factorStockMenu,
-        restauranteId,
-      );
-    } catch (error) {
-      console.error("Error no crítico al sincronizar stock con menú:", error);
+
+  // 🛡️ FILTRO INTELIGENTE: ¿Es un producto directo de la carta o un insumo?
+  if (item.esInsumo === false || item.tipoItem === "producto") {
+    // Si es producto directo (como una Gas coca), actualiza directo el menú
+    await actualizarStockProductoMenu(item.id, ajuste, restauranteId);
+  } else {
+    await actualizarStockInventario(restauranteId, item.id, ajuste);
+    if (item.producto_menu_id) {
+      try {
+        const factorStockMenu =
+          movimiento.tipo === "entrada"
+            ? movimiento.cantidad
+            : -movimiento.cantidad;
+        await actualizarStockProductoMenu(
+          item.producto_menu_id,
+          factorStockMenu,
+          restauranteId,
+        );
+      } catch (error) {
+        console.error("Error no crítico al sincronizar stock con menú:", error);
+      }
     }
   }
 
