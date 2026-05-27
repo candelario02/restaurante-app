@@ -537,6 +537,16 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       Swal.fire("Error", "Fallo al sincronizar: " + err.message, "error");
     }
   };
+  //funcion de editar
+  const iniciarEdicionInsumo = (item) => {
+    setEditandoInsumoId(item.id);
+    setValoresEditadosInsumo({
+      nombre: item.nombre,
+      stock_actual: Number(item.stock_actual) || 0,
+      precio_unitario: Number(item.precio_unitario || item.precio) || 0, // ¡Corregido nombre!
+      unidad_medida: item.unidad_medida || "und",
+    });
+  };
   //funcion de guardar cambios insumos
   const guardarCambiosInsumo = async (insumoId) => {
     try {
@@ -587,7 +597,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     }
   };
- 
   // Eliminar insumo definitivo con confirmación
   const eliminarInsumo = async (insumoId) => {
     Swal.fire({
