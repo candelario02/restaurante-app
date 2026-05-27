@@ -587,50 +587,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     }
   };
-  //funcion de guardar cambios insumos
-  const guardarCambiosInsumo = async (insumoId) => {
-    try {
-      // CORRECCIÓN: Asegúrate de pasar el ID del documento de Firebase, NO el slug de la URL
-      // Si usas una variable global o de contexto, reemplaza 'restauranteId' por la correcta.
-      await actualizarDatosInsumo(
-        restauranteId,
-        insumoId,
-        valoresEditadosInsumo,
-      );
-
-      // CORRECCIÓN: Cambiado al Hook de estado correcto de tu componente (ej: setInventario o el que uses)
-      setInventario((prev) =>
-        prev.map((ins) =>
-          ins.id === insumoId
-            ? {
-                ...ins,
-                nombre: valoresEditadosInsumo.nombre,
-                precio_unitario: Number(valoresEditadosInsumo.precio_unitario),
-                stock_actual: Number(valoresEditadosInsumo.stock_actual),
-                unidad_medida: valoresEditadosInsumo.unidad_medida,
-              }
-            : ins,
-        ),
-      );
-
-      setEditandoInsumoId(null);
-
-      Swal.fire({
-        icon: "success",
-        title: "¡Actualizado!",
-        text: "El insumo se ha modificado correctamente.",
-        confirmButtonColor: "#3085d6",
-      });
-    } catch (error) {
-      console.error("Error al actualizar:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un fallo al guardar los cambios en la base de datos.",
-        confirmButtonColor: "#d33",
-      });
-    }
-  };
+ 
   // Eliminar insumo definitivo con confirmación
   const eliminarInsumo = async (insumoId) => {
     Swal.fire({
