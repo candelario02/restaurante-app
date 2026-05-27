@@ -174,22 +174,15 @@ export const realizarMovimientoInventario = async (
   restauranteId,
   item,
   movimiento,
+  operadorFirma, // 👈 Candado 3: Recibe la firma del operador desde la tabla
 ) => {
-  const ajuste =
-    movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
+  const ajuste = movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
   await actualizarStockInventario(restauranteId, item.id, ajuste);
 
-  const historialRef = collection(
-    db,
-    "restaurantes",
-    restauranteId,
-    "historial_movimientos",
-  );
-
-  // Obtenemos fecha de hoy (sin hora para comparar días)
+  const historialRef = collection(db, "restaurantes", restauranteId, "historial_movimientos");
   const hoy = new Date().toLocaleDateString();
 
-  // 1. BUSCAR si ya existe movimiento para este item hoy
+  // BUSCAR si ya existe movimiento para este item hoy del mismo tipo e id
   const q = query(
     historialRef,
     where("item_id", "==", item.id),
@@ -206,20 +199,18 @@ export const realizarMovimientoInventario = async (
     }
   });
 
-  // 🎯 CORRECCIÓN: Usamos movimiento.precio (el valor real calculado) en vez de item.precio_unitario
   const precioUnitarioReal = movimiento.precio || 0;
+  const firmaResponsable = operadorFirma || "Operador Anónimo";
 
-  // 2. ACTUALIZAR O CREAR
   if (docExistente) {
     const data = docExistente.data();
     const nuevaCantidad = data.cantidad + movimiento.cantidad;
     await updateDoc(docExistente.ref, {
       cantidad: nuevaCantidad,
-      precio_unitario: precioUnitarioReal, // Agregamos el precio unitario para que el historial lo lea
-      total_costo:
-        movimiento.tipo !== "transferencia"
-          ? nuevaCantidad * precioUnitarioReal
-          : 0,
+      precio_unitario: precioUnitarioReal,
+      total_costo: movimiento.tipo !== "transferencia" ? nuevaCantidad * precioUnitarioReal : 0,
+      // Se añade la firma al acumulado del día
+      nota: `Operación rápida por: ${firmaResponsable}`, 
     });
   } else {
     await addDoc(historialRef, {
@@ -227,12 +218,10 @@ export const realizarMovimientoInventario = async (
       item_nombre: item.nombre,
       tipo: movimiento.tipo,
       cantidad: movimiento.cantidad,
-      precio_unitario: precioUnitarioReal, // Agregamos el precio unitario para que el historial lo lea
-      total_costo:
-        movimiento.tipo !== "transferencia"
-          ? movimiento.cantidad * precioUnitarioReal
-          : 0,
+      precio_unitario: precioUnitarioReal,
+      total_costo: movimiento.tipo !== "transferencia" ? movimiento.cantidad * precioUnitarioReal : 0,
       fecha: serverTimestamp(),
+      nota: `Operación rápida por: ${firmaResponsable}`, // 👈 Firma estampada en salidas rápidas
     });
   }
 };
@@ -265,7 +254,7 @@ export const actualizarDatosInsumo = async (
   restauranteId,
   insumoId,
   nuevosDatos,
-  operadorFirma, 
+  operadorFirma,
 ) => {
   try {
     const insumoRef = doc(
@@ -276,7 +265,7 @@ export const actualizarDatosInsumo = async (
       insumoId,
     );
 
-    // 1. OBTENER EL STOCK ACTUAL
+    // 1. OBTENER EL STOCK Y PRECIO ACTUAL
     const snapshotOriginal = await getDoc(insumoRef);
 
     if (snapshotOriginal.exists()) {
@@ -284,39 +273,51 @@ export const actualizarDatosInsumo = async (
       const stockViejo = Number(datosOriginales.stock_actual) || 0;
       const stockNuevo = Number(nuevosDatos.stock_actual) || 0;
 
-      // 2. SI EL STOCK CAMBIÓ, REGISTRAMOS LA DIFERENCIA CON LA FIRMA
-      if (stockViejo !== stockNuevo) {
-        const historialRef = collection(
-          db,
-          "restaurantes",
-          restauranteId,
-          "historial_movimientos",
-        );
+      const precioViejo =
+        Number(datosOriginales.precio_unitario || datosOriginales.precio) || 0;
+      const precioNuevo =
+        Number(nuevosDatos.precio_unitario || nuevosDatos.precio) || 0;
 
+      const historialRef = collection(
+        db,
+        "restaurantes",
+        restauranteId,
+        "historial_movimientos",
+      );
+      const firmaResponsable = operadorFirma || "Operador Anónimo";
+
+      // CASO A: SI EL STOCK CAMBIÓ (Es un ajuste manual de inventario)
+      if (stockViejo !== stockNuevo) {
         const diferencia = stockNuevo - stockViejo;
-        const tipoMovimiento = diferencia > 0 ? "entrada" : "salida";
         const cantidadAbsoluta = Math.abs(diferencia);
-        const precioReal =
-          Number(
-            nuevosDatos.precio_unitario || datosOriginales.precio_unitario,
-          ) || 0;
 
         await addDoc(historialRef, {
           item_id: insumoId,
           item_nombre: nuevosDatos.nombre.trim() || datosOriginales.nombre,
-          tipo: tipoMovimiento,
+          tipo: "ajuste", // 👈 Candado 1: Tipo neutro exclusivo para auditorías
           cantidad: cantidadAbsoluta,
-          precio_unitario: precioReal,
-          total_costo:
-            tipoMovimiento === "salida" ? cantidadAbsoluta * precioReal : 0,
+          precio_unitario: precioNuevo,
+          total_costo: 0, // Los ajustes manuales no desglosan costo operativo directo de cocina
           fecha: serverTimestamp(),
-          // 🎯 NOTA CON FIRMA DINÁMICA: Ahora el dueño sabrá exactamente quién metió la mano
-          nota: `Ajuste manual por: ${operadorFirma || "Operador Anónimo"}`,
+          nota: `Ajuste manual por: ${firmaResponsable} (Antes: ${stockViejo} / Ahora: ${stockNuevo})`,
+        });
+      }
+      // CASO B: EL STOCK NO CAMBIÓ, PERO EL PRECIO SÍ CAMBIÓ
+      else if (precioViejo !== precioNuevo) {
+        await addDoc(historialRef, {
+          item_id: insumoId,
+          item_nombre: nuevosDatos.nombre.trim() || datosOriginales.nombre,
+          tipo: "cambio_precio", // 👈 Candado 2: Rastreabilidad financiera
+          cantidad: 0,
+          precio_unitario: precioNuevo,
+          total_costo: 0,
+          fecha: serverTimestamp(),
+          nota: `Cambio de precio por: ${firmaResponsable} (De S/. ${precioViejo.toFixed(2)} a S/. ${precioNuevo.toFixed(2)})`,
         });
       }
     }
 
-    // 3. ACTUALIZACIÓN NORMAL DEL INSUMO
+    // 3. ACTUALIZACIÓN NORMAL EN FIRESTORE
     await updateDoc(insumoRef, {
       nombre: nuevosDatos.nombre.trim(),
       precio_unitario: Number(nuevosDatos.precio_unitario) || 0,

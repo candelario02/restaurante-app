@@ -157,8 +157,12 @@ const procesarHistorialInsumos = ({
     const unidad = mov.unidad_medida || "kg";
 
     // Las transferencias no generan alteración del costo financiero neto
-    const totalDineroFila =
-      mov.tipo !== "transferencia" ? cantidad * precioUnitario : 0;
+    const esGastoOrdinario =
+      mov.tipo !== "transferencia" &&
+      mov.tipo !== "ajuste" &&
+      mov.tipo !== "cambio_precio";
+    const totalDineroFila = esGastoOrdinario ? cantidad * precioUnitario : 0;
+
     dineroTotalFinanciero += totalDineroFila;
 
     // Agrupación física limpia respetando su unidad de medida
@@ -517,15 +521,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
 
     try {
-      // 🎯 CORRECCIÓN: Validamos tanto 'precio' (insumos) como 'precio_unitario' (productos)
       const precioReal = Number(item.precio || item.precio_unitario) || 0;
 
-      // Llamada única al servicio profesional
-      await realizarMovimientoInventario(restauranteId, item, {
-        cantidad: cant,
-        tipo: estadoFila.tipo,
-        precio: precioReal, // Arrastra el costo real detectado
-      });
+      // 🎯 CAPTURAMOS LA FIRMA DEL OPERADOR LOGUEADO PARA LA SALIDA RAPIDA
+      const emailOperador = auth.currentUser?.email || "Email Desconocido";
+      const firmaResponsable = `${emailOperador} (${rolUsuario || "Sin Rol"})`;
+
+      // Llamada al servicio pasando la firma como cuarto parámetro
+      await realizarMovimientoInventario(
+        restauranteId,
+        item,
+        {
+          cantidad: cant,
+          tipo: estadoFila.tipo,
+          precio: precioReal,
+        },
+        firmaResponsable,
+      ); // 👈 Pasamos el candado de identidad
 
       // Limpieza de estado
       setOperacionStock((prev) => ({
@@ -1663,6 +1675,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="entrada">📥 Entradas</option>
               <option value="salida">🍳 Salidas Cocina</option>
               <option value="transferencia">🚚 Transferencias</option>
+              {/* 🎯 NUEVAS OPCIONES DE AUDITORÍA */}
+              <option value="ajuste">🔧 Ajustes Manuales</option>
+              <option value="cambio_precio">💵 Cambios de Precio</option>
             </select>
           </div>
 
@@ -1716,8 +1731,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           ? "🍳 Salida Cocina"
                           : mov.tipo === "entrada"
                             ? "📥 Entrada"
-                            : "🚚 Transferencia"}
+                            : mov.tipo === "ajuste"
+                              ? "🔧 Ajuste Manual"
+                              : mov.tipo === "cambio_precio"
+                                ? "💵 Cambio Valor"
+                                : "🚚 Transferencia"}
                       </span>
+                    </td>
+                    <td>
+                      {mov.tipo === "cambio_precio"
+                        ? "-"
+                        : `${cantidad} ${mov.unidad_medida || "kg"}`}
                     </td>
                     <td>
                       {cantidad} {mov.unidad_medida || "kg"}
