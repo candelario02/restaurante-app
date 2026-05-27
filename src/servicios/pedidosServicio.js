@@ -238,6 +238,12 @@ export const realizarMovimientoInventario = async (
 
   const precioUnitarioReal = movimiento.precio || 0;
   const firmaResponsable = operadorFirma || "Operador Anónimo";
+  const esUnProducto = item.esInsumo === false || item.tipoItem === "producto";
+  const unidadMedidaReal = esUnProducto ? "und" : item.unidad_medida || "kg";
+  // Distintivo limpio para la nota interna
+  const destinoDestintivo = esUnProducto
+    ? "Público / Salón"
+    : "Cocina / Almacén";
 
   if (docExistente) {
     const data = docExistente.data();
@@ -245,12 +251,13 @@ export const realizarMovimientoInventario = async (
     await updateDoc(docExistente.ref, {
       cantidad: nuevaCantidad,
       precio_unitario: precioUnitarioReal,
+      unidad_medida: unidadMedidaReal, // 👈 Asegura "und" o "kg" en el acumulado diario
+      tipoItem: esUnProducto ? "producto" : "insumo", // 👈 Almacena el tipo para filtrar en la tabla
       total_costo:
         movimiento.tipo !== "transferencia"
           ? nuevaCantidad * precioUnitarioReal
           : 0,
-      // Se añade la firma al acumulado del día
-      nota: `Operación rápida por: ${firmaResponsable}`,
+      nota: `Operación rápida (${destinoDestintivo}) por: ${firmaResponsable}`, // 👈 Tu firma intacta con el destino
     });
   } else {
     await addDoc(historialRef, {
@@ -259,17 +266,20 @@ export const realizarMovimientoInventario = async (
       tipo: movimiento.tipo,
       cantidad: movimiento.cantidad,
       precio_unitario: precioUnitarioReal,
+      unidad_medida: unidadMedidaReal, // 👈 Registra "und" si es de la carta
+      tipoItem: esUnProducto ? "producto" : "insumo", // 👈 Almacena el tipo para filtrar en la tabla
       total_costo:
         movimiento.tipo !== "transferencia"
           ? movimiento.cantidad * precioUnitarioReal
           : 0,
       fecha: serverTimestamp(),
-      nota: `Operación rápida por: ${firmaResponsable}`, // 👈 Firma estampada en salidas rápidas
+      nota: `Operación rápida (${destinoDestintivo}) por: ${firmaResponsable}`, // 👈 Tu firma intacta con el destino
     });
   }
 };
+
 // actualizarStockInsumo
-export const actualizarStockInventario = async (
+ export const actualizarStockInventario = async (
   restauranteId,
   insumoId,
   cantidad,

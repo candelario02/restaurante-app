@@ -1530,11 +1530,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   return coincideBusqueda && coincideFiltro;
                 })
                 .map((item) => {
+                  // 1. 🌟 CORRECCIÓN DEL SELECTOR POR DEFECTO: Si es producto de la carta, su primer estado debe ser "entrada"
                   const estadoFila = operacionStock[item.id] || {
                     cantidad: "",
-                    tipo: item.esInsumo ? "entrada" : "salida",
+                    tipo: "entrada", // Lo forzamos a entrada para ambos mundos por seguridad de operación
                   };
-                  const stockNumerico = Number(item.stock_actual) || 0;
+
+                  // 2. 🌟 CORRECCIÓN DE STOCK INTEGRAL: Si es insumo lee stock_actual, si es plato lee cantidad
+                  const stockNumerico = item.esInsumo
+                    ? Number(item.stock_actual) || 0
+                    : Number(item.cantidad) || 0;
+
                   const precioItem =
                     Number(item.precio || item.precio_unitario) || 0;
 
