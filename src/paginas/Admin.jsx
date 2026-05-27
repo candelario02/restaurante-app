@@ -555,7 +555,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     setValoresEditadosInsumo({
       nombre: item.nombre,
       stock_actual: Number(item.stock_actual) || 0,
-      precio_unitario: Number(item.precio_unitario || item.precio) || 0, // ¡Corregido nombre!
+      precio_unitario: Number(item.precio_unitario || item.precio) || 0,
       unidad_medida: item.unidad_medida || "und",
     });
   };
@@ -1704,6 +1704,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 // 2. Retorno único del componente visual
                 return (
                   <tr key={mov.id}>
+                    {/* 1. FECHA */}
                     <td>
                       {mov.fecha?.seconds
                         ? new Date(
@@ -1711,20 +1712,28 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           ).toLocaleDateString()
                         : "N/A"}
                     </td>
+
+                    {/* 2. ITEM (Nombre + Alerta de Auditoría) */}
                     <td>
-                      {/* Contenedor unificado con el nombre y la alerta de auditoría si existe */}
                       <div className="hinsumos-celda-nombre">
                         <strong>{mov.item_nombre || mov.nombre}</strong>
                         {mov.nota && (
                           <span
                             className="hinsumos-nota-auditoria"
                             title={mov.nota}
+                            style={{
+                              display: "block",
+                              fontSize: "0.85em",
+                              color: "#b45309",
+                            }}
                           >
                             ⚠️ {mov.nota}
                           </span>
                         )}
                       </div>
                     </td>
+
+                    {/* 3. TIPO */}
                     <td>
                       <span className={`hinsumos-tag ${mov.tipo}`}>
                         {mov.tipo === "salida"
@@ -1738,15 +1747,18 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                                 : "🚚 Transferencia"}
                       </span>
                     </td>
+
+                    {/* 4. CANTIDAD (Corregida la duplicación aquí) */}
                     <td>
                       {mov.tipo === "cambio_precio"
                         ? "-"
                         : `${cantidad} ${mov.unidad_medida || "kg"}`}
                     </td>
-                    <td>
-                      {cantidad} {mov.unidad_medida || "kg"}
-                    </td>
+
+                    {/* 5. PRECIO UNITARIO */}
                     <td>S/. {precioUnitario.toFixed(2)}</td>
+
+                    {/* 6. TOTAL */}
                     <td>S/. {total.toFixed(2)}</td>
                   </tr>
                 );
