@@ -189,7 +189,25 @@
 .td-plato {
   font-weight: 600;
   color: #1e293b;
-  white-space: nowrap; /* Evita que el nombre del plato se parta feo en dos líneas */
+  white-space: nowrap; 
+}
+/* Celda contenedora de la cantidad */
+.td-cantidad {
+  font-weight: 700; 
+  text-align: center; 
+  white-space: nowrap;
+}
+.stock-disponible {
+  color: #10b981;
+}
+.stock-agotado {
+  color: #ef4444;
+}
+.stock-vacio {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400; /* Letra normal para el texto de ayuda */
 }
 
 /* Forzamos a la imagen y al texto del plato a alinearse perfectamente en el centro */

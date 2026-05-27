@@ -1059,19 +1059,13 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               if (!editandoId && !archivo) {
                 Swal.fire({
                   title: "¡Imagen Obligatoria!",
-
                   text: "Debe subir una foto para registrar el plato. Use el botón 'Subir Imagen' de abajo.",
-
                   icon: "warning",
-
                   confirmButtonColor: "#10b981",
-
                   confirmButtonText: "OK",
                 });
-
                 return;
               }
-
               guardarProducto(e);
             }}
             className="form-admin-pro"
@@ -1227,7 +1221,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <thead>
                 <tr>
                   <th>PLATO</th>
-                  <th>DESCRIPCIÓN</th> <th>PRECIO</th>
+                  <th>DESCRIPCIÓN</th>
+                  <th>PRECIO</th>
+                  <th>STOCK</th>
                   <th>DISP.</th>
                   <th>ACCIONES</th>
                 </tr>
@@ -1242,12 +1238,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         alt={p.nombre}
                         className="img-mini-pro"
                       />
-
                       <span>{p.nombre}</span>
                     </td>
-
-                    {/* Celda de Descripción */}
-
                     <td>
                       {p.descripcion ? (
                         <div className="td-descripcion">{p.descripcion}</div>
@@ -1260,6 +1252,21 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
                     <td className="td-precio">
                       S/ {Number(p.precio).toFixed(2)}
+                    </td>
+                    <td className="td-cantidad">
+                      {p.cantidad !== undefined ? (
+                        <span
+                          className={
+                            p.cantidad > 0
+                              ? "stock-disponible"
+                              : "stock-agotado"
+                          }
+                        >
+                          {p.cantidad} und
+                        </span>
+                      ) : (
+                        <span className="stock-vacio">0 und (Sin Entrada)</span>
+                      )}
                     </td>
 
                     <td>
