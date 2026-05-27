@@ -85,6 +85,95 @@ export const PERMISOS_ROLES = {
     seccionDefault: "menu",
   },
 };
+// funcion para un filtrado inteligente para control de imventarios que saleon a cocina
+const procesarHistorialInsumos = ({
+  historial,
+  filtroTipo,
+  filtroFecha,
+  filtroCalendario,
+}) => {
+  const desgloseItems = {};
+  let dineroTotalFinanciero = 0;
+
+  const datosFiltrados = historial.filter((mov) => {
+    // 1. Filtro por Tipo de Movimiento
+    if (filtroTipo !== "todos" && mov.tipo !== filtroTipo) {
+      return false;
+    }
+
+    // 2. Filtro por Fecha
+    if (!mov.fecha?.seconds) return true;
+
+    const fechaMov = new Date(mov.fecha.seconds * 1000);
+    const ahora = new Date();
+
+    const añoReg = fechaMov.getFullYear();
+    const mesReg = String(fechaMov.getMonth() + 1).padStart(2, "0");
+    const diaReg = String(fechaMov.getDate()).padStart(2, "0");
+    const fechaRegString = `${añoReg}-${mesReg}-${diaReg}`;
+
+    // Si el calendario tiene un día específico, este tiene prioridad absoluta
+    if (filtroCalendario) {
+      return fechaRegString === filtroCalendario;
+    }
+
+    if (filtroFecha === "todos") return true;
+
+    const hoy = new Date(
+      ahora.getFullYear(),
+      ahora.getMonth(),
+      ahora.getDate(),
+    );
+    const registroDia = new Date(
+      fechaMov.getFullYear(),
+      fechaMov.getMonth(),
+      fechaMov.getDate(),
+    );
+
+    if (filtroFecha === "hoy") {
+      return registroDia.getTime() === hoy.getTime();
+    }
+    if (filtroFecha === "semana") {
+      const unaSemanaAtras = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return registroDia >= unaSemanaAtras;
+    }
+    if (filtroFecha === "mes") {
+      return (
+        fechaMov.getMonth() === ahora.getMonth() &&
+        fechaMov.getFullYear() === ahora.getFullYear()
+      );
+    }
+    if (filtroFecha === "ano") {
+      return fechaMov.getFullYear() === ahora.getFullYear();
+    }
+    return true;
+  });
+
+  // 3. Cálculo de métricas e inventario consolidado sobre los registros que pasaron el filtro
+  datosFiltrados.forEach((mov) => {
+    const nombre = mov.item_nombre || mov.nombre || "Insumo Desconocido";
+    const cantidad = Number(mov.cantidad) || 0;
+    const precioUnitario = Number(mov.precio_unitario || mov.precio) || 0;
+    const unidad = mov.unidad_medida || "kg";
+
+    // Las transferencias no generan alteración del costo financiero neto
+    const totalDineroFila =
+      mov.tipo !== "transferencia" ? cantidad * precioUnitario : 0;
+    dineroTotalFinanciero += totalDineroFila;
+
+    // Agrupación física limpia respetando su unidad de medida
+    if (!desgloseItems[nombre]) {
+      desgloseItems[nombre] = { cantidad: 0, unidad: unidad };
+    }
+    desgloseItems[nombre].cantidad += cantidad;
+  });
+
+  return {
+    datosFiltrados,
+    desgloseItems,
+    dineroTotalFinanciero,
+  };
+};
 const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -144,6 +233,17 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     precio: "",
     stock_actual: "",
     unidad_medida: "kg",
+  });
+  //funcion que trabaja con la funcion que esta fuera oara el contro de historial de inusmos
+  const {
+    datosFiltrados: historialFiltrado,
+    desgloseItems,
+    dineroTotalFinanciero,
+  } = procesarHistorialInsumos({
+    historial,
+    filtroTipo: filtroTipoHistorial,
+    filtroFecha: filtroFechaHistorial,
+    filtroCalendario: filtroCalendarioHistorial,
   });
   //estados para el menu
   const [menuDiaPrecio, setMenuDiaPrecio] = useState(15);
@@ -1520,24 +1620,15 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
             Historial de Insumos Usados
           </h2>
 
-          {/* Contenedor de filtros con selectores adicionales */}
-          <div
-            className="hinsumos-filtros"
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-              marginBottom: "15px",
-            }}
-          >
-            {/* Filtro por Rango de Tiempo Clásico */}
+          {/* Contenedor de filtros unificado por CSS */}
+          <div className="hinsumos-filtros-group">
             <select
               className="hinsumos-select"
               value={filtroFechaHistorial}
               onChange={(e) => {
                 setFiltroFechaHistorial(e.target.value);
                 if (e.target.value !== "todos")
-                  setFiltroCalendarioHistorial(""); // Limpia el calendario si usa el combo
+                  setFiltroCalendarioHistorial("");
               }}
             >
               <option value="todos">📅 Rangos de Tiempo</option>
@@ -1547,32 +1638,20 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <option value="ano">🏢 Este Año</option>
             </select>
 
-            {/* NUEVO FILTRADOR: Calendario Día por Día (Clase CSS propia) */}
             <input
               type="date"
               className="hinsumos-filtro-fecha"
               value={filtroCalendarioHistorial}
               onChange={(e) => {
                 setFiltroCalendarioHistorial(e.target.value);
-                if (e.target.value) setFiltroFechaHistorial("todos"); // Desactiva el rango predeterminado si elige un día específico
-              }}
-              style={{
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
+                if (e.target.value) setFiltroFechaHistorial("todos");
               }}
             />
 
-            {/* NUEVO FILTRADOR: Tipo de Movimiento (Clase CSS propia) */}
             <select
               className="hinsumos-filtro-tipo"
               value={filtroTipoHistorial}
               onChange={(e) => setFiltroTipoHistorial(e.target.value)}
-              style={{
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-              }}
             >
               <option value="todos">🔄 Todos los Tipos</option>
               <option value="entrada">📥 Entradas</option>
@@ -1593,109 +1672,84 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               </tr>
             </thead>
             <tbody>
-              {historial
-                .filter((mov) => {
-                  // --- 1. FILTRADO POR TIPO DE MOVIMIENTO ---
-                  if (
-                    filtroTipoHistorial !== "todos" &&
-                    mov.tipo !== filtroTipoHistorial
-                  ) {
-                    return false;
-                  }
+              {historialFiltrado.map((mov) => {
+                const cantidad = Number(mov.cantidad) || 0;
+                const precioUnitario =
+                  Number(mov.precio_unitario || mov.precio) || 0;
+                const total =
+                  mov.tipo !== "transferencia" ? cantidad * precioUnitario : 0;
 
-                  // --- 2. FILTRADO POR FECHA ---
-                  if (!mov.fecha?.seconds) return true;
-
-                  const fechaMov = new Date(mov.fecha.seconds * 1000);
-                  const ahora = new Date();
-
-                  // Formatear fecha del registro para compararla con el Input Date (YYYY-MM-DD)
-                  const añoReg = fechaMov.getFullYear();
-                  const mesReg = String(fechaMov.getMonth() + 1).padStart(
-                    2,
-                    "0",
-                  );
-                  const diaReg = String(fechaMov.getDate()).padStart(2, "0");
-                  const fechaRegString = `${añoReg}-${mesReg}-${diaReg}`;
-
-                  // Si hay un día específico seleccionado en el calendario, manda sobre el rango clásico
-                  if (filtroCalendarioHistorial) {
-                    return fechaRegString === filtroCalendarioHistorial;
-                  }
-
-                  // Si no hay calendario, aplica tu filtro clásico por rango
-                  if (filtroFechaHistorial === "todos") return true;
-
-                  const hoy = new Date(
-                    ahora.getFullYear(),
-                    ahora.getMonth(),
-                    ahora.getDate(),
-                  );
-                  const registroDia = new Date(
-                    fechaMov.getFullYear(),
-                    fechaMov.getMonth(),
-                    fechaMov.getDate(),
-                  );
-
-                  if (filtroFechaHistorial === "hoy") {
-                    return registroDia.getTime() === hoy.getTime();
-                  }
-                  if (filtroFechaHistorial === "semana") {
-                    const unaSemanaAtras = new Date(
-                      hoy.getTime() - 7 * 24 * 60 * 60 * 1000,
-                    );
-                    return registroDia >= unaSemanaAtras;
-                  }
-                  if (filtroFechaHistorial === "mes") {
-                    return (
-                      fechaMov.getMonth() === ahora.getMonth() &&
-                      fechaMov.getFullYear() === ahora.getFullYear()
-                    );
-                  }
-                  if (filtroFechaHistorial === "ano") {
-                    return fechaMov.getFullYear() === ahora.getFullYear();
-                  }
-                  return true;
-                })
-                .map((mov) => {
-                  const cantidad = Number(mov.cantidad) || 0;
-                  const precioUnitario =
-                    Number(mov.precio_unitario || mov.precio) || 0;
-
-                  const total =
-                    mov.tipo !== "transferencia"
-                      ? cantidad * precioUnitario
-                      : 0;
-
-                  return (
-                    <tr key={mov.id}>
-                      <td>
-                        {mov.fecha?.seconds
-                          ? new Date(
-                              mov.fecha.seconds * 1000,
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td>{mov.item_nombre || mov.nombre}</td>
-                      <td>
-                        <span className={`hinsumos-tag ${mov.tipo}`}>
-                          {mov.tipo === "salida"
-                            ? "🍳 Salida Cocina"
-                            : mov.tipo === "entrada"
-                              ? "📥 Entrada"
-                              : "🚚 Transferencia"}
-                        </span>
-                      </td>
-                      <td>
-                        {cantidad} {mov.unidad_medida || "und"}
-                      </td>
-                      <td>S/. {precioUnitario.toFixed(2)}</td>
-                      <td>S/. {total.toFixed(2)}</td>
-                    </tr>
-                  );
-                })}
+                return (
+                  <tr key={mov.id}>
+                    <td>
+                      {mov.fecha?.seconds
+                        ? new Date(
+                            mov.fecha.seconds * 1000,
+                          ).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td>{mov.item_nombre || mov.nombre}</td>
+                    <td>
+                      <span className={`hinsumos-tag ${mov.tipo}`}>
+                        {mov.tipo === "salida"
+                          ? "🍳 Salida Cocina"
+                          : mov.tipo === "entrada"
+                            ? "📥 Entrada"
+                            : "🚚 Transferencia"}
+                      </span>
+                    </td>
+                    <td>
+                      {cantidad} {mov.unidad_medida || "kg"}
+                    </td>
+                    <td>S/. {precioUnitario.toFixed(2)}</td>
+                    <td>S/. {total.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+
+          {/* SECCIÓN INFERIOR DE RESÚMENES CONSOLIDADOS */}
+          <div className="hinsumos-resumen-container">
+            {/* Bloque Físico de Cantidades */}
+            <div className="hinsumos-resumen-lista">
+              <h3>📊 Cantidades Totales Utilizadas</h3>
+              {Object.keys(desgloseItems).length === 0 ? (
+                <p className="hinsumos-vacio-msg">
+                  No hay movimientos en este periodo.
+                </p>
+              ) : (
+                <ul>
+                  {Object.entries(desgloseItems).map(([nombreItem, info]) => (
+                    <li key={nombreItem}>
+                      <strong>{nombreItem}:</strong> {info.cantidad}{" "}
+                      {info.unidad}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Tarjeta de Valor Financiero Neto */}
+            <div
+              className={`hinsumos-tarjeta-financiera ${filtroTipoHistorial}`}
+            >
+              <span className="hinsumos-tarjeta-label">
+                💰{" "}
+                {filtroTipoHistorial === "salida"
+                  ? "COSTO TOTAL EN COCINA"
+                  : filtroTipoHistorial === "entrada"
+                    ? "INVERSIÓN EN ENTRADAS"
+                    : "VALOR NETO MOVILIZADO"}
+              </span>
+              <span className="hinsumos-tarjeta-monto">
+                S/. {dineroTotalFinanciero.toFixed(2)}
+              </span>
+              <small className="hinsumos-tarjeta-nota">
+                * Transferencias calculadas en S/. 0.00
+              </small>
+            </div>
+          </div>
         </div>
       )}
       {/* SECCIÓN PEDIDOS*/}
