@@ -15,9 +15,7 @@ import {
   where,
   getFirestore,
 } from "firebase/firestore";
-
 // SOLUCIÓN ÚNICA: Maneja creación y actualización
-
 export const gestionarPedido = async (
   restauranteId,
 
@@ -75,45 +73,57 @@ export const gestionarPedido = async (
     throw error;
   }
 };
-
 // Mantener para el Admin (Cambiar a Cocinando/Entregado)
-
 export const actualizarEstadoPedido = async (
   restauranteId,
-
   pedidoId,
-
   nuevoEstado,
+  itemsPedido = []
 ) => {
   try {
     const pedidoRef = doc(
       db,
-
       "restaurantes",
-
       restauranteId,
-
       "pedidos",
-
       pedidoId,
     );
-
     const actualizacion = { estado: nuevoEstado };
-
     if (nuevoEstado === "entregado") {
       actualizacion.fechaEntrega = serverTimestamp();
+      // 🔌 EL PUENTE AUTOMÁTICO: Descontar stock del menú del cliente al entregar
+      try {
+        const pedidoSnap = await getDoc(pedidoRef);
+
+        if (pedidoSnap.exists()) {
+          const datosPedido = pedidoSnap.data();
+          const itemsComprados =
+            datosPedido.items || datosPedido.productos || [];
+          for (const item of itemsComprados) {
+            if (item.id && item.cantidad > 0) {
+              await actualizarStockProductoMenu(
+                item.id,
+                -Math.abs(item.cantidad),
+                restauranteId,
+              );
+            }
+          }
+        }
+      } catch (stockError) {
+        console.error(
+          "Error no crítico al descontar stock del menú:",
+          stockError,
+        );
+      }
     }
 
     await updateDoc(pedidoRef, actualizacion);
   } catch (error) {
     console.error("Error al actualizar estado:", error);
-
     throw error;
   }
 };
-
 // Registra la calificación y comentario del cliente
-
 export const enviarResenaPedido = async (
   restauranteId,
 
@@ -168,18 +178,38 @@ export const crearInsumo = async (restauranteId, datosInsumo) => {
     throw new Error("No se pudo registrar el insumo");
   }
 };
-
 // registar hitorial de insumos
 export const realizarMovimientoInventario = async (
   restauranteId,
   item,
   movimiento,
-  operadorFirma, // 👈 Candado 3: Recibe la firma del operador desde la tabla
+  operadorFirma,
 ) => {
-  const ajuste = movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
+  const ajuste =
+    movimiento.tipo === "salida" ? -movimiento.cantidad : movimiento.cantidad;
   await actualizarStockInventario(restauranteId, item.id, ajuste);
+  if (item.producto_menu_id) {
+    try {
+      const factorStockMenu =
+        movimiento.tipo === "entrada"
+          ? movimiento.cantidad
+          : -movimiento.cantidad;
+      await actualizarStockProductoMenu(
+        item.producto_menu_id,
+        factorStockMenu,
+        restauranteId,
+      );
+    } catch (error) {
+      console.error("Error no crítico al sincronizar stock con menú:", error);
+    }
+  }
 
-  const historialRef = collection(db, "restaurantes", restauranteId, "historial_movimientos");
+  const historialRef = collection(
+    db,
+    "restaurantes",
+    restauranteId,
+    "historial_movimientos",
+  );
   const hoy = new Date().toLocaleDateString();
 
   // BUSCAR si ya existe movimiento para este item hoy del mismo tipo e id
@@ -208,9 +238,12 @@ export const realizarMovimientoInventario = async (
     await updateDoc(docExistente.ref, {
       cantidad: nuevaCantidad,
       precio_unitario: precioUnitarioReal,
-      total_costo: movimiento.tipo !== "transferencia" ? nuevaCantidad * precioUnitarioReal : 0,
+      total_costo:
+        movimiento.tipo !== "transferencia"
+          ? nuevaCantidad * precioUnitarioReal
+          : 0,
       // Se añade la firma al acumulado del día
-      nota: `Operación rápida por: ${firmaResponsable}`, 
+      nota: `Operación rápida por: ${firmaResponsable}`,
     });
   } else {
     await addDoc(historialRef, {
@@ -219,13 +252,15 @@ export const realizarMovimientoInventario = async (
       tipo: movimiento.tipo,
       cantidad: movimiento.cantidad,
       precio_unitario: precioUnitarioReal,
-      total_costo: movimiento.tipo !== "transferencia" ? movimiento.cantidad * precioUnitarioReal : 0,
+      total_costo:
+        movimiento.tipo !== "transferencia"
+          ? movimiento.cantidad * precioUnitarioReal
+          : 0,
       fecha: serverTimestamp(),
       nota: `Operación rápida por: ${firmaResponsable}`, // 👈 Firma estampada en salidas rápidas
     });
   }
 };
-
 // actualizarStockInsumo
 export const actualizarStockInventario = async (
   restauranteId,

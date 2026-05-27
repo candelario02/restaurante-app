@@ -433,7 +433,6 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         categoria,
         imagenUrl: urlFinal || "",
         cloudinaryId: nuevoPublicId,
-        insumoId: insumoSeleccionado,
       };
 
       if (editandoId) {
@@ -521,7 +520,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
 
     try {
-      const precioReal = Number(item.precio || item.precio_unitario) || 0;
+      const precioReal = Number(item.precio_unitario || item.precio) || 0;
 
       // 🎯 CAPTURAMOS LA FIRMA DEL OPERADOR LOGUEADO PARA LA SALIDA RAPIDA
       const emailOperador = auth.currentUser?.email || "Email Desconocido";

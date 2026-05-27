@@ -10,10 +10,9 @@ import {
   where,
   onSnapshot,
   getDoc,
+  increment,
 } from "firebase/firestore";
-
 // 🍔 CREAR PRODUCTO
-
 export const crearProducto = async (datos, restauranteId) => {
   if (!restauranteId) throw new Error("ID de restaurante no proporcionado");
 
@@ -31,9 +30,7 @@ export const crearProducto = async (datos, restauranteId) => {
 
   return docRef.id;
 };
-
 // 📝 ACTUALIZAR PRODUCTO
-
 export const actualizarProducto = async (id, datos, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId");
 
@@ -41,9 +38,7 @@ export const actualizarProducto = async (id, datos, restauranteId) => {
 
   await updateDoc(docRef, datos);
 };
-
 // 🗑️ ELIMINAR PRODUCTO
-
 export const eliminarProducto = async (id, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId");
 
@@ -51,9 +46,7 @@ export const eliminarProducto = async (id, restauranteId) => {
 
   await deleteDoc(docRef);
 };
-
 // ✅ CAMBIAR DISPONIBILIDAD
-
 export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId");
 
@@ -61,9 +54,7 @@ export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
 
   await updateDoc(docRef, { disponible: estado });
 };
-
 // 🕒 OBTENER PRODUCTOS
-
 export const obtenerProductos = (restauranteId, categoria, callback) => {
   if (!restauranteId) return () => {};
 
@@ -81,27 +72,29 @@ export const obtenerProductos = (restauranteId, categoria, callback) => {
     callback(datos);
   });
 };
+//funcion para actualizar ineventario multiple
+export const actualizarStockProductoMenu = async (
+  productoMenuId,
+  cambioCantidad,
+  restauranteId,
+) => {
+  if (!restauranteId)
+    throw new Error("Falta restauranteId para actualizar stock");
+  if (!productoMenuId) return; 
 
-// 🛠️ PARA EL ADMINISTRADOR
+  const docRef = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "productos",
+    productoMenuId,
+  );
 
-export const escucharProductosAdmin = (restauranteId, callback) => {
-  if (!restauranteId) return () => {};
-
-  const q = query(collection(db, "restaurantes", restauranteId, "productos"));
-
-  return onSnapshot(q, (snapshot) => {
-    const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-
-    callback(datos);
+  await updateDoc(docRef, {
+    cantidad: increment(cambioCantidad),
   });
 };
-
-// =============================
-
 //  ⚙️ CONFIG RESTAURANTE
-
-// =============================
-
 export const obtenerConfigRestaurante = async (restauranteId) => {
   if (!restauranteId) return null;
 

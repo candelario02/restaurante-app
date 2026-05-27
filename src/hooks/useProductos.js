@@ -14,10 +14,7 @@ import {
   doc,
 } from "firebase/firestore";
 
-// ==========================================
 // 🧾 PRODUCTOS (VISTA CLIENTE - CON FILTRO)
-// ==========================================
-
 export const useProductos = (restauranteId, categoria) => {
   const [productos, setProductos] = useState([]);
 
@@ -41,9 +38,7 @@ export const useProductos = (restauranteId, categoria) => {
 
   return productos;
 };
-// ==========================================
 // 🛠️ PRODUCTOS (VISTA ADMIN - TODA LA LISTA)
-// ==========================================
 export const escucharProductosAdmin = (restauranteId, callback) => {
   if (!restauranteId) return () => {};
 
