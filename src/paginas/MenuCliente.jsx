@@ -907,50 +907,52 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               ) : (
                 <button
                   className="btn-pedir-mas"
-                  disabled={datosPedidoRealtime?.estado !== "pendiente"}
+                  disabled={
+                    datosPedidoRealtime?.estado === "entregado" ||
+                    datosPedidoRealtime?.estado === "cancelado"
+                  }
                   onClick={async () => {
+                    // ✏️ MODIFICACIÓN: Si está en cocina, le avisa pero le permite continuar en vez de rebotarlo con un return
                     if (datosPedidoRealtime?.estado !== "pendiente") {
-                      Swal.fire(
-                        "Aviso",
-                        "Tu pedido ya está en cocina y no se pueden añadir más productos.",
-                        "info",
-                      );
-                      return;
-                    }
-
-                    const { isConfirmed } = await Swal.fire({
-                      title: "¡Perfecto!",
-                      text: "Tu carrito se cargará con tu pedido actual para que puedas añadir algo más.",
-                      icon: "info",
-                      confirmButtonText: "Entendido",
-                      confirmButtonColor: "#4CAF50",
-                    });
-
-                    // 🌟 CAMBIO DIRECTO AQUÍ EN TU IF:
-                    if (isConfirmed) {
-                      // Cargamos los ítems actuales tal como lo tenías
-                      setCarrito([...datosPedidoRealtime.items]);
-
-                      // CAMBIO 1: En lugar de true, lo ponemos en false para que el modal NO se abra en la cara
-                      setVerCarrito(false);
-
-                      setCategoriaActual(null);
-
-                      // CAMBIO 2: Metemos el aviso guía tipo Toast arriba a la derecha para no interrumpir
-                      Swal.fire({
-                        title: "¡Modo Adicional Activo!",
-                        text: "Ya puedes agregar productos a tu orden actual desde las categorías.",
-                        icon: "success",
-                        toast: true,
-                        position: "top-end",
-                        showConfirmButton: false,
-                        timer: 4000,
-                        timerProgressBar: true,
+                      await Swal.fire({
+                        title: "Aviso Importante",
+                        text: "Tu pedido ya está en cocina y esos platos ya no se pueden modificar, pero ¡sí puedes agregar productos adicionales a tu orden!",
+                        icon: "info",
+                        confirmButtonText: "Entendido, agregar más",
+                        confirmButtonColor: "#4CAF50",
+                      });
+                    } else {
+                      // Si el pedido sigue pendiente, muestra tu confirmación normal de siempre
+                      const { isConfirmed } = await Swal.fire({
+                        title: "¡Perfecto!",
+                        text: "Tu carrito se cargará con tu pedido actual para que puedas añadir algo más o modificarlo.",
+                        icon: "info",
+                        confirmButtonText: "Entendido",
+                        confirmButtonColor: "#4CAF50",
                       });
 
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                      setMostrarIconoCarrito(true);
+                      if (!isConfirmed) return;
                     }
+
+                    // Carga los ítems actuales al carrito local (Funciona para ambos estados)
+                    setCarrito([...datosPedidoRealtime.items]);
+
+                    setVerCarrito(false);
+                    setCategoriaActual(null);
+
+                    Swal.fire({
+                      title: "¡Modo Adicional Activo!",
+                      text: "Ya puedes agregar productos a tu orden actual desde las categorías.",
+                      icon: "success",
+                      toast: true,
+                      position: "top-end",
+                      showConfirmButton: false,
+                      timer: 4000,
+                      timerProgressBar: true,
+                    });
+
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setMostrarIconoCarrito(true);
                   }}
                 >
                   {datosPedidoRealtime?.estado === "pendiente"
