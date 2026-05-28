@@ -807,6 +807,60 @@
   border-color: #cbd5e1;
   background-color: #ffffff;
 }
+/* Estructura para que el título y la motivación vayan en fila vertical */
+.carrito-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Alinea arriba por si el texto ocupa dos líneas */
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-titulo-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.header-titulo-seccion h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* 🟠 ESTILO 1: Cuando le falta para llegar a la meta (Naranja/Fuego motivador) */
+.texto-motivacion-progreso {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: #ea580c; /* Color naranja vivo amigable */
+  background-color: #fff7ed; /* Fondo sutil naranja */
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px dashed #fdba74;
+  display: inline-block;
+}
+
+/* 🟢 ESTILO 2: Cuando ya logró la meta (Verde celebración) */
+.texto-motivacion-meta-lograda {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: #15803d; /* Verde éxito */
+  background-color: #f0fdf4; /* Fondo sutil verde */
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
+  display: inline-block;
+  /* Un pequeño pulso de alegría al completarse */
+  animation: pulsoLogro 0.5s ease-in-out;
+}
+
+@keyframes pulsoLogro {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
 /* =============================================
    6. FORMULARIO DE ENTREGA
    ============================================= */

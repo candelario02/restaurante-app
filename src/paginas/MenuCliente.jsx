@@ -1395,8 +1395,40 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       {verCarrito && (
         <div className="carrito-overlay">
           <div className="carrito-modal">
+            {/* 🛒 CABECERA DEL CARRITO MODIFICADA */}
             <div className="carrito-header">
-              <h2>🛒 Tu Pedido</h2>
+              <div className="header-titulo-seccion">
+                <h2>🛒 Tu Pedido</h2>
+
+                {/* 🎯 TEXTO DINÁMICO DE MOTIVACIÓN */}
+                {(() => {
+                  // Calculamos el total actual del carrito
+                  const totalCarrito = carrito.reduce(
+                    (acc, item) => acc + Number(item.precio) * item.cantidad,
+                    0,
+                  );
+                  const META_POSTRE = 50; // 👈 Configura aquí el monto meta en Soles
+                  const faltaParaMeta = META_POSTRE - totalCarrito;
+
+                  if (faltaParaMeta > 0) {
+                    return (
+                      <p className="texto-motivacion-progreso">
+                        🔥 Estás a solo{" "}
+                        <strong>S/ {faltaParaMeta.toFixed(2)}</strong> de
+                        reclamar tu postre gratis. ¡Engríete! 🍰
+                      </p>
+                    );
+                  } else {
+                    return (
+                      <p className="texto-motivacion-meta-lograda">
+                        🎉 ¡Meta alcanzada! Te ganaste un postre de la casa
+                        gratis. 🍰✨
+                      </p>
+                    );
+                  }
+                })()}
+              </div>
+
               <button
                 className="btn-cerrar-x"
                 onClick={() => setVerCarrito(false)}
@@ -1482,12 +1514,8 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                                     ? "Sin especificaciones"
                                     : "¿Alguna especificación? (Ej: sin cebolla...)"
                               }
-                              value={
-                                esItemTaper ? "" : item.notaCliente || ""
-                              } 
-                              disabled={
-                                debeBloquearse
-                              } 
+                              value={esItemTaper ? "" : item.notaCliente || ""}
+                              disabled={debeBloquearse}
                               readOnly={debeBloquearse}
                               onChange={(e) => {
                                 if (debeBloquearse) return;
