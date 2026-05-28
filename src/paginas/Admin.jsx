@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Save,
   Power,
+  Tv,
   Check,
   Search,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import {
   actualizarProducto,
   eliminarProducto,
   cambiarDisponibilidad,
+  cambiarVisibilidadTv,
   obtenerProductos,
   actualizarStockProductoMenu,
 } from "../servicios/productosServicio";
@@ -1003,7 +1005,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                 />
               </div>
 
-              {/* Switch Encendido/Apagado */}
+              {/* Switch Encendido/Apagado del menu del dia */}
 
               <div className="menu-dia-switch-box">
                 <span
@@ -1274,25 +1276,54 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                       )}
                     </td>
 
-                    <td>
-                      <button
-                        className="btn-status-pro"
-                        disabled={cargando}
-                        onClick={() =>
-                          manejarDisponibilidad(
-                            p.id,
+                    <td className="text-center">
+                      <div className="flex items-center justify-center gap-3">
+                        {/* 🟢/🔴 BOTÓN 1: DISPONIBILIDAD GENERAL DE VENTA */}
+                        <button
+                          className="btn-status-pro"
+                          disabled={cargando}
+                          title={
+                            p.disponible
+                              ? "Producto Disponible (Click para Apagar)"
+                              : "Producto Agotado (Click para Encender)"
+                          }
+                          onClick={() =>
+                            manejarDisponibilidad(
+                              p.id,
+                              p.disponible,
+                              restauranteId,
+                            )
+                          }
+                        >
+                          <Power
+                            size={18}
+                            color={p.disponible ? "#10b981" : "#ef4444"} // Verde si vende / Rojo si no
+                          />
+                        </button>
 
-                            p.disponible,
-
-                            restauranteId,
-                          )
-                        }
-                      >
-                        <Power
-                          size={18}
-                          color={p.disponible ? "#10b981" : "#ef4444"}
-                        />
-                      </button>
+                        {/* 📺 BOTÓN 2: VISIBILIDAD EXCLUSIVA EN LA TELEVISIÓN */}
+                        <button
+                          className="btn-status-pro"
+                          disabled={cargando}
+                          title={
+                            p.mostrarEnTv
+                              ? "Mostrando en TV (Click para Ocultar)"
+                              : "Oculto en TV (Click para Mostrar)"
+                          }
+                          onClick={() =>
+                            manejarVisibilidadTv(
+                              p.id,
+                              p.mostrarEnTv,
+                              restauranteId,
+                            )
+                          }
+                        >
+                          <Tv
+                            size={18}
+                            color={p.mostrarEnTv ? "#6366f1" : "#94a3b8"} // Indigo si está en TV / Gris si está oculto
+                          />
+                        </button>
+                      </div>
                     </td>
 
                     {/* 🌟 ENVOLVEMOS LOS BOTONES EN EL CONTAINER PARA ALINEACIÓN PERFECTA */}

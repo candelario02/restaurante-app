@@ -1,0 +1,116 @@
+:root {
+  --bg-dark: #090d16;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border-glow: rgba(99, 102, 241, 0.12);
+  --accent-color: #ffb800;
+  --text-main: #ffffff;
+  --text-muted: #64748b;
+}
+
+.tv-board-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 2vw;
+  box-sizing: border-box;
+}
+
+.tv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 8vh;
+  border-bottom: 1px solid var(--border-glow);
+}
+
+.tv-logo h1 {
+  font-size: 3.8vh;
+  font-weight: 900;
+  margin: 0;
+  background: linear-gradient(to right, #fff, var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tv-tagline { font-size: 1.6vh; color: var(--text-muted); }
+.tv-clock { font-size: 3.8vh; font-weight: 800; color: var(--accent-color); }
+
+.tv-grid-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28vw, 1fr));
+  gap: 2.5vh 2vw;
+  padding: 3vh 0;
+  overflow: hidden;
+}
+
+.tv-category-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  padding: 2vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tv-category-title {
+  font-size: 2.4vh;
+  color: var(--accent-color);
+  margin-top: 0;
+  margin-bottom: 2vh;
+  border-left: 4px solid var(--accent-color);
+  padding-left: 0.6vw;
+  letter-spacing: 1px;
+}
+
+.tv-products-list { display: flex; flex-direction: column; gap: 2vh; }
+.tv-product-item { display: flex; align-items: center; gap: 1vw; }
+
+.tv-product-img {
+  width: 7.5vh;
+  height: 7.5vh;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.tv-product-info { flex: 1; min-width: 0; }
+.tv-product-row { display: flex; justify-content: space-between; align-items: baseline; }
+.tv-product-name { font-size: 2.3vh; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-product-price { font-size: 2.5vh; font-weight: 800; color: var(--accent-color); padding-left: 0.5vw; }
+.tv-product-desc { font-size: 1.6vh; color: var(--text-muted); margin: 0.4vh 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* MARKETING MARQUESINA */
+.tv-marketing-ticker {
+  height: 6vh;
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
+  margin: 0 -2vw -2vh -2vw;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.ticker-wrap { width: 100%; overflow: hidden; }
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 2.5vh;
+  font-weight: 800;
+  animation: ticker 30s linear infinite;
+}
+
+@keyframes ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

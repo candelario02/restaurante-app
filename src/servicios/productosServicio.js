@@ -46,13 +46,36 @@ export const eliminarProducto = async (id, restauranteId) => {
 
   await deleteDoc(docRef);
 };
-// ✅ CAMBIAR DISPONIBILIDAD
+// ✅ CAMBIAR DISPONIBILIDAD EN EL MENU
 export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
   if (!restauranteId) throw new Error("Falta restauranteId");
 
   const docRef = doc(db, "restaurantes", restauranteId, "productos", id);
 
   await updateDoc(docRef, { disponible: estado });
+};
+//✅ CAMBIAR DISPONIBILIDAD EN LA TV
+export const cambiarVisibilidadTv = async (
+  restauranteId,
+  productoId,
+  nuevoEstadoTv,
+) => {
+  if (!restauranteId || !productoId) return;
+  try {
+    const docRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+      productoId,
+    );
+    await updateDoc(docRef, {
+      mostrarEnTv: nuevoEstadoTv,
+    });
+  } catch (error) {
+    console.error("Error al cambiar visibilidad de TV:", error);
+    throw error;
+  }
 };
 // 🕒 OBTENER PRODUCTOS
 export const obtenerProductos = (restauranteId, categoria, callback) => {
@@ -80,7 +103,7 @@ export const actualizarStockProductoMenu = async (
 ) => {
   if (!restauranteId)
     throw new Error("Falta restauranteId para actualizar stock");
-  if (!productoMenuId) return; 
+  if (!productoMenuId) return;
 
   const docRef = doc(
     db,
