@@ -602,7 +602,40 @@
   align-items: center;
   width: 100%;
 }
+/* Contenedor individual de cada plato en la orden */
+.admin-item-contenedor {
+  margin-bottom: 8px;
+}
 
+/* Fila superior: Alinea cantidad, nombre y la alerta en horizontal */
+.admin-item-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+/* Alerta roja llamativa para el Mozo */
+.badge-admin-adicional {
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  border: 1px solid #fca5a5;
+  margin-left: 4px;
+  display: inline-block;
+}
+
+/* Nota del cliente estilizada en azul claro informativo */
+.admin-nota-cliente {
+  display: block;
+  color: #0284c7;
+  font-weight: 600;
+  margin-top: 2px;
+}
 /* Contenedor alineado para el Teléfono y el Botón */
 .container-telefono-whatsapp {
   display: flex;
