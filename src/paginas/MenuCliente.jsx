@@ -144,7 +144,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     };
   }, [restauranteId]);
 
-  2; //Seguimeto para el contador regresivo
+  // 2 Seguimeto para el contador regresivo
   useEffect(() => {
     let intervalo;
 
@@ -168,7 +168,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return `${m}:${s < 10 ? "0" : ""}${s} min aprox.`;
   };
 
-  // Efecto para sincronizar el carrito cuando el estado cambia de estado fuera de "pendiente"
+  // 3 Efecto para sincronizar el carrito cuando el estado cambia de estado fuera de "pendiente"
   useEffect(() => {
     if (datosPedidoRealtime && datosPedidoRealtime.estado !== "pendiente") {
       if (datosPedidoRealtime.items) {
@@ -186,6 +186,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           cantidad: item.cantidad,
           detalles: item.details || item.detalles,
           isMenuCompleto: !!item.detalles,
+
+          // 🌟 CORREGIDO: Retorna la nota y los tápers al cambiar el estado (Preparar/Cocina)
+          notaCliente: item.notaCliente || "",
+          taper: item.taper !== undefined ? item.taper : null,
+          llevar: item.llevar !== undefined ? item.llevar : null,
+          cobroTaper: item.cobroTaper !== undefined ? item.cobroTaper : null,
         }));
 
         setCarrito(itemsSincronizados);
@@ -193,7 +199,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     }
   }, [datosPedidoRealtime?.estado]);
 
-  // 3. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
+  // 4. SEGUIMIENTO REALTIME Y SINCRONIZACIÓN AUTOMÁTICA DEL CARRITO
   useEffect(() => {
     if (!pedidoActivoId || !restauranteId) {
       setDatosPedidoRealtime(null);
@@ -229,6 +235,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
               cantidad: item.cantidad,
               detalles: item.details || item.detalles,
               isMenuCompleto: !!item.detalles,
+
+              // 🌟 CORREGIDO: Recupera la nota y los tápers en la carga inicial realtime
+              notaCliente: item.notaCliente || "",
+              taper: item.taper !== undefined ? item.taper : null,
+              llevar: item.llevar !== undefined ? item.llevar : null,
+              cobroTaper:
+                item.cobroTaper !== undefined ? item.cobroTaper : null,
             }));
             setCarrito(itemsCarrito);
           }
@@ -251,7 +264,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     return () => unsubscribe();
   }, [pedidoActivoId, restauranteId, carrito.length]);
 
-  // 4. Temporizador Aviso
+  // 5. Temporizador Aviso
   useEffect(() => {
     if (avisoAgregado) {
       const timer = setTimeout(() => setAvisoAgregado(null), 2000);
@@ -443,7 +456,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
-          notaCliente: item.notaCliente || "", 
+          notaCliente: item.notaCliente || "",
           taper: item.taper !== undefined ? item.taper : null,
           llevar: item.llevar !== undefined ? item.llevar : null,
           cobroTaper: item.cobroTaper !== undefined ? item.cobroTaper : null,
