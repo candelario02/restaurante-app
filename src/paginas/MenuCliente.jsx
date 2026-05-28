@@ -1462,30 +1462,48 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
                       {/* 📝 UN SOLO CAJÓN LIMPIO: Muestra la nota original persistente o permite escribir si es nuevo */}
                       <div className="item-detalles-row">
-                        <input
-                          type="text"
-                          className="input-nota-carrito"
-                          placeholder={
-                            esPlatoFijoEnCocina
-                              ? "Sin especificaciones"
-                              : "¿Alguna especificación? (Ej: sin cebolla...)"
-                          }
-                          value={item.notaCliente || ""}
-                          disabled={
-                            esPlatoFijoEnCocina
-                          } /* 🔒 Bloquea el input por completo si ya está en cocina */
-                          readOnly={esPlatoFijoEnCocina}
-                          onChange={(e) => {
-                            const nuevaNota = e.target.value;
-                            setCarrito((prevCarrito) =>
-                              prevCarrito.map((c) =>
-                                c.idUnico === item.idUnico
-                                  ? { ...c, notaCliente: nuevaNota }
-                                  : c,
-                              ),
-                            );
-                          }}
-                        />
+                        {(() => {
+                          const esItemTaper =
+                            item.id === "taper" ||
+                            item.nombre?.toLowerCase().includes("taper") ||
+                            item.nombre?.toLowerCase().includes("empaque");
+
+                          const debeBloquearse =
+                            esPlatoFijoEnCocina || esItemTaper;
+
+                          return (
+                            <input
+                              type="text"
+                              className="input-nota-carrito"
+                              placeholder={
+                                esItemTaper
+                                  ? "Cargo por empaque automático"
+                                  : esPlatoFijoEnCocina
+                                    ? "Sin especificaciones"
+                                    : "¿Alguna especificación? (Ej: sin cebolla...)"
+                              }
+                              value={
+                                esItemTaper ? "" : item.notaCliente || ""
+                              } 
+                              disabled={
+                                debeBloquearse
+                              } 
+                              readOnly={debeBloquearse}
+                              onChange={(e) => {
+                                if (debeBloquearse) return;
+
+                                const nuevaNota = e.target.value;
+                                setCarrito((prevCarrito) =>
+                                  prevCarrito.map((c) =>
+                                    c.idUnico === item.idUnico
+                                      ? { ...c, notaCliente: nuevaNota }
+                                      : c,
+                                  ),
+                                );
+                              }}
+                            />
+                          );
+                        })()}
                       </div>
                     </div>
                   );
