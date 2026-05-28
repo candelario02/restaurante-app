@@ -4,6 +4,7 @@ import MenuCliente from "./paginas/MenuCliente";
 import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
 import LoginPin from "./paginas/LoginPin";
+import TvMenuBoard from "./paginas/TvMenuBoard";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -263,6 +264,16 @@ function App() {
                     >
                       Historial
                     </button>
+                    <button
+                      className={`btn-nav-tab ${seccion === "tv" ? "active" : ""}`}
+                      onClick={() => setSeccion("tv")}
+                      style={{
+                        borderLeft: "2px solid #6366f1",
+                        color: "#6366f1",
+                      }}
+                    >
+                      📺 Tablero TV
+                    </button>
                   </>
                 )}
 
@@ -311,6 +322,14 @@ function App() {
                     🔒 Cambiar Operador
                   </button>
                 )}
+                {/* 📺 INYECTAR EXCLUSIVAMENTE ESTE BOTÓN AQUÍ */}
+                <button
+                  className="btn-nav-tab"
+                  style={{ color: "#6366f1", fontWeight: "bold" }}
+                  onClick={() => setSeccion("tv")}
+                >
+                  📺 Vista TV
+                </button>
                 <button
                   className="btn-nav-tab"
                   onClick={() => setIsAdmin(!isAdmin)}
