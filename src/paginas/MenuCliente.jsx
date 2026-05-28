@@ -443,7 +443,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
-          notaCliente: item.notaCliente || "", // ✏️ Req 4.1: Conservamos las notas/preferencias por plato
+          notaCliente: item.notaCliente || "", 
+          taper: item.taper !== undefined ? item.taper : null,
+          llevar: item.llevar !== undefined ? item.llevar : null,
+          cobroTaper: item.cobroTaper !== undefined ? item.cobroTaper : null,
         };
       });
 
@@ -788,7 +791,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             cantidad: item.cantidad,
             detalles: item.detalles,
             isMenuCompleto: !!item.detalles,
-            notaCliente: item.notaCliente || "", // 🌟 CORREGIDO: Recupera la nota de Firebase al revertir
+            notaCliente: item.notaCliente || "",
+            taper: item.taper !== undefined ? item.taper : null,
+            llevar: item.llevar !== undefined ? item.llevar : null,
+            cobroTaper: item.cobroTaper !== undefined ? item.cobroTaper : null,
           }));
 
           // Restauramos el carrito al estado real de la cocina
