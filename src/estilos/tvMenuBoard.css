@@ -1,6 +1,6 @@
 :root {
-  --tv-bg-dark: #090d16;
-  --tv-card-bg: #131c2e;
+  --tv-bg-dark: #060911;
+  --tv-card-bg: #111827;
   --tv-accent-color: #4f46e5;
   --tv-text-main: #f8fafc;
   --tv-text-muted: #94a3b8;
@@ -10,152 +10,239 @@
 .tv-board-main-container {
   background-color: var(--tv-bg-dark);
   color: var(--tv-text-main);
-  min-height: 100vh;
-  font-family: 'Poppins', sans-serif;
-  padding: 30px;
+  height: 100vh;
+  font-family: "Poppins", sans-serif;
+  padding: 25px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-/* HEADER STYLE */
+/* HEADER */
 .tv-board-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid var(--tv-accent-color);
+  border-bottom: 4px solid var(--tv-accent-color);
   padding-bottom: 15px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
+  height: 10%;
 }
 
 .tv-board-branding h1 {
-  font-size: 3rem;
+  font-size: 3.2rem;
   margin: 0;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 .tv-board-subtitle {
   color: var(--tv-text-muted);
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 
 .tv-board-timer {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 2.8rem;
+  font-weight: 800;
   background: var(--tv-card-bg);
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 8px 24px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* MESH GRID LAYOUT FOR 1080p / 4K PANTALLAS */
-.tv-board-grid {
+/* DISTRIBUCIÓN DEL CUERPO EN DOS COLUMNAS */
+.tv-board-layout-body {
+  display: flex;
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30px;
-  align-content: start;
+  gap: 25px;
+  height: 82%;
 }
 
-.tv-board-section {
-  background: rgba(19, 28, 46, 0.4);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.tv-board-category-title {
-  font-size: 1.8rem;
-  color: var(--tv-text-main);
-  margin-top: 0;
-  margin-bottom: 20px;
-  border-left: 6px solid var(--tv-accent-color);
-  padding-left: 15px;
-}
-
-.tv-board-list {
+/* COLUMNA IZQUIERDA (PLATOS) */
+.tv-board-left-panel {
+  width: 70%;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-}
-
-/* TARJETAS HORIZONTALES GRANDES */
-.tv-board-item-card {
-  display: flex;
-  background: var(--tv-card-bg);
-  border-radius: 12px;
-  overflow: hidden;
-  height: 110px; /* Tamaño fijo perfecto para visualización en línea */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.tv-board-item-img-wrapper {
-  width: 140px;
+  justify-content: space-between;
   height: 100%;
 }
 
-.tv-board-item-img-wrapper img {
+/* GRID DE TARJETAS ULTRA GRANDES (2 columnas x 3 filas) */
+.tv-board-large-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 20px;
+  flex: 1;
+}
+
+/* TARJETAS HORIZONTALES GRANDES INCREMENTADAS */
+.tv-board-item-card-large {
+  display: flex;
+  background: var(--tv-card-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s ease;
+}
+
+.tv-board-item-img-wrapper-large {
+  width: 180px; /* Ancho de imagen grande de alta visibilidad */
+  height: 100%;
+}
+
+.tv-board-item-img-wrapper-large img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.tv-board-item-details {
+.tv-board-item-details-large {
   flex: 1;
-  padding: 15px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
+  position: relative;
 }
 
-.tv-board-item-header {
+.tv-board-item-header-large {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
+  align-items: flex-start;
 }
 
-.tv-board-item-name {
-  font-size: 1.6rem;
-  font-weight: 700;
+.tv-board-item-name-large {
+  font-size: 2rem; /* Texto ultra legible para salones */
+  font-weight: 800;
+  max-width: 70%;
 }
 
-.tv-board-item-price {
-  font-size: 1.6rem;
-  font-weight: 700;
+.tv-board-item-price-large {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: var(--tv-price-color);
 }
 
-.tv-board-item-desc {
+.tv-board-item-desc-large {
   color: var(--tv-text-muted);
-  font-size: 1rem;
-  margin: 0;
-  white-space: nowrap;
+  font-size: 1.1rem;
+  margin: 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* MARQUESINA EN MOVIMIENTO INFINITO */
+.tv-board-item-badge {
+  align-self: flex-start;
+  background: rgba(79, 70, 229, 0.2);
+  color: #a5b4fc;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* PUNTOS DE PAGINACIÓN */
+.tv-board-pagination-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.tv-dot {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.tv-dot.active {
+  background: var(--tv-accent-color);
+  transform: scale(1.3);
+  box-shadow: 0 0 10px var(--tv-accent-color);
+}
+
+/* COLUMNA DERECHA (MARKETING / PUBLICIDAD) */
+.tv-board-right-panel {
+  width: 30%;
+  background: var(--tv-card-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(79, 70, 229, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  height: 96%;
+}
+
+.tv-marketing-promo-container {
+  width: 100%;
+  height: 100%;
+}
+
+.tv-marketing-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tv-marketing-placeholder {
+  padding: 40px 25px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.tv-marketing-placeholder h3 {
+  font-size: 2.2rem;
+  color: #f59e0b;
+  margin-bottom: 20px;
+}
+
+.tv-marketing-placeholder p {
+  font-size: 1.3rem;
+  color: var(--tv-text-muted);
+  line-height: 1.6;
+}
+
+.tv-placeholder-decor {
+  font-size: 4rem;
+  margin-top: 30px;
+  animation: pulse 2s infinite;
+}
+
+/* MARQUESINA INFERIOR */
 .tv-board-footer-marquee {
   background: var(--tv-accent-color);
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 15px 0;
+  padding: 12px 0;
   overflow: hidden;
+  height: 5%;
+  display: flex;
+  align-items: center;
 }
 
 .tv-marquee-wrapper {
   white-space: nowrap;
   display: inline-block;
-  animation: tvMarquee linear 25s infinite;
+  animation: tvMarquee linear 30s infinite;
 }
 
 .tv-marquee-text {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
   color: white;
@@ -163,6 +250,22 @@
 }
 
 @keyframes tvMarquee {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-33.33%, 0, 0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-33.33%, 0, 0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
