@@ -55,26 +55,22 @@ export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
   await updateDoc(docRef, { disponible: estado });
 };
 //✅ CAMBIAR DISPONIBILIDAD EN LA TV
-export const cambiarVisibilidadTv = async (
-  restauranteId,
-  productoId,
-  nuevoEstadoTv,
-) => {
-  if (!restauranteId || !productoId) return;
+const manejarVisibilidadTv = async (id, estadoTvActual, restauranteId) => {
   try {
-    const docRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "productos",
-      productoId,
-    );
-    await updateDoc(docRef, {
-      mostrarEnTv: nuevoEstadoTv,
+    const nuevoEstadoTv = !estadoTvActual;
+
+    // Llamamos al servicio importado pasando los parámetros en su orden correcto
+    await cambiarVisibilidadTv(restauranteId, id, nuevoEstadoTv);
+
+    Swal.fire({
+      title: nuevoEstadoTv ? "Mostrando en TV" : "Oculto de la TV",
+      icon: "success",
+      timer: 800,
+      showConfirmButton: false,
+      position: "center",
     });
   } catch (error) {
-    console.error("Error al cambiar visibilidad de TV:", error);
-    throw error;
+    Swal.fire("Error", "No se pudo actualizar el estado en la TV", "error");
   }
 };
 // 🕒 OBTENER PRODUCTOS

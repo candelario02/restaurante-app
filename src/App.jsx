@@ -322,14 +322,6 @@ function App() {
                     🔒 Cambiar Operador
                   </button>
                 )}
-                {/* 📺 INYECTAR EXCLUSIVAMENTE ESTE BOTÓN AQUÍ */}
-                <button
-                  className="btn-nav-tab"
-                  style={{ color: "#6366f1", fontWeight: "bold" }}
-                  onClick={() => setSeccion("tv")}
-                >
-                  📺 Vista TV
-                </button>
                 <button
                   className="btn-nav-tab"
                   onClick={() => setIsAdmin(!isAdmin)}
