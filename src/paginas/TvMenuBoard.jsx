@@ -3,62 +3,69 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "../estilos/tvMenuBoard.css";
 
-const TvMenuBoard = ({ restauranteId = "jekito_restobar" }) => {
+const TvMenuBoard = ({ restauranteId }) => {
   const [productos, setProductos] = useState([]);
+  const [nombreLocal, setNombreLocal] = useState("");
   const [marketing, setMarketing] = useState({
     textoBanner: "",
     activo: false,
   });
 
   useEffect(() => {
-    const productosRef = collection(
-      db,
-      "restaurantes",
-      restauranteId,
-      "productos",
-    );
+    if (!restauranteId || restauranteId === "undefined") return;
 
-    // 🎯 REGLA MULTIPUNTO: Solo trae lo disponible Y autorizado para la TV
+    // 1. 🏦 NOMBRE DEL RESTAURANTE (DINÁMICO MULTIPUNTO)
+    const datosRef = doc(db, "restaurantes", restauranteId, "configuraciones", "datos");
+    const unsubDatos = onSnapshot(datosRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setNombreLocal(snapshot.data().nombre || "MENÚ DIGITAL");
+      }
+    });
+
+    // 2. 🎯 PRODUCTOS DISPONIBLES Y AUTORIZADOS PARA LA TV
+    const productosRef = collection(db, "restaurantes", restauranteId, "productos");
     const q = query(
       productosRef,
       where("disponible", "==", true),
-      where("mostrarEnTv", "==", true),
+      where("mostrarEnTv", "==", true)
     );
 
-    const unsubscribeProductos = onSnapshot(q, (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      // Filtro de seguridad por stock real
-      setProductos(lista.filter((p) => Number(p.cantidad) > 0));
+    const unsubProd = onSnapshot(q, (snapshot) => {
+      const lista = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      // Filtrado por seguridad de stock si maneja cantidades numéricas
+      setProductos(lista.filter((p) => p.cantidad === undefined || Number(p.cantidad) > 0));
     });
 
-    // Escucha de la marquesina publicitaria inferior
-    const configRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "configuracion",
-      "tv",
-    );
-    const unsubscribeMarketing = onSnapshot(configRef, (docSnap) => {
-      if (docSnap.exists()) setMarketing(docSnap.data());
+    // 3. 📢 MARQUESINA PUBLICITARIA / PROMOCIONES
+    const configTvRef = doc(db, "restaurantes", restauranteId, "configuraciones", "tv");
+    const unsubTv = onSnapshot(configTvRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setMarketing(snapshot.data());
+      }
     });
 
     return () => {
-      unsubscribeProductos();
-      unsubscribeMarketing();
+      unsubDatos();
+      unsubProd();
+      unsubTv();
     };
   }, [restauranteId]);
 
+  // Lista de categorías estándar del sistema
   const categorias = ["Comidas", "Entradas", "Bebidas", "Cafetería", "Postres"];
 
   return (
-    <div className="tv-board-container">
-      <header className="tv-header">
-        <div className="tv-logo">
-          <h1>JEKITO RESTOBAR</h1>
-          <span className="tv-tagline">Menú Digital en Tiempo Real</span>
+    <div className="tv-board-main-container">
+      {/* HEADER DE ALTO IMPACTO */}
+      <header className="tv-board-header">
+        <div className="tv-board-branding">
+          <h1>{nombreLocal.toUpperCase()}</h1>
+          <span className="tv-board-subtitle">Menú del Día en Tiempo Real</span>
         </div>
-        <div className="tv-clock">
+        <div className="tv-board-timer">
           {new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -67,36 +74,30 @@ const TvMenuBoard = ({ restauranteId = "jekito_restobar" }) => {
         </div>
       </header>
 
-      <main className="tv-grid-layout">
+      {/* GRID PRINCIPAL: RENDERIZA EN TARJETAS HORIZONTALES GRANDES PARA TV */}
+      <main className="tv-board-grid">
         {categorias.map((cat) => {
           const filtrados = productos.filter((p) => p.categoria === cat);
           if (filtrados.length === 0) return null;
 
           return (
-            <section key={cat} className="tv-category-card">
-              <h2 className="tv-category-title">{cat.toUpperCase()}</h2>
-              <div className="tv-products-list">
+            <section key={cat} className="tv-board-section">
+              <h2 className="tv-board-category-title">{cat.toUpperCase()}</h2>
+              <div className="tv-board-list">
                 {filtrados.map((item) => (
-                  <div
-                    key={item.id}
-                    className="tv-product-item animate-fade-in"
-                  >
+                  <div key={item.id} className="tv-board-item-card">
                     {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.nombre}
-                        className="tv-product-img"
-                      />
+                      <div className="tv-board-item-img-wrapper">
+                        <img src={item.imageUrl} alt={item.nombre} />
+                      </div>
                     )}
-                    <div className="tv-product-info">
-                      <div className="tv-product-row">
-                        <span className="tv-product-name">{item.nombre}</span>
-                        <span className="tv-product-price">
-                          S/ {Number(item.precio).toFixed(2)}
-                        </span>
+                    <div className="tv-board-item-details">
+                      <div className="tv-board-item-header">
+                        <span className="tv-board-item-name">{item.nombre}</span>
+                        <span className="tv-board-item-price">S/ {Number(item.precio).toFixed(2)}</span>
                       </div>
                       {item.descripcion && (
-                        <p className="tv-product-desc">{item.descripcion}</p>
+                        <p className="tv-board-item-desc">{item.descripcion}</p>
                       )}
                     </div>
                   </div>
@@ -107,13 +108,13 @@ const TvMenuBoard = ({ restauranteId = "jekito_restobar" }) => {
         })}
       </main>
 
+      {/* SECCIÓN DE PROMOCIONES / MARKETING BAJO PANTALLA */}
       {marketing.activo && marketing.textoBanner && (
-        <footer className="tv-marketing-ticker">
-          <div className="ticker-wrap">
-            <div className="ticker-content">
-              {marketing.textoBanner} &nbsp;&nbsp; ✨ &nbsp;&nbsp;{" "}
-              {marketing.textoBanner}
-            </div>
+        <footer className="tv-board-footer-marquee">
+          <div className="tv-marquee-wrapper">
+            <p className="tv-marquee-text">
+              🔥 {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨ {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥 {marketing.textoBanner}
+            </p>
           </div>
         </footer>
       )}
