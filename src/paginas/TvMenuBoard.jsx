@@ -3,6 +3,7 @@ import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "../estilos/tvMenuBoard.css";
 
+
 const TvMenuBoard = ({ restauranteId }) => {
   const [productos, setProductos] = useState([]);
   const [nombreLocal, setNombreLocal] = useState("");
@@ -15,7 +16,13 @@ const TvMenuBoard = ({ restauranteId }) => {
     if (!restauranteId || restauranteId === "undefined") return;
 
     // 1. 🏦 NOMBRE DEL RESTAURANTE (DINÁMICO MULTIPUNTO)
-    const datosRef = doc(db, "restaurantes", restauranteId, "configuraciones", "datos");
+    const datosRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "configuraciones",
+      "datos",
+    );
     const unsubDatos = onSnapshot(datosRef, (snapshot) => {
       if (snapshot.exists()) {
         setNombreLocal(snapshot.data().nombre || "MENÚ DIGITAL");
@@ -23,11 +30,16 @@ const TvMenuBoard = ({ restauranteId }) => {
     });
 
     // 2. 🎯 PRODUCTOS DISPONIBLES Y AUTORIZADOS PARA LA TV
-    const productosRef = collection(db, "restaurantes", restauranteId, "productos");
+    const productosRef = collection(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+    );
     const q = query(
       productosRef,
       where("disponible", "==", true),
-      where("mostrarEnTv", "==", true)
+      where("mostrarEnTv", "==", true),
     );
 
     const unsubProd = onSnapshot(q, (snapshot) => {
@@ -36,11 +48,19 @@ const TvMenuBoard = ({ restauranteId }) => {
         ...doc.data(),
       }));
       // Filtrado por seguridad de stock si maneja cantidades numéricas
-      setProductos(lista.filter((p) => p.cantidad === undefined || Number(p.cantidad) > 0));
+      setProductos(
+        lista.filter((p) => p.cantidad === undefined || Number(p.cantidad) > 0),
+      );
     });
 
     // 3. 📢 MARQUESINA PUBLICITARIA / PROMOCIONES
-    const configTvRef = doc(db, "restaurantes", restauranteId, "configuraciones", "tv");
+    const configTvRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "configuraciones",
+      "tv",
+    );
     const unsubTv = onSnapshot(configTvRef, (snapshot) => {
       if (snapshot.exists()) {
         setMarketing(snapshot.data());
@@ -59,7 +79,7 @@ const TvMenuBoard = ({ restauranteId }) => {
 
   return (
     <div className="tv-board-main-container">
-      {/* HEADER DE ALTO IMPACTO */}
+      {/* HEADER DE ALTO IMPACTO (Usa el nombre que ya recupera tu useEffect) */}
       <header className="tv-board-header">
         <div className="tv-board-branding">
           <h1>{nombreLocal.toUpperCase()}</h1>
@@ -74,38 +94,61 @@ const TvMenuBoard = ({ restauranteId }) => {
         </div>
       </header>
 
-      {/* GRID PRINCIPAL: RENDERIZA EN TARJETAS HORIZONTALES GRANDES PARA TV */}
+      {/* GRID PRINCIPAL: COMPRUEBA SI HAY PRODUCTOS */}
       <main className="tv-board-grid">
-        {categorias.map((cat) => {
-          const filtrados = productos.filter((p) => p.categoria === cat);
-          if (filtrados.length === 0) return null;
+        {productos.length === 0 ? (
+          <div className="tv-board-no-products">
+            <p>📺 No hay productos seleccionados para mostrar en la TV.</p>
+            <small>
+              Asegúrate de activar "Mostrar en TV" desde tu panel de
+              Administración.
+            </small>
+          </div>
+        ) : (
+          // Mapeamos las categorías estándar
+          ["Comidas", "Entradas", "Bebidas", "Cafetería", "Postres"].map(
+            (cat) => {
+              const filtrados = productos.filter((p) => p.categoria === cat);
+              if (filtrados.length === 0) return null;
 
-          return (
-            <section key={cat} className="tv-board-section">
-              <h2 className="tv-board-category-title">{cat.toUpperCase()}</h2>
-              <div className="tv-board-list">
-                {filtrados.map((item) => (
-                  <div key={item.id} className="tv-board-item-card">
-                    {item.imageUrl && (
-                      <div className="tv-board-item-img-wrapper">
-                        <img src={item.imageUrl} alt={item.nombre} />
+              return (
+                <section key={cat} className="tv-board-section">
+                  <h2 className="tv-board-category-title">
+                    {cat.toUpperCase()}
+                  </h2>
+                  <div className="tv-board-list">
+                    {filtrados.map((item) => (
+                      <div key={item.id} className="tv-board-item-card">
+                        {/* 🔥 MANEJADOR DE IMÁGENES PROPIAS NATIVO */}
+                        {item.imageUrl && (
+                          <div className="tv-board-item-img-wrapper">
+                            <img src={item.imageUrl} alt={item.nombre} />
+                          </div>
+                        )}
+
+                        <div className="tv-board-item-details">
+                          <div className="tv-board-item-header">
+                            <span className="tv-board-item-name">
+                              {item.nombre}
+                            </span>
+                            <span className="tv-board-item-price">
+                              S/ {Number(item.precio).toFixed(2)}
+                            </span>
+                          </div>
+                          {item.descripcion && (
+                            <p className="tv-board-item-desc">
+                              {item.descripcion}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="tv-board-item-details">
-                      <div className="tv-board-item-header">
-                        <span className="tv-board-item-name">{item.nombre}</span>
-                        <span className="tv-board-item-price">S/ {Number(item.precio).toFixed(2)}</span>
-                      </div>
-                      {item.descripcion && (
-                        <p className="tv-board-item-desc">{item.descripcion}</p>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+                </section>
+              );
+            },
+          )
+        )}
       </main>
 
       {/* SECCIÓN DE PROMOCIONES / MARKETING BAJO PANTALLA */}
@@ -113,7 +156,9 @@ const TvMenuBoard = ({ restauranteId }) => {
         <footer className="tv-board-footer-marquee">
           <div className="tv-marquee-wrapper">
             <p className="tv-marquee-text">
-              🔥 {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨ {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥 {marketing.textoBanner}
+              🔥 {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨{" "}
+              {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
+              {marketing.textoBanner}
             </p>
           </div>
         </footer>

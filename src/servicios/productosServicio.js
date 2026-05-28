@@ -55,23 +55,14 @@ export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
   await updateDoc(docRef, { disponible: estado });
 };
 //✅ CAMBIAR DISPONIBILIDAD EN LA TV
-const manejarVisibilidadTv = async (id, estadoTvActual, restauranteId) => {
-  try {
-    const nuevoEstadoTv = !estadoTvActual;
-
-    // Llamamos al servicio importado pasando los parámetros en su orden correcto
-    await cambiarVisibilidadTv(restauranteId, id, nuevoEstadoTv);
-
-    Swal.fire({
-      title: nuevoEstadoTv ? "Mostrando en TV" : "Oculto de la TV",
-      icon: "success",
-      timer: 800,
-      showConfirmButton: false,
-      position: "center",
-    });
-  } catch (error) {
-    Swal.fire("Error", "No se pudo actualizar el estado en la TV", "error");
-  }
+export const cambiarVisibilidadTv = async (productoId, nuevoEstado, restauranteId) => {
+  if (!restauranteId || !productoId) return;
+  
+  const productoRef = doc(db, "restaurantes", restauranteId, "productos", productoId);
+  
+  return await updateDoc(productoRef, {
+    mostrarEnTv: nuevoEstado
+  });
 };
 // 🕒 OBTENER PRODUCTOS
 export const obtenerProductos = (restauranteId, categoria, callback) => {

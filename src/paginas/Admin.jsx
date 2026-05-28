@@ -910,7 +910,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     XLSX.utils.book_append_sheet(wb, ws, "Ventas");
     XLSX.writeFile(wb, `${nombreArchivo}.xlsx`);
   };
-  //DISPONIBILIDAD
+  //DISPONIBILIDAD PARA EL CLIENTE
   const manejarDisponibilidad = async (id, estadoActual, restauranteId) => {
     try {
       await cambiarDisponibilidad(id, !estadoActual, restauranteId);
@@ -925,6 +925,23 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       });
     } catch (error) {
       Swal.fire("Error", "No se pudo cambiar el estado", "error");
+    }
+  };
+  // 📺 VISIBILIDAD TV (Sigue el mismo patrón exacto que manejarDisponibilidad)
+  const manejarVisibilidadTv = async (id, estadoActual, restauranteId) => {
+    try {
+      const nuevoEstado = !estadoActual;
+      await cambiarVisibilidadTv(id, nuevoEstado, restauranteId);
+
+      Swal.fire({
+        title: nuevoEstado ? "Enviado a la TV" : "Quitado de la TV",
+        icon: "success",
+        timer: 800,
+        showConfirmButton: false,
+        position: "center",
+      });
+    } catch (error) {
+      Swal.fire("Error", "No se pudo cambiar la visibilidad en TV", "error");
     }
   };
   //eliminacion de usuarios
