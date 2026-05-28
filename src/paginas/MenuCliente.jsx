@@ -447,25 +447,28 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
         const precioFinalItem = precioBase + precioExtra;
 
-        // 🌟 REGLA DE ORO: Validamos si el plato califica para cobrar táper
-        const esCategoriaValida =
-          item.categoria === "Comidas" || item.categoria === "Menú del Día";
+        // 🌟 DETECCIÓN EXACTA: ¿Es menú del día o categoría comidas?
+        const esMenu =
+          item.isMenuCompleto ||
+          (item.id && item.id.startsWith("menu_")) ||
+          (item.nombre && item.nombre.includes("Menú del Día"));
+        const esComida = item.categoria === "Comidas";
 
-        // Solo lleva cobro si la categoría es correcta Y no es un postre/regalo gratis (precio > 0)
-        const calificaParaTaper = esCategoriaValida && precioFinalItem > 0;
+        // Regla de oro: Es válido si es comida o menú, Y el precio es mayor a 0 (descarta regalos de S/ 0.00)
+        const calificaParaTaper = (esComida || esMenu) && precioFinalItem > 0;
 
         return {
           id: item.id,
           idUnico: item.idUnico,
           nombre: item.nombre,
-          descripcion: item.descripcion || "",
+          categoria: item.categoria || (esMenu ? "Menú del Día" : ""), // 🌟 Forzamos la categoría si es menú
           precio: precioFinalItem,
           cantidad: item.cantidad,
           subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
           notaCliente: item.notaCliente || "",
 
-          // 🌟 AJUSTE DE TÁPERS: Si no califica, forzamos false o null para que no sume S/ 1.00
+          // Propiedades de control individuales
           taper: calificaParaTaper
             ? item.taper !== undefined
               ? item.taper
@@ -532,7 +535,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             itemsFinales.push({ ...nuevo, adicionado: true });
           }
         });
-       } else {
+      } else {
         // 🍔 MODO NUEVO: El pedido arranca directamente con los platos del carrito local
         itemsFinales = [...nuevosItems].filter(
           (i) => i.id !== "insumo_taper_envase" && i.id !== "postre_cortesia",
@@ -544,11 +547,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         tipoPedido === "delivery" || tipoPedido === "llevar";
 
       if (requiereTaper) {
-        // 🌟 CORREGIDO: Sumamos las cantidades reales de todos los platos de comida para saber cuántos tápers se necesitan
-        const totalEmpaquesNecesarios = itemsFinales.reduce(
-          (acc, item) => acc + item.cantidad,
-          0,
-        );
+        // 🌟 CORREGIDO: Suma únicamente los platos que tienen activo el cobro de táper individual
+        const totalEmpaquesNecesarios = itemsFinales.reduce((acc, item) => {
+          // Si marcamos en el mapeo que genera cobro, sumamos su cantidad
+          if (item.cobroTaper !== undefined && item.cobroTaper > 0) {
+            return acc + item.cantidad;
+          }
+          return acc; // Ignora por completo postres gratis, bebidas o cafetería
+        }, 0);
 
         if (totalEmpaquesNecesarios > 0) {
           itemsFinales.push({
@@ -557,7 +563,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             nombre: "Cargo por Empaque / Llevar",
             descripcion: "Costo de envases descartables",
             precio: 1.0,
-            cantidad: totalEmpaquesNecesarios, // Cantidad exacta emparejada
+            cantidad: totalEmpaquesNecesarios,
             subtotal: 1.0 * totalEmpaquesNecesarios,
             detalles: null,
           });
