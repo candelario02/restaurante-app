@@ -313,7 +313,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     );
   // Funcion agregar al carrito
   const agregarAlCarrito = (producto) => {
-    // 🌟 MODIFICADO: Ya no bloqueamos si está en cocina. Solo si ya fue entregado o cancelado.
     if (
       datosPedidoRealtime?.estado === "entregado" ||
       datosPedidoRealtime?.estado === "cancelado"
@@ -344,33 +343,47 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       if (existe) {
         return prev.map((item) =>
           item.idUnico === idUnico
-            ? { ...item, cantidad: item.cantidad + 1 }
+            ? { ...item, cantidad: item.cantidad + 1 } // Conserva su notaCliente intacta
             : item,
         );
       }
 
-      // Guardamos el precioBase original del producto (ej: Menú a S/. 15 o Plato Carta a S/. 18)
       const precioBase = Number(producto.precioBase || producto.precio || 0);
 
-      return [...prev, { ...producto, idUnico, precioBase, cantidad: 1 }];
+      // Si el producto viene directamente del pedido original de Firebase, conservamos su nota original
+      const notaOriginal = producto.notaCliente || "";
+
+      return [
+        ...prev,
+        {
+          ...producto,
+          idUnico,
+          precioBase,
+          cantidad: 1,
+          notaCliente: notaOriginal,
+        },
+      ];
     });
   };
+
   // Funcion restar al carrito
   const restarAlCarrito = (idUnico) => {
-    if (datosPedidoRealtime?.estado === "cocinando") return;
+    // 🌟 CORREGIDO: Si está en cocina, revisamos si el plato pertenece a la orden vieja de Firebase
+    const esDeCocina =
+      datosPedidoRealtime?.estado === "cocinando" &&
+      datosPedidoRealtime.items?.some((oldItem) => oldItem.idUnico === idUnico);
+
+    if (esDeCocina) return; // ⛔ Bloqueado si ya está cocinándose
 
     setCarrito((prev) => {
-      // Buscamos el producto en el carrito actual
       const itemExistente = prev.find((item) => item.idUnico === idUnico);
 
       if (!itemExistente) return prev;
 
-      // Si solo queda 1, lo filtramos (lo elimina por completo)
       if (itemExistente.cantidad === 1) {
         return prev.filter((item) => item.idUnico !== idUnico);
       }
 
-      // Si hay más de 1, reducimos la cantidad en una unidad
       return prev.map((item) =>
         item.idUnico === idUnico
           ? { ...item, cantidad: item.cantidad - 1 }
@@ -676,9 +689,15 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       setEnviando(false);
     }
   };
-  //funcion borra dell carrito
+  // Funcion borrar del carrito
   const eliminarDelCarrito = (idUnico) => {
-    if (datosPedidoRealtime?.estado === "cocinando") return;
+    // 🌟 CORREGIDO: Si está en cocina, validamos individualmente que no sea un plato viejo congelado
+    const esDeCocina =
+      datosPedidoRealtime?.estado === "cocinando" &&
+      datosPedidoRealtime.items?.some((oldItem) => oldItem.idUnico === idUnico);
+
+    if (esDeCocina) return; // ⛔ Bloqueado si ya está en producción
+
     const itemEliminado = carrito.find((item) => item.idUnico === idUnico);
     setCarrito((prev) => prev.filter((item) => item.idUnico !== idUnico));
     setAvisoAgregado(null);
@@ -1366,81 +1385,80 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                   <p>Tu carrito está vacío</p>
                 </div>
               ) : (
-                carrito.map((item) => (
-                  <div key={item.idUnico} className="carrito-item">
-                    <div className="item-info">
-                      <h4>{item.nombre}</h4>
-                      <span>S/ {Number(item.precio).toFixed(2)}</span>
+                carrito.map((item) => {
+                  // 🌟 DETERMINACIÓN INDIVIDUAL: ¿Este ítem ya se está cocinando en Firebase?
+                  const esPlatoFijoEnCocina =
+                    datosPedidoRealtime?.estado === "cocinando" &&
+                    datosPedidoRealtime.items?.some(
+                      (oldItem) => oldItem.idUnico === item.idUnico,
+                    );
 
-                      {/* Muestra la nota fija abajo del nombre si ya está en modo lectura */}
-                      {datosPedidoRealtime &&
-                        datosPedidoRealtime?.estado !== "pendiente" &&
-                        item.notaCliente && (
-                          <span
-                            className="item-nota-lectura"
-                            style={{
-                              display: "block",
-                              fontSize: "12px",
-                              color: "#666",
-                              fontStyle: "italic",
-                            }}
-                          >
-                            Nota: {item.notaCliente}
+                  return (
+                    <div key={item.idUnico} className="carrito-item">
+                      <div className="item-info">
+                        <h4>{item.nombre}</h4>
+                        <span>S/ {Number(item.precio).toFixed(2)}</span>
+
+                        {/* ✅ CLASE CSS LIMPIA: Muestra nota estática de lo que ya está en cocina */}
+                        {item.notaCliente && (
+                          <span className="item-nota-lectura">
+                            Nota original: {item.notaCliente}
                           </span>
                         )}
-                    </div>
+                      </div>
 
-                    <div className="item-controles">
-                      {/* 🌟 FILTRO INTELIGENTE: Si el pedido es nuevo, está pendiente, O el ítem NO existe en el pedido original de Firebase (es un adicional nuevo) */}
-                      {!datosPedidoRealtime ||
-                      datosPedidoRealtime?.estado === "pendiente" ||
-                      !datosPedidoRealtime.items?.some(
-                        (oldItem) => oldItem.idUnico === item.idUnico,
-                      ) ? (
-                        <>
-                          <button onClick={() => restarAlCarrito(item.idUnico)}>
-                            -
-                          </button>
-                          <span className="item-cantidad">{item.cantidad}</span>
-                          <button onClick={() => agregarAlCarrito(item)}>
-                            +
-                          </button>
-                          <button
-                            className="btn-eliminar-item"
-                            onClick={() => eliminarDelCarrito(item.idUnico)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        /* Si el ítem ya existía en el pedido que está en cocina, se congela */
-                        <span className="item-cantidad">
-                          Cant: {item.cantidad}
-                        </span>
+                      <div className="item-controles">
+                        {/* 🌟 FILTRO INTELIGENTE: Si NO está en cocina, botones activos */}
+                        {!esPlatoFijoEnCocina ? (
+                          <>
+                            <button
+                              onClick={() => restarAlCarrito(item.idUnico)}
+                            >
+                              -
+                            </button>
+                            <span className="item-cantidad">
+                              {item.cantidad}
+                            </span>
+                            <button onClick={() => agregarAlCarrito(item)}>
+                              +
+                            </button>
+                            <button
+                              className="btn-eliminar-item"
+                              onClick={() => eliminarDelCarrito(item.idUnico)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          /* Si el ítem ya está en cocina, congelamos su control */
+                          <span className="item-cantidad-cocina">
+                            🍳 En cocina: {item.cantidad}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* ✅ CLASE CSS LIMPIA: Input compacto al 100% de ancho, activo solo para platos editables o nuevos adicionales */}
+                      {!esPlatoFijoEnCocina && (
+                        <input
+                          type="text"
+                          className="input-nota-carrito"
+                          placeholder="¿Alguna especificación? (Ej: sin cebolla, bien frito...)"
+                          value={item.notaCliente || ""}
+                          onChange={(e) => {
+                            const nuevaNota = e.target.value;
+                            setCarrito((prevCarrito) =>
+                              prevCarrito.map((c) =>
+                                c.idUnico === item.idUnico
+                                  ? { ...c, notaCliente: nuevaNota }
+                                  : c,
+                              ),
+                            );
+                          }}
+                        />
                       )}
                     </div>
-
-                    {/* Input para redactar la nota (Solo disponible en estado pendiente) */}
-                    {(!datosPedidoRealtime ||
-                      datosPedidoRealtime?.estado === "pendiente") && (
-                      <input
-                        type="text"
-                        placeholder="¿Alguna especificación? (Ej: sin cebolla, bien frito...)"
-                        value={item.notaCliente || ""}
-                        onChange={(e) => {
-                          const nuevaNota = e.target.value;
-                          setCarrito((prevCarrito) =>
-                            prevCarrito.map((c) =>
-                              c.idUnico === item.idUnico
-                                ? { ...c, notaCliente: nuevaNota }
-                                : c,
-                            ),
-                          );
-                        }}
-                      />
-                    )}
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -1450,7 +1468,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 <span className="total-monto">S/ {total.toFixed(2)}</span>
               </div>
               <div className="carrito-acciones">
-                {/* 🌟 MODIFICADO: Agregamos la condición de 'cocinando' para que no oculte los botones */}
                 {!datosPedidoRealtime ||
                 datosPedidoRealtime?.estado === "pendiente" ||
                 datosPedidoRealtime?.estado === "cocinando" ? (
@@ -1490,7 +1507,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     </button>
                   </>
                 ) : (
-                  /* ELSE: Si ya no se puede interactuar (ej: entregado o cancelado) */
                   <p className="msg-bloqueo">
                     ¡Buenas noticias! Tu orden se está{" "}
                     <b>{datosPedidoRealtime?.estado}</b>, y ya no es posible

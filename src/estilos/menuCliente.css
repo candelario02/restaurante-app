@@ -765,7 +765,44 @@
 .carrito-flotante:active {
   transform: translateX(-50%) scale(0.9);
 }
+/* Estilo para la nota de lectura (platos fijos que están cocinándose) */
+.item-nota-lectura {
+  display: block;
+  font-size: 12px;
+  color: #ea580c; /* Un color naranja/marrón sutil de aviso culinario o #666 si prefieres gris */
+  font-style: italic;
+  margin-top: 4px;
+}
 
+/* Indicador visual de cantidad en cocina */
+.item-cantidad-cocina {
+  font-weight: bold;
+  color: #16a34a; /* Verde éxito de producción */
+  font-size: 13px;
+}
+
+/* El nuevo Input compacto adaptado perfectamente al ancho */
+.input-nota-carrito {
+  width: 100%;
+  grid-column: 1 / -1; /* Si usas CSS Grid en .carrito-item, esto hace que se mude a una línea completa abajo sin romper las columnas */
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  color: #334155;
+  outline: none;
+  box-sizing: border-box; /* Asegura que el padding no expanda el input fuera del contenedor */
+  transition: all 0.2s ease;
+}
+
+/* Efecto visual cuando el cliente da clic para escribir */
+.input-nota-carrito:focus {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
 /* =============================================
    6. FORMULARIO DE ENTREGA
    ============================================= */
