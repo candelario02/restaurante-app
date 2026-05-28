@@ -765,43 +765,71 @@
 .carrito-flotante:active {
   transform: translateX(-50%) scale(0.9);
 }
-/* Estilo para la nota de lectura (platos fijos que están cocinándose) */
-.item-nota-lectura {
-  display: block;
-  font-size: 12px;
-  color: #ea580c; /* Un color naranja/marrón sutil de aviso culinario o #666 si prefieres gris */
-  font-style: italic;
-  margin-top: 4px;
+/* Estructura del Item encapsulado en vertical */
+.carrito-item {
+  display: flex;
+  flex-direction: column; 
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-/* Indicador visual de cantidad en cocina */
-.item-cantidad-cocina {
+/* Fila superior: Mantiene tu nombre de plato y botones en una sola línea horizontal */
+.item-principal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Fila inferior: Aloja las notas, inputs y alertas abajo sin empujar los botones */
+.item-detalles-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Alerta roja de Adicional (Brilla directo para cuando lo veas tú o el mozo) */
+.badge-adicional {
+  color: #dc2626; 
   font-weight: bold;
-  color: #16a34a; /* Verde éxito de producción */
-  font-size: 13px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* El nuevo Input compacto adaptado perfectamente al ancho */
+/* El input compacto que se estira limpio al 100% del contenedor */
 .input-nota-carrito {
   width: 100%;
-  grid-column: 1 / -1; /* Si usas CSS Grid en .carrito-item, esto hace que se mude a una línea completa abajo sin romper las columnas */
-  margin-top: 8px;
-  padding: 6px 10px;
+  box-sizing: border-box; 
+  padding: 6px 8px;
   font-size: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background-color: #f8fafc;
   color: #334155;
   outline: none;
-  box-sizing: border-box; /* Asegura que el padding no expanda el input fuera del contenedor */
-  transition: all 0.2s ease;
 }
 
-/* Efecto visual cuando el cliente da clic para escribir */
 .input-nota-carrito:focus {
   border-color: #cbd5e1;
   background-color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Nota en modo lectura para platos ya fijos */
+.item-nota-lectura {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  display: block;
+}
+
+/* Indicador visual de cantidad congelada en cocina */
+.item-cantidad-cocina {
+  font-weight: bold;
+  color: #16a34a; 
+  font-size: 13px;
 }
 /* =============================================
    6. FORMULARIO DE ENTREGA

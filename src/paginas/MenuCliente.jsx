@@ -462,7 +462,6 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
         // Recorremos los ítems que el cliente tiene en su carrito local actual
         nuevosItems.forEach((nuevo) => {
-          // Ignoramos empaques o cortesías que se hayan colado en el carrito local
           if (
             nuevo.id === "insumo_taper_envase" ||
             nuevo.id === "postre_cortesia"
@@ -474,18 +473,25 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           );
 
           if (index !== -1) {
-            // 🌟 CORREGIDO: La cantidad local manda (ya incluye lo viejo + lo que sumó en la carta)
+            const itemOriginal = itemsPreviosLimpios.find(
+              (f) => f.idUnico === nuevo.idUnico,
+            );
+
             itemsFinales[index].cantidad = nuevo.cantidad;
             itemsFinales[index].subtotal = nuevo.subtotal;
-            itemsFinales[index].notaCliente = nuevo.notaCliente;
 
-            // Si la cantidad actual es mayor a la original de Firebase, es un adicional
-            const cantidadOriginal = itemsPreviosLimpios[index]?.cantidad || 0;
+            // 🌟 CORREGIDO: Si el input está vacío pero ya existía una nota inicial, la preservamos
+            itemsFinales[index].notaCliente =
+              nuevo.notaCliente.trim() !== ""
+                ? nuevo.notaCliente
+                : itemOriginal?.notaCliente || "";
+
+            const cantidadOriginal = itemOriginal?.cantidad || 0;
             if (nuevo.cantidad > cantidadOriginal) {
               itemsFinales[index].adicionado = true;
             }
           } else {
-            // Si es un antojo completamente nuevo, lo inyectamos marcado
+            // Si es un antojo completamente nuevo
             itemsFinales.push({ ...nuevo, adicionado: true });
           }
         });
@@ -1395,67 +1401,76 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
                   return (
                     <div key={item.idUnico} className="carrito-item">
-                      <div className="item-info">
-                        <h4>{item.nombre}</h4>
-                        <span>S/ {Number(item.precio).toFixed(2)}</span>
+                      {/* 📦 CONTENEDOR PRINCIPAL: Alinea nombre, precio y botones perfectamente */}
+                      <div className="item-principal-row">
+                        <div className="item-info">
+                          <h4>{item.nombre}</h4>
+                          <span>S/ {Number(item.precio).toFixed(2)}</span>
+                        </div>
 
-                        {/* ✅ CLASE CSS LIMPIA: Muestra nota estática de lo que ya está en cocina */}
+                        <div className="item-controles">
+                          {!esPlatoFijoEnCocina ? (
+                            <>
+                              <button
+                                onClick={() => restarAlCarrito(item.idUnico)}
+                              >
+                                -
+                              </button>
+                              <span className="item-cantidad">
+                                {item.cantidad}
+                              </span>
+                              <button onClick={() => agregarAlCarrito(item)}>
+                                +
+                              </button>
+                              <button
+                                className="btn-eliminar-item"
+                                onClick={() => eliminarDelCarrito(item.idUnico)}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            <span className="item-cantidad-cocina">
+                              🍳 En cocina: {item.cantidad}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 📝 CONTENEDOR DE DETALLES: Notas e Indicador Adicional sin descuadrar la fila */}
+                      <div className="item-detalles-row">
+                        {/* Etiqueta roja visible para el mozo si el plato es un adicional */}
+                        {item.adicionado && (
+                          <span className="badge-adicional">[ADICIONAL]</span>
+                        )}
+
+                        {/* Nota fija/Lectura original */}
                         {item.notaCliente && (
                           <span className="item-nota-lectura">
                             Nota original: {item.notaCliente}
                           </span>
                         )}
-                      </div>
 
-                      <div className="item-controles">
-                        {/* 🌟 FILTRO INTELIGENTE: Si NO está en cocina, botones activos */}
-                        {!esPlatoFijoEnCocina ? (
-                          <>
-                            <button
-                              onClick={() => restarAlCarrito(item.idUnico)}
-                            >
-                              -
-                            </button>
-                            <span className="item-cantidad">
-                              {item.cantidad}
-                            </span>
-                            <button onClick={() => agregarAlCarrito(item)}>
-                              +
-                            </button>
-                            <button
-                              className="btn-eliminar-item"
-                              onClick={() => eliminarDelCarrito(item.idUnico)}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        ) : (
-                          /* Si el ítem ya está en cocina, congelamos su control */
-                          <span className="item-cantidad-cocina">
-                            🍳 En cocina: {item.cantidad}
-                          </span>
+                        {/* Input compacto para notas (Solo editable si no está en cocina) */}
+                        {!esPlatoFijoEnCocina && (
+                          <input
+                            type="text"
+                            className="input-nota-carrito"
+                            placeholder="¿Alguna especificación? (Ej: sin cebolla...)"
+                            value={item.notaCliente || ""}
+                            onChange={(e) => {
+                              const nuevaNota = e.target.value;
+                              setCarrito((prevCarrito) =>
+                                prevCarrito.map((c) =>
+                                  c.idUnico === item.idUnico
+                                    ? { ...c, notaCliente: nuevaNota }
+                                    : c,
+                                ),
+                              );
+                            }}
+                          />
                         )}
                       </div>
-
-                      {/* ✅ CLASE CSS LIMPIA: Input compacto al 100% de ancho, activo solo para platos editables o nuevos adicionales */}
-                      {!esPlatoFijoEnCocina && (
-                        <input
-                          type="text"
-                          className="input-nota-carrito"
-                          placeholder="¿Alguna especificación? (Ej: sin cebolla, bien frito...)"
-                          value={item.notaCliente || ""}
-                          onChange={(e) => {
-                            const nuevaNota = e.target.value;
-                            setCarrito((prevCarrito) =>
-                              prevCarrito.map((c) =>
-                                c.idUnico === item.idUnico
-                                  ? { ...c, notaCliente: nuevaNota }
-                                  : c,
-                              ),
-                            );
-                          }}
-                        />
-                      )}
                     </div>
                   );
                 })
