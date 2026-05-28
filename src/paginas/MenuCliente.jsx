@@ -313,10 +313,14 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
     );
   // Funcion agregar al carrito
   const agregarAlCarrito = (producto) => {
-    if (datosPedidoRealtime?.estado === "cocinando") {
+    // 🌟 MODIFICADO: Ya no bloqueamos si está en cocina. Solo si ya fue entregado o cancelado.
+    if (
+      datosPedidoRealtime?.estado === "entregado" ||
+      datosPedidoRealtime?.estado === "cancelado"
+    ) {
       Swal.fire({
-        title: "Cocina trabajando",
-        text: "No puedes modificar el carrito mientras tu orden se está preparando.",
+        title: "Pedido finalizado",
+        text: "Este pedido ya fue cerrado y no se le pueden añadir más productos.",
         icon: "info",
         confirmButtonColor: "#4CAF50",
       });
