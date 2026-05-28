@@ -523,7 +523,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
         pedidoParaFirebase = {
           ...datosPedidoRealtime,
           items: itemsFinales,
-          total: totalConsolidated,
+          total: totalConsolidado, // 🌟 CORREGIDO: Cambiado totalConsolidated por totalConsolidado
           fechaActualizacion: new Date(),
         };
       } else {
@@ -1368,8 +1368,12 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     </div>
 
                     <div className="item-controles">
+                      {/* 🌟 FILTRO INTELIGENTE: Si el pedido es nuevo, está pendiente, O el ítem NO existe en el pedido original de Firebase (es un adicional nuevo) */}
                       {!datosPedidoRealtime ||
-                      datosPedidoRealtime?.estado === "pendiente" ? (
+                      datosPedidoRealtime?.estado === "pendiente" ||
+                      !datosPedidoRealtime.items?.some(
+                        (oldItem) => oldItem.idUnico === item.idUnico,
+                      ) ? (
                         <>
                           <button onClick={() => restarAlCarrito(item.idUnico)}>
                             -
@@ -1386,7 +1390,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                           </button>
                         </>
                       ) : (
-                        /* Encapsulado en un span con la misma clase estructural para conservar el ancho */
+                        /* Si el ítem ya existía en el pedido que está en cocina, se congela */
                         <span className="item-cantidad">
                           Cant: {item.cantidad}
                         </span>
