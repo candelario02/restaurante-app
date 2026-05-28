@@ -447,6 +447,13 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
 
         const precioFinalItem = precioBase + precioExtra;
 
+        // 🌟 REGLA DE ORO: Validamos si el plato califica para cobrar táper
+        const esCategoriaValida =
+          item.categoria === "Comidas" || item.categoria === "Menú del Día";
+
+        // Solo lleva cobro si la categoría es correcta Y no es un postre/regalo gratis (precio > 0)
+        const calificaParaTaper = esCategoriaValida && precioFinalItem > 0;
+
         return {
           id: item.id,
           idUnico: item.idUnico,
@@ -457,9 +464,23 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
           subtotal: precioFinalItem * item.cantidad,
           detalles: item.detalles || null,
           notaCliente: item.notaCliente || "",
-          taper: item.taper !== undefined ? item.taper : null,
-          llevar: item.llevar !== undefined ? item.llevar : null,
-          cobroTaper: item.cobroTaper !== undefined ? item.cobroTaper : null,
+
+          // 🌟 AJUSTE DE TÁPERS: Si no califica, forzamos false o null para que no sume S/ 1.00
+          taper: calificaParaTaper
+            ? item.taper !== undefined
+              ? item.taper
+              : true
+            : false,
+          llevar: calificaParaTaper
+            ? item.llevar !== undefined
+              ? item.llevar
+              : true
+            : false,
+          cobroTaper: calificaParaTaper
+            ? item.cobroTaper !== undefined
+              ? item.cobroTaper
+              : 1
+            : 0,
         };
       });
 
@@ -511,7 +532,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             itemsFinales.push({ ...nuevo, adicionado: true });
           }
         });
-      } else {
+       } else {
         // 🍔 MODO NUEVO: El pedido arranca directamente con los platos del carrito local
         itemsFinales = [...nuevosItems].filter(
           (i) => i.id !== "insumo_taper_envase" && i.id !== "postre_cortesia",
