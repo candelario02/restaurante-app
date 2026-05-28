@@ -15,7 +15,7 @@ import {
   where,
   getFirestore,
 } from "firebase/firestore";
-// SOLUCIÓN ÚNICA: Maneja creación y actualización
+//  Maneja creación y actualización
 export const gestionarPedido = async (
   restauranteId,
 
@@ -73,7 +73,7 @@ export const gestionarPedido = async (
     throw error;
   }
 };
-// Mantener para el Admin (Cambiar a Cocinando/Entregado)
+// para el Admin (Cambiar a Cocinando/Entregado)
 export const actualizarEstadoPedido = async (
   restauranteId,
   pedidoId,
@@ -89,8 +89,10 @@ export const actualizarEstadoPedido = async (
       pedidoId,
     );
     const actualizacion = { estado: nuevoEstado };
+
     if (nuevoEstado === "entregado") {
       actualizacion.fechaEntrega = serverTimestamp();
+
       // 🔌 EL PUENTE AUTOMÁTICO: Descontar stock del menú del cliente al entregar
       try {
         const pedidoSnap = await getDoc(pedidoRef);
@@ -99,8 +101,41 @@ export const actualizarEstadoPedido = async (
           const datosPedido = pedidoSnap.data();
           const itemsComprados =
             datosPedido.items || datosPedido.productos || [];
+
           for (const item of itemsComprados) {
-            if (item.id && item.cantidad > 0) {
+            if (!item.cantidad || item.cantidad <= 0) continue;
+
+            // 🌟 DETECCIÓN: ¿Es un Menú del Día compuesto?
+            const esMenu =
+              (item.id && item.id.startsWith("menu_")) || !!item.detalles;
+
+            if (esMenu && item.detalles) {
+              // Desglosamos los componentes reales seleccionados por el cliente
+              const componentesADescontar = [
+                item.detalles.segundo,
+                item.detalles.entrada,
+                item.detalles.bebida,
+              ];
+
+              for (const nombreComponente of componentesADescontar) {
+                if (nombreComponente) {
+                  // Buscamos el ID real en el inventario usando el nombre exacto
+                  const idRealProducto = await buscarIdProductoPorNombre(
+                    restauranteId,
+                    nombreComponente,
+                  );
+
+                  if (idRealProducto) {
+                    await actualizarStockProductoMenu(
+                      idRealProducto,
+                      -Math.abs(item.cantidad),
+                      restauranteId,
+                    );
+                  }
+                }
+              }
+            } else if (item.id && item.id !== "insumo_taper_envase") {
+              // 🥩 Caso normal: Platos a la carta individuales (Ignora el cargo por empaque)
               await actualizarStockProductoMenu(
                 item.id,
                 -Math.abs(item.cantidad),
@@ -121,6 +156,36 @@ export const actualizarEstadoPedido = async (
   } catch (error) {
     console.error("Error al actualizar estado:", error);
     throw error;
+  }
+};
+
+// 🔍 FUNCIÓN AUXILIAR PROFESIONAL: Resuelve el ID real de Firestore usando el nombre del plato
+const buscarIdProductoPorNombre = async (restauranteId, nombre) => {
+  try {
+    if (!nombre) return null;
+
+    const productosRef = collection(
+      db,
+      "restaurantes",
+      restauranteId,
+      "productos",
+    );
+    // Buscamos coincidencia exacta por nombre en tu colección de inventario
+    const q = query(productosRef, where("nombre", "==", nombre.trim()));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // Retornamos el ID real del documento encontrado (ej. el id del Aji de Gallina, Tamal, etc)
+      return querySnapshot.docs[0].id;
+    }
+
+    console.warn(
+      `No se encontró ningún producto en inventario con el nombre: "${nombre}"`,
+    );
+    return null;
+  } catch (err) {
+    console.error("Error buscando ID por nombre:", err);
+    return null;
   }
 };
 // Registra la calificación y comentario del cliente
