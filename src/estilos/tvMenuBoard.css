@@ -19,7 +19,93 @@
   overflow: hidden;
   position: relative;
 }
-
+.tv-board-left-grid-container {
+  width: 68%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+}
+.tv-board-product-card {
+  position: relative;
+  background-color: #0d121f;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.tv-board-card-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.tv-board-card-bg-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tv-board-card-gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(5, 7, 12, 0.95) 20%, rgba(5, 7, 12, 0.5) 70%, rgba(5, 7, 12, 0.2));
+}
+.tv-board-card-info-content {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.tv-board-card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.tv-board-card-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+.tv-board-card-price {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #10b981;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+.tv-board-card-description {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  margin: 5px 0 10px 0;
+  line-height: 1.4;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tv-board-card-badge {
+  background: rgba(79, 70, 229, 0.3);
+  border: 1px solid #4f46e5;
+  color: #e0e7ff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-block;
+}
 /* 📊 BOTÓN FLOTANTE PANTALLA COMPLETA */
 .tv-fullscreen-toggle-btn {
   position: absolute;

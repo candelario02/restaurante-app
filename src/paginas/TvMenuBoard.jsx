@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -125,7 +124,7 @@ const TvMenuBoard = ({ restauranteId }) => {
 
   return (
     <div ref={containerRef} className="tv-board-main-container">
-      {/* 🔘 BOTÓN FLOTANTE INTELIGENTE: Controla el Fullscreen y se adapta visualmente */}
+      {/* 🔘 BOTÓN INTELIGENTE: Cambia dinámicamente de estilo y añade la "✕" al estar en Fullscreen */}
       <button onClick={toggleFullScreen} className="tv-fullscreen-toggle-btn">
         {isFullScreen ? "✕ Salir Vista TV" : "📺 Pantalla Completa"}
       </button>
@@ -134,7 +133,7 @@ const TvMenuBoard = ({ restauranteId }) => {
       <header className="tv-board-header">
         <div className="tv-board-branding">
           <h1>{nombreLocal.toUpperCase()}</h1>
-          <span className="tv-board-subtitle">Nuestra Oferta del Día</span>
+          <span className="tv-board-subtitle">Menú del Día en Tiempo Real</span>
         </div>
         <div className="tv-board-timer">
           {new Date().toLocaleTimeString([], {
@@ -147,41 +146,49 @@ const TvMenuBoard = ({ restauranteId }) => {
 
       {/* CUERPO DIVIDIDO */}
       <div className="tv-board-layout-body">
-        {/* PANEL IZQUIERDO: UN SOLO PLATO EN FORMATO GIGANTE INMERSIVO */}
-        <main className="tv-board-left-panel-premium">
-          {!productoActivo ? (
+        {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS CON FOTO DE FONDO Y DESCRIPCIÓN */}
+        <main className="tv-board-left-grid-container">
+          {productos.length === 0 ? (
             <div className="tv-board-no-products">
-              <p>📺 No hay productos seleccionados para mostrar en la TV.</p>
-              <small>Activa "Mostrar en TV" en tus productos.</small>
+              <p>📺 No hay productos autorizados para mostrar en la TV.</p>
+              <small>
+                Activa "Mostrar en TV" en el panel de administración.
+              </small>
             </div>
           ) : (
-            <div className="tv-board-hero-card">
-              {/* FOTO GIGANTE DE FONDO COMPLETO */}
-              {productoActivo.imagen && (
-                <div className="tv-board-hero-bg-image">
-                  <img
-                    src={productoActivo.imagen}
-                    alt={productoActivo.nombre}
-                  />
-                  <div className="tv-board-hero-overlay"></div>
-                </div>
-              )}
+            // Tomamos los primeros 4 productos configurados para la TV
+            productos.slice(0, 4).map((p) => (
+              <div key={p.id} className="tv-board-product-card">
+                {/* CAPA DE FOTO DE FONDO (Corregido a p.imagen igual que en tu menu.jsx) */}
+                {p.imagen && (
+                  <div className="tv-board-card-bg-image">
+                    <img src={p.imagen} alt={p.nombre} />
+                    <div className="tv-board-card-gradient-overlay"></div>
+                  </div>
+                )}
 
-              {/* DETALLES DEL PLATO FLOTANTES ABAJO (Igual que en tu imagen de ejemplo) */}
-              <div className="tv-board-hero-content-bottom">
-                <span className="tv-board-hero-category-badge">
-                  {productoActivo.categoria.toUpperCase()}
-                </span>
-                <div className="tv-board-hero-row">
-                  <h2 className="tv-board-hero-name">
-                    {productoActivo.nombre}
-                  </h2>
-                  <span className="tv-board-hero-price">
-                    S/ {Number(productoActivo.precio).toFixed(2)}
-                  </span>
+                {/* CONTENIDO DE LA TARJETA (Texto flotante con lectura clara) */}
+                <div className="tv-board-card-info-content">
+                  <div className="tv-board-card-top-row">
+                    <h3 className="tv-board-card-title">{p.nombre}</h3>
+                    <span className="tv-board-card-price">
+                      S/ {Number(p.precio).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* DESCRIPCIÓN DEL PLATO (Misma lógica de validación que tu menu.jsx) */}
+                  {p.descripcion && (
+                    <p className="tv-board-card-description">{p.descripcion}</p>
+                  )}
+
+                  {p.categoria && (
+                    <span className="tv-board-card-badge">
+                      {p.categoria.toUpperCase()}
+                    </span>
+                  )}
                 </div>
               </div>
-            </div>
+            ))
           )}
         </main>
 
