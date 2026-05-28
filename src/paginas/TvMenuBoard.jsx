@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
-import "./tvMenuBoard.css"; // 🔥 Corrección de ruta relativa para que Vercel compile sin caerse
-
+import "../estilos/tvMenuBoard.css";
 const TvMenuBoard = ({ restauranteId }) => {
   const [productos, setProductos] = useState([]);
   const [nombreLocal, setNombreLocal] = useState("");
