@@ -1431,20 +1431,30 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                               </button>
                             </>
                           ) : (
-                            <span className="item-cantidad-cocina">
-                              🍳 En cocina: {item.cantidad}
+                            <span
+                              className="item-cantidad"
+                              style={{ fontWeight: "bold", padding: "0 8px" }}
+                            >
+                              {item.cantidad} x
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* 📝 UN SOLO CAJÓN LIMPIO: Muestra o escribe la nota en una sola línea */}
+                      {/* 📝 UN SOLO CAJÓN LIMPIO: Muestra la nota original persistente o permite escribir si es nuevo */}
                       <div className="item-detalles-row">
                         <input
                           type="text"
                           className="input-nota-carrito"
-                          placeholder="¿Alguna especificación? (Ej: sin cebolla...)"
+                          placeholder={
+                            esPlatoFijoEnCocina
+                              ? "Sin especificaciones"
+                              : "¿Alguna especificación? (Ej: sin cebolla...)"
+                          }
                           value={item.notaCliente || ""}
+                          disabled={
+                            esPlatoFijoEnCocina
+                          } /* 🔒 Bloquea el input por completo si ya está en cocina */
                           readOnly={esPlatoFijoEnCocina}
                           onChange={(e) => {
                             const nuevaNota = e.target.value;

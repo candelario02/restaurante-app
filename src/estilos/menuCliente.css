@@ -807,13 +807,6 @@
   border-color: #cbd5e1;
   background-color: #ffffff;
 }
-
-/* Indicador visual de cantidad congelada en cocina */
-.item-cantidad-cocina {
-  font-weight: bold;
-  color: #16a34a; 
-  font-size: 13px;
-}
 /* =============================================
    6. FORMULARIO DE ENTREGA
    ============================================= */
