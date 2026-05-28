@@ -1419,9 +1419,10 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                 <span className="total-monto">S/ {total.toFixed(2)}</span>
               </div>
               <div className="carrito-acciones">
-                {/* Condición: Si el pedido es nuevo O el pedido está en estado 'pendiente' */}
+                {/* 🌟 MODIFICADO: Agregamos la condición de 'cocinando' para que no oculte los botones */}
                 {!datosPedidoRealtime ||
-                datosPedidoRealtime?.estado === "pendiente" ? (
+                datosPedidoRealtime?.estado === "pendiente" ||
+                datosPedidoRealtime?.estado === "cocinando" ? (
                   <>
                     <button
                       className="btn-agregar-cerrar"
@@ -1458,7 +1459,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                     </button>
                   </>
                 ) : (
-                  /* ELSE: Si ya existe un pedido y NO está en pendiente (ej. está en cocina) */
+                  /* ELSE: Si ya no se puede interactuar (ej: entregado o cancelado) */
                   <p className="msg-bloqueo">
                     ¡Buenas noticias! Tu orden se está{" "}
                     <b>{datosPedidoRealtime?.estado}</b>, y ya no es posible
