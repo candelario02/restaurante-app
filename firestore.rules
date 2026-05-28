@@ -35,11 +35,16 @@ service cloud.firestore {
     }
 
 
-      // 📝 PEDIDOS
+     // 📝 PEDIDOS
       match /pedidos/{docId} {
         allow read, create: if true;
-        // Permitimos update si: 1. Es admin, 2. Es una reseña, 3. Es el cliente modificando un pedido pendiente
-        allow update: if esAdminDelRestaurante(restId) || esSoloResena() || esModificacionCliente();
+        
+        // 🌟 REGLA CORREGIDA: Permitimos actualizar si es admin, reseña, modificación pendiente O si el pedido está en cocina
+        allow update: if esAdminDelRestaurante(restId) || 
+                         esSoloResena() || 
+                         esModificacionCliente() || 
+                         resource.data.estado == 'cocinando';
+                         
         allow delete: if esAdminDelRestaurante(restId);
       }
 
