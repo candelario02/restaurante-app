@@ -602,12 +602,12 @@
   align-items: center;
   width: 100%;
 }
-/* Contenedor individual de cada plato en la orden */
+/* Contenedor principal del plato */
 .admin-item-contenedor {
   margin-bottom: 8px;
 }
 
-/* Fila superior: Alinea cantidad, nombre y la alerta en horizontal */
+/* Cabecera que alinea cantidad, nombre y badge en línea */
 .admin-item-cabecera {
   display: flex;
   align-items: center;
@@ -615,11 +615,19 @@
   margin: 0;
 }
 
-/* Alerta roja llamativa para el Mozo */
-.badge-admin-adicional {
+/* Nota de pedido nuevo en color VERDE SUAVE */
+.admin-nota-cliente-verde {
+  display: block;
+  color: #16a34a; /* Verde éxito de producción, amigable a la vista */
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Alerta roja llamativa con animación de parpadeo */
+.badge-admin-adicional-parpadeo {
   background-color: #fee2e2;
   color: #dc2626;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
   padding: 2px 6px;
   border-radius: 4px;
@@ -627,14 +635,21 @@
   border: 1px solid #fca5a5;
   margin-left: 4px;
   display: inline-block;
+  /* Aplica la animación: dura 1 segundo, es infinita y suaviza el cambio */
+  animation: parpadeoAlerta 1s infinite ease-in-out; 
 }
 
-/* Nota del cliente estilizada en azul claro informativo */
-.admin-nota-cliente {
-  display: block;
-  color: #0284c7;
-  font-weight: 600;
-  margin-top: 2px;
+/* Animación de parpadeo de opacidad */
+@keyframes parpadeoAlerta {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 /* Contenedor alineado para el Teléfono y el Botón */
 .container-telefono-whatsapp {

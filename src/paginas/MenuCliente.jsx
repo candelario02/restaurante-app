@@ -788,6 +788,7 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
             cantidad: item.cantidad,
             detalles: item.detalles,
             isMenuCompleto: !!item.detalles,
+            notaCliente: item.notaCliente || "", // 🌟 CORREGIDO: Recupera la nota de Firebase al revertir
           }));
 
           // Restauramos el carrito al estado real de la cocina
@@ -1437,39 +1438,25 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
                         </div>
                       </div>
 
-                      {/* 📝 CONTENEDOR DE DETALLES: Notas e Indicador Adicional sin descuadrar la fila */}
+                      {/* 📝 UN SOLO CAJÓN LIMPIO: Muestra o escribe la nota en una sola línea */}
                       <div className="item-detalles-row">
-                        {/* Etiqueta roja visible para el mozo si el plato es un adicional */}
-                        {item.adicionado && (
-                          <span className="badge-adicional">[ADICIONAL]</span>
-                        )}
-
-                        {/* Nota fija/Lectura original */}
-                        {item.notaCliente && (
-                          <span className="item-nota-lectura">
-                            Nota original: {item.notaCliente}
-                          </span>
-                        )}
-
-                        {/* Input compacto para notas (Solo editable si no está en cocina) */}
-                        {!esPlatoFijoEnCocina && (
-                          <input
-                            type="text"
-                            className="input-nota-carrito"
-                            placeholder="¿Alguna especificación? (Ej: sin cebolla...)"
-                            value={item.notaCliente || ""}
-                            onChange={(e) => {
-                              const nuevaNota = e.target.value;
-                              setCarrito((prevCarrito) =>
-                                prevCarrito.map((c) =>
-                                  c.idUnico === item.idUnico
-                                    ? { ...c, notaCliente: nuevaNota }
-                                    : c,
-                                ),
-                              );
-                            }}
-                          />
-                        )}
+                        <input
+                          type="text"
+                          className="input-nota-carrito"
+                          placeholder="¿Alguna especificación? (Ej: sin cebolla...)"
+                          value={item.notaCliente || ""}
+                          readOnly={esPlatoFijoEnCocina}
+                          onChange={(e) => {
+                            const nuevaNota = e.target.value;
+                            setCarrito((prevCarrito) =>
+                              prevCarrito.map((c) =>
+                                c.idUnico === item.idUnico
+                                  ? { ...c, notaCliente: nuevaNota }
+                                  : c,
+                              ),
+                            );
+                          }}
+                        />
                       </div>
                     </div>
                   );

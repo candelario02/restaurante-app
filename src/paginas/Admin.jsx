@@ -1922,24 +1922,24 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                         };
 
                         return (
-                          <div key={index} style={{ marginBottom: "8px" }}>
-                            <p className="item-fila">
+                          <div key={index} className="admin-item-contenedor">
+                            <p className="item-fila admin-item-cabecera">
                               <span className="cantidad">
                                 {safeItem.cantidad}x
                               </span>
                               <span className="nombre">{safeItem.nombre}</span>
+
+                              {/* 🚨 ALERTA ROJA PARPADEANTE SI EL PLATO ES UN ADICIONAL */}
+                              {safeItem.adicionado && (
+                                <span className="badge-admin-adicional-parpadeo">
+                                  🚨 ¡Adicional!
+                                </span>
+                              )}
                             </p>
 
-                            {/* ✏️ RENDERIZADO DE LA NOTA DEL CLIENTE EN LA COCINA */}
+                            {/* ✏️ NOTA DEL CLIENTE EN VERDE SUAVE INFORMATIVO */}
                             {safeItem.notaCliente && (
-                              <span
-                                className="detalles-menu-admin"
-                                style={{
-                                  display: "block",
-                                  color: "#ff5722",
-                                  fontWeight: "bold",
-                                }}
-                              >
+                              <span className="detalles-menu-admin admin-nota-cliente-verde">
                                 📝 Nota: {safeItem.notaCliente}
                               </span>
                             )}
