@@ -440,49 +440,72 @@ const MenuCliente = ({ restauranteId, logoRestaurante, nombreRestaurante }) => {
       let itemsFinales = [];
 
       if (idExistente && datosPedidoRealtime) {
-        // 🔄 MODO ADICIÓN: Clonamos lo que ya está cocinándose en Firebase
-        itemsFinales = [...(datosPedidoRealtime.items || [])];
+        // Filtramos y quitamos empaques y cortesías viejas para recalcularlos limpiamente
+        const itemsPreviosLimpios = (datosPedidoRealtime.items || []).filter(
+          (i) => i.id !== "insumo_taper_envase" && i.id !== "postre_cortesia",
+        );
+
+        itemsFinales = [...itemsPreviosLimpios];
 
         // Recorremos los ítems que el cliente tiene en su carrito local actual
         nuevosItems.forEach((nuevo) => {
+          // Ignoramos empaques o cortesías que se hayan colado en el carrito local
+          if (
+            nuevo.id === "insumo_taper_envase" ||
+            nuevo.id === "postre_cortesia"
+          )
+            return;
+
           const index = itemsFinales.findIndex(
             (f) => f.idUnico === nuevo.idUnico,
           );
+
           if (index !== -1) {
-            // Si el producto ya existía en la orden, incrementamos su cantidad de forma controlada
-            itemsFinales[index].cantidad += nuevo.cantidad;
-            itemsFinales[index].subtotal =
-              itemsFinales[index].cantidad * itemsFinales[index].precio;
-            // Marcamos el ítem existente para que el cocinero sepa que aumentó la comanda
-            itemsFinales[index].adicionado = true;
+            // 🌟 CORREGIDO: La cantidad local manda (ya incluye lo viejo + lo que sumó en la carta)
+            itemsFinales[index].cantidad = nuevo.cantidad;
+            itemsFinales[index].subtotal = nuevo.subtotal;
+            itemsFinales[index].notaCliente = nuevo.notaCliente;
+
+            // Si la cantidad actual es mayor a la original de Firebase, es un adicional
+            const cantidadOriginal = itemsPreviosLimpios[index]?.cantidad || 0;
+            if (nuevo.cantidad > cantidadOriginal) {
+              itemsFinales[index].adicionado = true;
+            }
           } else {
-            // Si es un antojo nuevo (ej: una gaseosa extra), lo inyectamos con la marca de adicional
+            // Si es un antojo completamente nuevo, lo inyectamos marcado
             itemsFinales.push({ ...nuevo, adicionado: true });
           }
         });
       } else {
         // 🍔 MODO NUEVO: El pedido arranca directamente con los platos del carrito local
-        itemsFinales = [...nuevosItems];
+        itemsFinales = [...nuevosItems].filter(
+          (i) => i.id !== "insumo_taper_envase" && i.id !== "postre_cortesia",
+        );
       }
 
       // 🥡 Req 4.2: LÓGICA DEL TÁPER (+ S/. 1.00 PARA LLEVAR / DELIVERY)
       const requiereTaper =
         tipoPedido === "delivery" || tipoPedido === "llevar";
-      const yaTieneTaper = itemsFinales.some(
-        (i) => i.id === "insumo_taper_envase",
-      );
 
-      if (requiereTaper && !yaTieneTaper) {
-        itemsFinales.push({
-          id: "insumo_taper_envase",
-          idUnico: "insumo_taper_envase_unico",
-          nombre: "Cargo por Empaque / Llevar",
-          descripcion: "Costo de envases descartables",
-          precio: 1.0,
-          cantidad: 1,
-          subtotal: 1.0,
-          detalles: null,
-        });
+      if (requiereTaper) {
+        // 🌟 CORREGIDO: Sumamos las cantidades reales de todos los platos de comida para saber cuántos tápers se necesitan
+        const totalEmpaquesNecesarios = itemsFinales.reduce(
+          (acc, item) => acc + item.cantidad,
+          0,
+        );
+
+        if (totalEmpaquesNecesarios > 0) {
+          itemsFinales.push({
+            id: "insumo_taper_envase",
+            idUnico: "insumo_taper_envase_unico",
+            nombre: "Cargo por Empaque / Llevar",
+            descripcion: "Costo de envases descartables",
+            precio: 1.0,
+            cantidad: totalEmpaquesNecesarios, // Cantidad exacta emparejada
+            subtotal: 1.0 * totalEmpaquesNecesarios,
+            detalles: null,
+          });
+        }
       }
 
       // 🧁 Req 6: LÓGICA DE POSTRE DE CORTESÍA (PRECIO 0.00 SI SUPERA LOS S/. 50.00)
