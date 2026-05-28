@@ -1,8 +1,8 @@
 :root {
-  --tv-bg-dark: #060911;
-  --tv-card-bg: #111827;
+  --tv-bg-dark: #05070c;
+  --tv-card-bg: #0d121f;
   --tv-accent-color: #4f46e5;
-  --tv-text-main: #f8fafc;
+  --tv-text-main: #ffffff;
   --tv-text-muted: #94a3b8;
   --tv-price-color: #10b981;
 }
@@ -12,11 +12,46 @@
   color: var(--tv-text-main);
   height: 100vh;
   font-family: "Poppins", sans-serif;
-  padding: 25px;
+  padding: 30px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
+  position: relative;
+}
+
+/* 📊 BOTÓN FLOTANTE PANTALLA COMPLETA */
+.tv-fullscreen-toggle-btn {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(79, 70, 229, 0.9);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.tv-fullscreen-toggle-btn:hover {
+  background: var(--tv-accent-color);
+  transform: translateX(-50%) scale(1.05);
+}
+
+/* Ocultar el botón automáticamente si estamos en pantalla completa para no estorbar en el salón */
+.tv-board-main-container:fullscreen .tv-fullscreen-toggle-btn {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+/* Al pasar el mouse por arriba de la pantalla completa, vuelve a aparecer por seguridad */
+.tv-board-main-container:fullscreen .tv-fullscreen-toggle-btn:hover {
+  opacity: 1;
 }
 
 /* HEADER */
@@ -26,159 +61,138 @@
   align-items: center;
   border-bottom: 4px solid var(--tv-accent-color);
   padding-bottom: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   height: 10%;
 }
 
 .tv-board-branding h1 {
-  font-size: 3.2rem;
+  font-size: 3.5rem;
   margin: 0;
   font-weight: 900;
-  letter-spacing: 1.5px;
-  text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
 }
 
 .tv-board-subtitle {
   color: var(--tv-text-muted);
-  font-size: 1.3rem;
+  font-size: 1.4rem;
 }
 
 .tv-board-timer {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 800;
   background: var(--tv-card-bg);
-  padding: 8px 24px;
-  border-radius: 14px;
+  padding: 10px 25px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* DISTRIBUCIÓN DEL CUERPO EN DOS COLUMNAS */
+/* ESTRUCTURA PRINCIPAL DE COLA */
 .tv-board-layout-body {
   display: flex;
   flex: 1;
-  gap: 25px;
-  height: 82%;
+  gap: 30px;
+  height: 85%;
+  margin-bottom: 15px;
 }
 
-/* COLUMNA IZQUIERDA (PLATOS) */
-.tv-board-left-panel {
-  width: 70%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* CONTENEDOR IZQUIERDO GIGANTE */
+.tv-board-left-panel-premium {
+  width: 68%;
   height: 100%;
 }
 
-/* GRID DE TARJETAS ULTRA GRANDES (2 columnas x 3 filas) */
-.tv-board-large-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 20px;
-  flex: 1;
-}
-
-/* TARJETAS HORIZONTALES GRANDES INCREMENTADAS */
-.tv-board-item-card-large {
-  display: flex;
-  background: var(--tv-card-bg);
-  border-radius: 16px;
+.tv-board-hero-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.4s ease;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+  background: var(--tv-card-bg);
 }
 
-.tv-board-item-img-wrapper-large {
-  width: 180px; /* Ancho de imagen grande de alta visibilidad */
+/* FOTO INMERSIVA TOTAL */
+.tv-board-hero-bg-image {
+  width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.tv-board-item-img-wrapper-large img {
+.tv-board-hero-bg-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.tv-board-item-details-large {
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
+/* Degradado oscuro inferior para asegurar lectura perfecta del precio y nombre */
+.tv-board-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(
+    to top,
+    rgba(5, 7, 12, 0.95) 10%,
+    rgba(5, 7, 12, 0.6) 50%,
+    transparent 100%
+  );
 }
 
-.tv-board-item-header-large {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+/* CONTENIDO FLOTANTE INFERIOR (Estilo Franquicia) */
+.tv-board-hero-content-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 40px;
+  box-sizing: border-box;
+  z-index: 10;
 }
 
-.tv-board-item-name-large {
-  font-size: 2rem; /* Texto ultra legible para salones */
-  font-weight: 800;
-  max-width: 70%;
-}
-
-.tv-board-item-price-large {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: var(--tv-price-color);
-}
-
-.tv-board-item-desc-large {
-  color: var(--tv-text-muted);
-  font-size: 1.1rem;
-  margin: 8px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.tv-board-item-badge {
-  align-self: flex-start;
-  background: rgba(79, 70, 229, 0.2);
-  color: #a5b4fc;
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
-
-/* PUNTOS DE PAGINACIÓN */
-.tv-board-pagination-dots {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px 0;
-}
-
-.tv-dot {
-  width: 12px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.tv-dot.active {
+.tv-board-hero-category-badge {
   background: var(--tv-accent-color);
-  transform: scale(1.3);
-  box-shadow: 0 0 10px var(--tv-accent-color);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-bottom: 15px;
 }
 
-/* COLUMNA DERECHA (MARKETING / PUBLICIDAD) */
-.tv-board-right-panel {
-  width: 30%;
+.tv-board-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.tv-board-hero-name {
+  font-size: 4rem; /* Título masivo */
+  font-weight: 900;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+.tv-board-hero-price {
+  font-size: 4.5rem;
+  font-weight: 900;
+  color: var(--tv-price-color);
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+
+/* PANEL DE PUBLICIDAD DERECHO */
+.tv-board-right-panel-premium {
+  width: 32%;
   background: var(--tv-card-bg);
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  border: 2px solid rgba(79, 70, 229, 0.3);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  height: 96%;
+  border: 3px solid rgba(79, 70, 229, 0.4);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
 }
 
 .tv-marketing-promo-container {
@@ -192,9 +206,9 @@
   object-fit: cover;
 }
 
-.tv-marketing-placeholder {
-  padding: 40px 25px;
+.tv-marketing-placeholder-premium {
   height: 100%;
+  padding: 40px 30px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -203,22 +217,22 @@
   box-sizing: border-box;
 }
 
-.tv-marketing-placeholder h3 {
+.tv-promo-badge-fire {
   font-size: 2.2rem;
+  font-weight: 900;
   color: #f59e0b;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
-.tv-marketing-placeholder p {
-  font-size: 1.3rem;
+.tv-promo-text-main {
+  font-size: 1.6rem;
   color: var(--tv-text-muted);
   line-height: 1.6;
 }
 
-.tv-placeholder-decor {
-  font-size: 4rem;
-  margin-top: 30px;
-  animation: pulse 2s infinite;
+.tv-promo-decor-stars {
+  font-size: 5rem;
+  margin-top: 40px;
 }
 
 /* MARQUESINA INFERIOR */
@@ -228,21 +242,21 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 12px 0;
-  overflow: hidden;
+  padding: 10px 0;
   height: 5%;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .tv-marquee-wrapper {
   white-space: nowrap;
   display: inline-block;
-  animation: tvMarquee linear 30s infinite;
+  animation: tvMarquee linear 25s infinite;
 }
 
 .tv-marquee-text {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
   margin: 0;
   color: white;
@@ -255,17 +269,5 @@
   }
   100% {
     transform: translate3d(-33.33%, 0, 0);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
   }
 }

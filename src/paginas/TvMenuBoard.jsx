@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
-import "../estilos/tvMenuBoard.css";
+import "./tvMenuBoard.css"; // 🔥 Corrección de ruta relativa para que Vercel compile sin caerse
 
 const TvMenuBoard = ({ restauranteId }) => {
   const [productos, setProductos] = useState([]);
   const [nombreLocal, setNombreLocal] = useState("");
   const [marketing, setMarketing] = useState({
     textoBanner: "",
-    imagenPublicidad: "", // URL de la imagen promocional para el costado
+    imagenPublicidad: "",
     activo: false,
   });
 
-  // 🔄 Estado para la paginación automática
-  const [paginaActual, setPaginaActual] = useState(0);
-  const PRODUCTOS_POR_PAGINA = 6; // Cantidad ideal de tarjetas grandes para pantallas 1080p
+  // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
+  const [indexActual, setIndexActual] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
-    // 1. 🏦 NOMBRE DEL RESTAURANTE
+    // 1. NOMBRE DEL RESTAURANTE
     const datosRef = doc(
       db,
       "restaurantes",
@@ -33,7 +34,7 @@ const TvMenuBoard = ({ restauranteId }) => {
       }
     });
 
-    // 2. 🎯 PRODUCTOS DISPONIBLES Y AUTORIZADOS PARA LA TV
+    // 2. PRODUCTOS AUTORIZADOS PARA LA TV
     const productosRef = collection(
       db,
       "restaurantes",
@@ -56,7 +57,7 @@ const TvMenuBoard = ({ restauranteId }) => {
       );
     });
 
-    // 3. 📢 CONFIGURACIÓN DE TELEVISIÓN / MARKETING LATERAL Y BANNER
+    // 3. ANUNCIOS Y MARKETING
     const configTvRef = doc(
       db,
       "restaurantes",
@@ -77,31 +78,58 @@ const TvMenuBoard = ({ restauranteId }) => {
     };
   }, [restauranteId]);
 
-  // 🕒 EFECTO: Rotación automática de pantallas (Paginación tipo Franquicia)
+  // 🕒 Rotación automática individual (Estilo cadena de comida rápida)
   useEffect(() => {
-    if (productos.length <= PRODUCTOS_POR_PAGINA) {
-      setPaginaActual(0);
+    if (productos.length <= 1) {
+      setIndexActual(0);
       return;
     }
 
-    const totalPaginas = Math.ceil(productos.length / PRODUCTOS_POR_PAGINA);
-
     const intervalo = setInterval(() => {
-      setPaginaActual((prev) => (prev + 1) % totalPaginas);
-    }, 8000); // ⏱️ Cambia de pantallazo cada 8 segundos automáticamente
+      setIndexActual((prev) => (prev + 1) % productos.length);
+    }, 7000); // Cambia de plato cada 7 segundos
 
     return () => clearInterval(intervalo);
   }, [productos]);
 
-  // Segmentación de productos para la página activa
-  const inicio = paginaActual * PRODUCTOS_POR_PAGINA;
-  const productosVisibles = productos.slice(
-    inicio,
-    inicio + PRODUCTOS_POR_PAGINA,
-  );
+  // 🖥️ Lógica del Manejador de Pantalla Completa Nativo
+  const toggleFullScreen = async () => {
+    if (!document.fullscreenElement) {
+      try {
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        }
+        setIsFullScreen(true);
+      } catch (err) {
+        console.error("Error al activar pantalla completa:", err);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+      setIsFullScreen(false);
+    }
+  };
+
+  // Escuchar si el usuario sale con la tecla ESC
+  useEffect(() => {
+    const handleScrenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleScrenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleScrenChange);
+  }, []);
+
+  const productoActivo = productos[indexActual];
 
   return (
-    <div className="tv-board-main-container">
+    <div ref={containerRef} className="tv-board-main-container">
+      {/* 🔘 BOTÓN FLOTANTE INTELIGENTE: Controla el Fullscreen y se adapta visualmente */}
+      <button onClick={toggleFullScreen} className="tv-fullscreen-toggle-btn">
+        {isFullScreen ? "✕ Salir Vista TV" : "📺 Pantalla Completa"}
+      </button>
+
       {/* HEADER SUPERIOR */}
       <header className="tv-board-header">
         <div className="tv-board-branding">
@@ -117,66 +145,48 @@ const TvMenuBoard = ({ restauranteId }) => {
         </div>
       </header>
 
-      {/* CONTENEDOR DIVIDIDO: PLATOS (IZQUIERDA) | ANUNCIOS (DERECHA) */}
+      {/* CUERPO DIVIDIDO */}
       <div className="tv-board-layout-body">
-        {/* COLUMNA DE PLATOS (70% del ancho) */}
-        <main className="tv-board-left-panel">
-          {productos.length === 0 ? (
+        {/* PANEL IZQUIERDO: UN SOLO PLATO EN FORMATO GIGANTE INMERSIVO */}
+        <main className="tv-board-left-panel-premium">
+          {!productoActivo ? (
             <div className="tv-board-no-products">
               <p>📺 No hay productos seleccionados para mostrar en la TV.</p>
-              <small>Activa "Mostrar en TV" en el inventario.</small>
+              <small>Activa "Mostrar en TV" en tus productos.</small>
             </div>
           ) : (
-            <div className="tv-board-large-cards-grid">
-              {productosVisibles.map((item) => (
-                <div key={item.id} className="tv-board-item-card-large">
-                  {/* 🔥 CORREGIDO: apuntando a item.imagen */}
-                  {item.imagen && (
-                    <div className="tv-board-item-img-wrapper-large">
-                      <img src={item.imagen} alt={item.nombre} />
-                    </div>
-                  )}
-
-                  <div className="tv-board-item-details-large">
-                    <div className="tv-board-item-header-large">
-                      <span className="tv-board-item-name-large">
-                        {item.nombre}
-                      </span>
-                      <span className="tv-board-item-price-large">
-                        S/ {Number(item.precio).toFixed(2)}
-                      </span>
-                    </div>
-                    {item.descripcion && (
-                      <p className="tv-board-item-desc-large">
-                        {item.descripcion}
-                      </p>
-                    )}
-                    <span className="tv-board-item-badge">
-                      {item.categoria.toUpperCase()}
-                    </span>
-                  </div>
+            <div className="tv-board-hero-card">
+              {/* FOTO GIGANTE DE FONDO COMPLETO */}
+              {productoActivo.imagen && (
+                <div className="tv-board-hero-bg-image">
+                  <img
+                    src={productoActivo.imagen}
+                    alt={productoActivo.nombre}
+                  />
+                  <div className="tv-board-hero-overlay"></div>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          {/* INDICADOR DE PÁGINAS (Puntitos abajo del panel de platos) */}
-          {productos.length > PRODUCTOS_POR_PAGINA && (
-            <div className="tv-board-pagination-dots">
-              {Array.from({
-                length: Math.ceil(productos.length / PRODUCTOS_POR_PAGINA),
-              }).map((_, index) => (
-                <span
-                  key={index}
-                  className={`tv-dot ${paginaActual === index ? "active" : ""}`}
-                />
-              ))}
+              {/* DETALLES DEL PLATO FLOTANTES ABAJO (Igual que en tu imagen de ejemplo) */}
+              <div className="tv-board-hero-content-bottom">
+                <span className="tv-board-hero-category-badge">
+                  {productoActivo.categoria.toUpperCase()}
+                </span>
+                <div className="tv-board-hero-row">
+                  <h2 className="tv-board-hero-name">
+                    {productoActivo.nombre}
+                  </h2>
+                  <span className="tv-board-hero-price">
+                    S/ {Number(productoActivo.precio).toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
         </main>
 
-        {/* COLUMNA LATERAL DE MARKETING / ANUNCIOS (30% del ancho) */}
-        <aside className="tv-board-right-panel">
+        {/* PANEL DERECHO: PUBLICIDAD ADAPTABLE */}
+        <aside className="tv-board-right-panel-premium">
           {marketing.activo && marketing.imagenPublicidad ? (
             <div className="tv-marketing-promo-container">
               <img
@@ -186,19 +196,19 @@ const TvMenuBoard = ({ restauranteId }) => {
               />
             </div>
           ) : (
-            <div className="tv-marketing-placeholder">
-              <h3>🔥 COMBOS IMPERDIBLES</h3>
-              <p>
+            <div className="tv-marketing-placeholder-premium">
+              <div className="tv-promo-badge-fire">🔥 COMBOS IMPERDIBLES</div>
+              <p className="tv-promo-text-main">
                 Consulta por nuestras promociones exclusivas pidiendo desde tu
                 mesa.
               </p>
-              <div className="tv-placeholder-decor">✨</div>
+              <div className="tv-promo-decor-stars">✨</div>
             </div>
           )}
         </aside>
       </div>
 
-      {/* MARQUESINA PUBLICITARIA INFERIOR */}
+      {/* MARQUESINA INFERIOR */}
       {marketing.activo && marketing.textoBanner && (
         <footer className="tv-board-footer-marquee">
           <div className="tv-marquee-wrapper">
