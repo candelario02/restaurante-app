@@ -267,10 +267,6 @@ function App() {
                     <button
                       className={`btn-nav-tab ${seccion === "tv" ? "active" : ""}`}
                       onClick={() => setSeccion("tv")}
-                      style={{
-                        borderLeft: "2px solid #6366f1",
-                        color: "#6366f1",
-                      }}
                     >
                       📺 Tablero TV
                     </button>
@@ -354,8 +350,13 @@ function App() {
                   setSeccion(seccionInicial);
                 }}
               />
+            ) : // Si ya hay un operador validado por PIN, decidimos qué renderizar:
+
+            /* 📺 INTERCEPCIÓN CRÍTICA: Si el botón presionó "tv", cargamos el JSX de la tele a pantalla completa */
+            seccion === "tv" ? (
+              <TvMenuBoard restauranteId={restauranteId} />
             ) : (
-              // Si ya hay un operador validado por PIN, renderizamos el panel administrativo normal
+              /* De lo contrario, sigue cargando el panel administrativo normal */
               <Admin
                 seccion={seccion}
                 setSeccion={setSeccion}
