@@ -733,6 +733,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       }
     });
   };
+  //manejar imagen
   const manejarClickImagen = () => {
     fileInputRef.current.click();
   };

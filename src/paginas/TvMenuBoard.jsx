@@ -145,75 +145,48 @@ const TvMenuBoard = ({ restauranteId }) => {
       </header>
 
       {/* CUERPO DIVIDIDO */}
-      <div className="tv-board-layout-body">
-        {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS CON FOTO DE FONDO Y DESCRIPCIÓN */}
-        <main className="tv-board-left-grid-container">
-          {productos.length === 0 ? (
-            <div className="tv-board-no-products">
-              <p>📺 No hay productos autorizados para mostrar en la TV.</p>
-              <small>
-                Activa "Mostrar en TV" en el panel de administración.
-              </small>
-            </div>
-          ) : (
-            // Tomamos los primeros 4 productos configurados para la TV
-            productos.slice(0, 4).map((p) => (
-              <div key={p.id} className="tv-board-product-card">
-                {/* CAPA DE FOTO DE FONDO (Corregido a p.imagen igual que en tu menu.jsx) */}
-                {p.imagen && (
-                  <div className="tv-board-card-bg-image">
-                    <img src={p.imagen} alt={p.nombre} />
-                    <div className="tv-board-card-gradient-overlay"></div>
-                  </div>
+      {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS CON FOTO DE FONDO Y DESCRIPCIÓN */}
+      <main className="tv-board-left-grid-container">
+        {productos.length === 0 ? (
+          <div className="tv-board-no-products">
+            <p>📺 No hay productos autorizados para mostrar en la TV.</p>
+            <small>Activa "Mostrar en TV" en el panel de administración.</small>
+          </div>
+        ) : (
+          productos.slice(0, 4).map((p) => (
+            <div key={p.id} className="tv-board-product-card">
+              {/* 🔥 CORREGIDO: Ahora lee 'imagenUrl' exactamente como está en tu Firestore */}
+              {p.imagenUrl && (
+                <div className="tv-board-card-bg-image">
+                  <img src={p.imagenUrl} alt={p.nombre} />
+                  <div className="tv-board-card-gradient-overlay"></div>
+                </div>
+              )}
+
+              {/* CONTENIDO DE LA TARJETA */}
+              <div className="tv-board-card-info-content">
+                <div className="tv-board-card-top-row">
+                  <h3 className="tv-board-card-title">{p.nombre}</h3>
+                  <span className="tv-board-card-price">
+                    S/ {Number(p.precio).toFixed(2)}
+                  </span>
+                </div>
+
+                {/* DESCRIPCIÓN DEL PLATO */}
+                {p.descripcion && (
+                  <p className="tv-board-card-description">{p.descripcion}</p>
                 )}
 
-                {/* CONTENIDO DE LA TARJETA (Texto flotante con lectura clara) */}
-                <div className="tv-board-card-info-content">
-                  <div className="tv-board-card-top-row">
-                    <h3 className="tv-board-card-title">{p.nombre}</h3>
-                    <span className="tv-board-card-price">
-                      S/ {Number(p.precio).toFixed(2)}
-                    </span>
-                  </div>
-
-                  {/* DESCRIPCIÓN DEL PLATO (Misma lógica de validación que tu menu.jsx) */}
-                  {p.descripcion && (
-                    <p className="tv-board-card-description">{p.descripcion}</p>
-                  )}
-
-                  {p.categoria && (
-                    <span className="tv-board-card-badge">
-                      {p.categoria.toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                {p.categoria && (
+                  <span className="tv-board-card-badge">
+                    {p.categoria.toUpperCase()}
+                  </span>
+                )}
               </div>
-            ))
-          )}
-        </main>
-
-        {/* PANEL DERECHO: PUBLICIDAD ADAPTABLE */}
-        <aside className="tv-board-right-panel-premium">
-          {marketing.activo && marketing.imagenPublicidad ? (
-            <div className="tv-marketing-promo-container">
-              <img
-                src={marketing.imagenPublicidad}
-                alt="Promoción del Día"
-                className="tv-marketing-img"
-              />
             </div>
-          ) : (
-            <div className="tv-marketing-placeholder-premium">
-              <div className="tv-promo-badge-fire">🔥 COMBOS IMPERDIBLES</div>
-              <p className="tv-promo-text-main">
-                Consulta por nuestras promociones exclusivas pidiendo desde tu
-                mesa.
-              </p>
-              <div className="tv-promo-decor-stars">✨</div>
-            </div>
-          )}
-        </aside>
-      </div>
+          ))
+        )}
+      </main>
 
       {/* MARQUESINA INFERIOR */}
       {marketing.activo && marketing.textoBanner && (
