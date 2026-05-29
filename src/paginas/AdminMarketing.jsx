@@ -177,21 +177,20 @@ const AdminMarketing = ({ restauranteId }) => {
           <div className="admin-mkt-input-group">
             <label>⚙️ Texto para pie de tv</label>
             <select
-              className="admin-mkt-select" /* Puedes reusar estilos de inputs o darle una clase select */
-              value={modoMarquesina || "automatico"} // Suponiendo que manejas este estado (automatico / manual)
+              className="admin-mkt-select" 
+              value={modoMarquesina || "automatico"} 
               onChange={(e) => setModoMarquesina(e.target.value)}
             >
               <option value="automatico">✨ Auto (Textos de Afiches)</option>
               <option value="manual">✍️ Manual (Texto Fijo)</option>
             </select>
-          </div>
+           </div>
 
           {/* 2. MODIFICADO: Input Dinámico Inteligente */}
           <div className="admin-mkt-input-group" style={{ flexGrow: 2 }}>
-            <label>📝 Texto Informativo (Marquesina TV)</label>
+            <label>📝Anuncio informativo para (PIE TV)</label>
             <input
               type="text"
-              /* Si está en automático, calculamos en tiempo real el texto unido de las tarjetas activas para mostrarlo como preview */
               value={
                 modoMarquesina === "automatico"
                   ? (
@@ -206,7 +205,7 @@ const AdminMarketing = ({ restauranteId }) => {
                       )
                       .map((a) => a?.texto || "")
                       .filter(Boolean)
-                      .join("  •  ") || "Sin afiches activos para mostrar"
+                      .join("  •  ") || "Sin anuncios manual"
                   : textoBanner
               }
               onChange={(e) => {
