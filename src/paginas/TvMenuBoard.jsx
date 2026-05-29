@@ -13,12 +13,21 @@ const TvMenuBoard = ({ restauranteId }) => {
 
   // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
   const [productos, setProductos] = useState([]);
-  const [config, setConfig] = useState(null); // 🔄 Centraliza nombreLocal, logOut y marketing multipunto
+  const [config, setConfig] = useState(null); // 🔥 Se mantiene null al inicio para el control de carga
   const [indexActual, setIndexActual] = useState(0);
   const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
   const [isFullScreen, setIsFullScreen] = useState(false);
   const containerRef = useRef(null);
-  const anunciosVisibles = config.anuncios.filter(a => a.activo !== false);
+
+  // 🔄 Paginación automática para los productos de la izquierda (Opcional si usas indexActual)
+  useEffect(() => {
+    if (productos.length <= 4) return;
+    const intervaloProductos = setInterval(() => {
+      setIndexActual((prev) => (prev + 4 >= productos.length ? 0 : prev + 4));
+    }, 8000); // Cambia de grupo cada 8 segundos sin romper el CSS
+    return () => clearInterval(intervaloProductos);
+  }, [productos]);
+
   //usefectt para caragr datos
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
@@ -65,9 +74,13 @@ const TvMenuBoard = ({ restauranteId }) => {
       unsubProd();
     };
   }, [restauranteId]);
-  // 🕒 Rotación automática de la galería de publicidad (Panel Derecho)
+
+  // 🕒 Rotación automática de la galería de publicidad filtrando solo los ACTIVOS
   useEffect(() => {
-    if (!config || !config.anuncios || config.anuncios.length <= 1) {
+    if (!config || !config.anuncios) return;
+
+    const anunciosVisibles = config.anuncios.filter((a) => a.activo !== false);
+    if (anunciosVisibles.length <= 1) {
       setIndexPromo(0);
       return;
     }
@@ -76,7 +89,7 @@ const TvMenuBoard = ({ restauranteId }) => {
     const tiempoEnMilisegundos = (config.tiempoRotacion || 6) * 1000;
 
     const intervaloPromo = setInterval(() => {
-      setIndexPromo((prev) => (prev + 1) % config.anuncios.length);
+      setIndexPromo((prev) => (prev + 1) % anunciosVisibles.length);
     }, tiempoEnMilisegundos);
 
     return () => clearInterval(intervaloPromo);
@@ -111,7 +124,21 @@ const TvMenuBoard = ({ restauranteId }) => {
       document.removeEventListener("fullscreenchange", handleScrenChange);
   }, []);
 
-  const productoActivo = productos[indexActual];
+  // 🛑 PANTALLA DE CARGA SEGURA: Evita que el componente intente leer datos inexistentes al arrancar
+  if (!config) {
+    return (
+      <div className="tv-board-loading-screen">
+        <h2 className="tv-board-loading-text">
+          Conectando con el canal de marketing de Jekito Restobar...
+        </h2>
+      </div>
+    );
+  }
+
+  // 🛡️ Una vez cargado "config", procesamos los anuncios que el administrador activó
+  const anunciosVisibles = (config.anuncios || []).filter(
+    (a) => a.activo !== false,
+  );
 
   return (
     <div ref={containerRef} className="tv-board-main-container">
@@ -140,7 +167,7 @@ const TvMenuBoard = ({ restauranteId }) => {
         className="tv-board-columns-wrapper"
         style={{ display: "flex", flex: 1, width: "100%", overflow: "hidden" }}
       >
-        {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS */}
+        {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS DINÁMICAS POR PÁGINA */}
         <main className="tv-board-left-grid-container" style={{ flex: 1 }}>
           {productos.length === 0 ? (
             <div className="tv-board-no-products">
@@ -150,7 +177,8 @@ const TvMenuBoard = ({ restauranteId }) => {
               </small>
             </div>
           ) : (
-            productos.slice(0, 4).map((p) => (
+            // Muestra bloques de 4 productos de acuerdo al índice actual
+            productos.slice(indexActual, indexActual + 4).map((p) => (
               <div key={p.id} className="tv-board-product-card">
                 {p.imagenUrl && (
                   <div className="tv-board-card-bg-image">
@@ -182,48 +210,35 @@ const TvMenuBoard = ({ restauranteId }) => {
           )}
         </main>
 
-        {/* 🖼️ PANEL DERECHO PREMIUM: PUBLICIDAD ROTATIVA AUTOMÁTICA O LOGO RESPUESTO */}
+        {/* 🖼️ PANEL DERECHO PREMIUM: PUBLICIDAD ROTATIVA AUTOMÁTICA FILTRADA */}
         <aside className="tv-board-right-panel-premium">
-          {config?.anuncios && config.anuncios.length > 0 ? (
+          {anunciosVisibles.length > 0 ? (
             <div
               className="tv-marketing-promo-container"
               style={{ position: "relative" }}
             >
-              {/* 🔥 EL TEXTO DEL ANUNCIO (Se muestra si el admin escribió algo para esta foto) */}
-              {config.anuncios[indexPromo].textoPromocional && (
-                <div
-                  className="tv-marketing-promo-text-overlay"
-                  style={{
-                    position: "absolute",
-                    top: "10%",
-                    left: 0,
-                    width: "100%",
-                    textAlign: "center",
-                    zIndex: 10,
-                    color: "white",
-                    textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
-                    padding: "0 20px",
-                  }}
-                >
-                  <h2
-                    style={{
-                      fontSize: "2.5rem",
-                      fontWeight: "bold",
-                      margin: 0,
-                    }}
-                  >
-                    {config.anuncios[indexPromo].textoPromocional}
-                  </h2>
-                </div>
-              )}
+              {/* Ajuste de seguridad por si el índice queda fuera de rango temporalmente */}
+              {anunciosVisibles[indexPromo] && (
+                <>
+                  {/* 🔥 EL TEXTO DEL ANUNCIO */}
+                  {anunciosVisibles[indexPromo].textoPromocional && (
+                    <div className="tv-marketing-promo-text-overlay">
+                      <h2 className="tv-marketing-promo-title">
+                        {anunciosVisibles[indexPromo].textoPromocional}
+                      </h2>
+                    </div>
+                  )}
 
-              <img
-                src={config.anuncios[indexPromo].imagenUrl}
-                alt="Promoción Activa"
-                className="tv-marketing-img"
-              />
+                  <img
+                    src={anunciosVisibles[indexPromo].imagenUrl}
+                    alt="Promoción Activa"
+                    className="tv-marketing-img"
+                  />
+                </>
+              )}
             </div>
           ) : (
+            /* RESPUESTO: LOGO CUANDO NO HAY PUBLICIDADES ACTIVAS */
             <div className="tv-marketing-promo-container">
               <img
                 src={config?.logOut || "/logo-placeholder.jpg"}
