@@ -19,7 +19,7 @@ const AdminMarketing = ({ restauranteId }) => {
   const textoAMostrar = isAuto
     ? lista
         .filter((a) => a?.visible || a?.estado === "mostrando" || a?.activo)
-        .map((a) => a?.texto || "")
+        .map((a) => a?.textoPromocional || a?.texto || "Sin descripción")
         .filter(Boolean)
         .join("  •  ")
     : config?.textoBanner || "Bienvenido";
