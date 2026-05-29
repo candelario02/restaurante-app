@@ -432,7 +432,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
       const datos = {
         nombre: nombre.trim(),
-        precio: parseFloat(precio) || 0,
+        precio: Number(parseFloat(precio || 0).toFixed(2)),
         descripcion: descripcion.trim(),
         categoria,
         imagenUrl: urlFinal || "",
