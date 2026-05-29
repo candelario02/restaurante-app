@@ -21,7 +21,7 @@ const AdminMarketing = ({ restauranteId }) => {
       "restaurantes",
       restauranteId,
       "configuraciones",
-      "datos"
+      "datos",
     );
     const unsubscribe = onSnapshot(docRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -29,7 +29,7 @@ const AdminMarketing = ({ restauranteId }) => {
         setConfig(data);
         setTextoBanner(data.textoBanner || "");
         setActivo(data.activo || false);
-        setTiempoRotacion(data.tiempoRotacion || 6); 
+        setTiempoRotacion(data.tiempoRotacion || 6);
       }
     });
 
@@ -64,14 +64,14 @@ const AdminMarketing = ({ restauranteId }) => {
           imagenUrl: resCloudinary.url,
           publicId: resCloudinary.public_id,
           textoPromocional: textoAnuncioActual,
-          activo: true, 
+          activo: true,
         };
 
         await guardarMarketingConfig(restauranteId, {
           anuncios: [...anunciosActuales, nuevoAnuncio],
         });
 
-        setTextoAnuncioActual(""); 
+        setTextoAnuncioActual("");
       }
     } catch (error) {
       console.error("Error al subir anuncio:", error);
@@ -84,7 +84,7 @@ const AdminMarketing = ({ restauranteId }) => {
   const handleUpdateAnuncio = async (id, camposActualizados) => {
     if (!restauranteId) return;
     const anunciosActualizados = (config?.anuncios || []).map((anuncio) =>
-      anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio
+      anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio,
     );
 
     await guardarMarketingConfig(restauranteId, {
@@ -101,7 +101,7 @@ const AdminMarketing = ({ restauranteId }) => {
       return;
 
     const anunciosFiltrados = (config?.anuncios || []).filter(
-      (a) => a.id !== idAnuncio
+      (a) => a.id !== idAnuncio,
     );
     await guardarMarketingConfig(restauranteId, {
       anuncios: anunciosFiltrados,
@@ -134,18 +134,62 @@ const AdminMarketing = ({ restauranteId }) => {
       </header>
 
       {/* ⚙️ PANEL SUPERIOR: CONFIGURACIÓN GLOBAL */}
-      <form onSubmit={handleGuardarConfigGlobal} className="admin-mkt-top-panel">
+      <form
+        onSubmit={handleGuardarConfigGlobal}
+        className="admin-mkt-top-panel"
+      >
         <div className="admin-mkt-row">
+          {/* 1. NUEVO: Selector de Modo de Marquesina */}
           <div className="admin-mkt-input-group">
+            <label>⚙️ Origen del Texto (Marquesina)</label>
+            <select
+              className="admin-mkt-select" /* Puedes reusar estilos de inputs o darle una clase select */
+              value={modoMarquesina || "automatico"} // Suponiendo que manejas este estado (automatico / manual)
+              onChange={(e) => setModoMarquesina(e.target.value)}
+            >
+              <option value="automatico">✨ Auto (Textos de Afiches)</option>
+              <option value="manual">✍️ Manual (Texto Fijo)</option>
+            </select>
+          </div>
+
+          {/* 2. MODIFICADO: Input Dinámico Inteligente */}
+          <div className="admin-mkt-input-group" style={{ flexGrow: 2 }}>
             <label>📝 Texto Informativo (Marquesina TV)</label>
             <input
               type="text"
-              value={textoBanner}
-              onChange={(e) => setTextoBanner(e.target.value)}
-              placeholder="Ej: ¡Hoy 2x1 en toda la coctelería!"
+              /* Si está en automático, calculamos en tiempo real el texto unido de las tarjetas activas para mostrarlo como preview */
+              value={
+                modoMarquesina === "automatico"
+                  ? anuncios
+                      .filter((a) => a.visible || a.estado === "mostrando") // Filtra solo los activos
+                      .map((a) => a.texto)
+                      .join("  •  ") || "Sin afiches activos para mostrar"
+                  : textoBanner
+              }
+              onChange={(e) => {
+                if (modoMarquesina === "manual") {
+                  setTextoBanner(e.target.value);
+                }
+              }}
+              disabled={
+                modoMarquesina === "automatico"
+              } /* Se bloquea elegantemente si es automático */
+              placeholder={
+                modoMarquesina === "automatico"
+                  ? "Generando texto desde los afiches activos..."
+                  : "Ej: ¡Hoy 2x1 en toda la coctelería!"
+              }
+              style={{
+                opacity: modoMarquesina === "automatico" ? 0.75 : 1,
+                cursor:
+                  modoMarquesina === "automatico" ? "not-allowed" : "text",
+                backgroundColor:
+                  modoMarquesina === "automatico" ? "#e2e8f0" : "#f1f5f9",
+              }}
             />
           </div>
 
+          {/* 3. IGUAL: Rotación en Segundos */}
           <div className="admin-mkt-input-group">
             <label>⏱️ Rotación (Segundos)</label>
             <input
@@ -156,6 +200,7 @@ const AdminMarketing = ({ restauranteId }) => {
             />
           </div>
 
+          {/* 4. IGUAL: Visibilidad Global */}
           <div className="admin-mkt-input-group">
             <label>📺 Visibilidad Global (Panel TV)</label>
             <button
@@ -168,6 +213,7 @@ const AdminMarketing = ({ restauranteId }) => {
             </button>
           </div>
 
+          {/* 5. IGUAL: Botón Guardar */}
           <div className="admin-mkt-input-group">
             <label>&nbsp;</label>
             <button type="submit" className="admin-mkt-btn-primary">
@@ -188,8 +234,12 @@ const AdminMarketing = ({ restauranteId }) => {
             placeholder="Asigna un título o texto a la promoción (Opcional)"
             className="admin-mkt-upload-text"
           />
-          <label className={`admin-mkt-file-label ${cargandoImagen ? "admin-mkt-disabled" : ""}`}>
-            {cargandoImagen ? "⏳ Subiendo e inyectando..." : "➕ Seleccionar e Inyectar Imagen"}
+          <label
+            className={`admin-mkt-file-label ${cargandoImagen ? "admin-mkt-disabled" : ""}`}
+          >
+            {cargandoImagen
+              ? "⏳ Subiendo e inyectando..."
+              : "➕ Seleccionar e Inyectar Imagen"}
             <input
               type="file"
               accept="image/*"
@@ -203,15 +253,18 @@ const AdminMarketing = ({ restauranteId }) => {
 
       {/* 🗂️ PANEL INFERIOR: TARJETAS DE ANUNCIOS */}
       <main className="admin-mkt-ads-section">
-        <h3>Lista de Afiches Activos en Sistema ({config.anuncios?.length || 0})</h3>
+        <h3>
+          Lista de Afiches Activos en Sistema ({config.anuncios?.length || 0})
+        </h3>
 
         <div className="admin-mkt-ads-grid">
           {config.anuncios && config.anuncios.length > 0 ? (
             config.anuncios.map((anuncio) => (
               <div key={anuncio.id} className="admin-mkt-ad-card">
-                
                 {/* Badge flotante que indica si se muestra o no */}
-                <div className={`admin-mkt-status-badge ${anuncio.activo !== false ? "badge-on" : "badge-off"}`}>
+                <div
+                  className={`admin-mkt-status-badge ${anuncio.activo !== false ? "badge-on" : "badge-off"}`}
+                >
                   {anuncio.activo !== false ? "En Pantalla" : "Oculto"}
                 </div>
 
@@ -263,7 +316,8 @@ const AdminMarketing = ({ restauranteId }) => {
             <div className="admin-mkt-fallback">
               <p>No hay afiches publicitarios registrados en este momento.</p>
               <small>
-                La TV mostrará automáticamente el logotipo institucional por defecto.
+                La TV mostrará automáticamente el logotipo institucional por
+                defecto.
               </small>
             </div>
           )}
@@ -274,4 +328,3 @@ const AdminMarketing = ({ restauranteId }) => {
 };
 
 export default AdminMarketing;
-
