@@ -275,4 +275,3 @@ const AdminMarketing = ({ restauranteId }) => {
 
 export default AdminMarketing;
 
-export default AdminMarketing;
