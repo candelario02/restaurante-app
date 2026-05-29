@@ -432,7 +432,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
       const datos = {
         nombre: nombre.trim(),
-        precio: Number(precio),
+        precio: parseFloat(precio) || 0,
         descripcion: descripcion.trim(),
         categoria,
         imagenUrl: urlFinal || "",
@@ -1114,11 +1114,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               value={precio}
               onChange={(e) => {
                 const valor = e.target.value;
-
-                if (valor.split(".")[0].length > 3) {
-                  return;
-                }
-
+                if (valor.split(".")[0].length > 3) return;
                 setPrecio(valor);
               }}
               placeholder="Precio (S/)"
