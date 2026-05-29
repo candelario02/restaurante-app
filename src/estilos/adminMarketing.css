@@ -21,11 +21,13 @@
 
 .admin-mkt-header {
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e2e8f0; 
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-mkt-header h2 {
