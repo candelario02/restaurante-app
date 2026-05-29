@@ -11,6 +11,7 @@ const AdminMarketing = ({ restauranteId }) => {
   const [activo, setActivo] = useState(false);
   const [cargandoImagen, setCargandoImagen] = useState(false);
   const [textoAnuncioActual, setTextoAnuncioActual] = useState("");
+  const [modoMarquesina, setModoMarquesina] = useState("automatico");
   const [tiempoRotacion, setTiempoRotacion] = useState(6);
 
   useEffect(() => {
