@@ -279,19 +279,52 @@
   overflow: hidden;
   border: 3px solid rgba(79, 70, 229, 0.4);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column; /* Alinea el bloque de texto y la imagen verticalmente */
 }
 
 .tv-marketing-promo-container {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column; /* Fuerza a que los elementos internos respeten su espacio */
+}
+
+/* 🔥 NUEVO: Bloque exclusivo para el texto superior con fondo oscuro para máximo contraste */
+.tv-marketing-promo-text-block {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.85); /* Fondo premium oscuro detrás de las letras */
+  padding: 20px;
+  text-align: center;
+  box-sizing: border-box;
+  border-bottom: 2px solid rgba(79, 70, 229, 0.3); /* Línea sutil divisoria */
+}
+
+/* Estilo para el título H2 interno */
+.tv-marketing-promo-title {
+  font-size: 2.2rem; /* Ajustado ligeramente para optimizar espacio */
+  font-weight: bold;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+  line-height: 1.3;
+}
+
+/* 🔥 NUEVO: Contenedor para que la imagen consuma exactamente el espacio sobrante */
+.tv-marketing-img-wrapper {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  background-color: #000; /* Fondo negro por si la imagen tiene proporciones distintas */
 }
 
 .tv-marketing-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Cambiado a contain para que la comida se vea completa sin recortarse */
 }
 
+/* Mantienes tus placeholders intactos por si acaso */
 .tv-marketing-placeholder-premium {
   height: 100%;
   padding: 40px 30px;
@@ -319,7 +352,7 @@
 .tv-promo-decor-stars {
   font-size: 5rem;
   margin-top: 40px;
-}
+}s
 
 /* MARQUESINA INFERIOR */
 .tv-board-footer-marquee {
@@ -348,38 +381,8 @@
   color: white;
   display: inline-block;
 }
-/* Contenedor principal del panel derecho */
-.tv-board-right-panel-premium {
-  width: 35%;
-  position: relative;
-  overflow: hidden;
-}
 
-/* Contenedor de la imagen/promoción */
-.tv-marketing-promo-container {
-  width: 100%;
-  height: 100%;
-}
-/* Contenedor del texto superpuesto en la publicidad */
-.tv-marketing-promo-text-overlay {
-  position: absolute;
-  top: 10%;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  z-index: 10;
-  color: white;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
-  padding: 0 20px;
-  box-sizing: border-box; /* Evita que el padding rompa el 100% del ancho */
-}
 
-/* Estilo para el título H2 interno */
-.tv-marketing-promo-title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin: 0;
-}
 /* Contenedor principal de la pantalla de carga */
 .tv-board-loading-screen {
   color: white;
@@ -399,7 +402,7 @@
   font-weight: 500;
   margin: 0;
 }
-/* Imagen que ocupa todo el espacio sin deformarse */
+/* clase para imagen de aniucio si esque no hay nada en ese baner  */
 .tv-marketing-img {
   width: 100%;
   height: 100%;

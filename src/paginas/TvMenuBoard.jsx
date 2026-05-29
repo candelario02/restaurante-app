@@ -213,38 +213,40 @@ const TvMenuBoard = ({ restauranteId }) => {
         {/* 🖼️ PANEL DERECHO PREMIUM: PUBLICIDAD ROTATIVA AUTOMÁTICA FILTRADA */}
         <aside className="tv-board-right-panel-premium">
           {anunciosVisibles.length > 0 ? (
-            <div
-              className="tv-marketing-promo-container"
-              style={{ position: "relative" }}
-            >
+            <div className="tv-marketing-promo-container">
               {/* Ajuste de seguridad por si el índice queda fuera de rango temporalmente */}
               {anunciosVisibles[indexPromo] && (
                 <>
-                  {/* 🔥 EL TEXTO DEL ANUNCIO */}
+                  {/* 🔥 EL TEXTO DEL ANUNCIO (Ahora es un bloque independiente arriba) */}
                   {anunciosVisibles[indexPromo].textoPromocional && (
-                    <div className="tv-marketing-promo-text-overlay">
+                    <div className="tv-marketing-promo-text-block">
                       <h2 className="tv-marketing-promo-title">
                         {anunciosVisibles[indexPromo].textoPromocional}
                       </h2>
                     </div>
                   )}
 
-                  <img
-                    src={anunciosVisibles[indexPromo].imagenUrl}
-                    alt="Promoción Activa"
-                    className="tv-marketing-img"
-                  />
+                  {/* 🖼️ LA IMAGEN DEL ANUNCIO (Se ajusta abajo automáticamente) */}
+                  <div className="tv-marketing-img-wrapper">
+                    <img
+                      src={anunciosVisibles[indexPromo].imagenUrl}
+                      alt="Promoción Activa"
+                      className="tv-marketing-img"
+                    />
+                  </div>
                 </>
               )}
             </div>
           ) : (
             /* RESPUESTO: LOGO CUANDO NO HAY PUBLICIDADES ACTIVAS */
             <div className="tv-marketing-promo-container">
-              <img
-                src={config?.logOut || "/logo-placeholder.jpg"}
-                alt="Logo Institucional"
-                className="tv-marketing-img"
-              />
+              <div className="tv-marketing-img-wrapper">
+                <img
+                  src={config?.logOut || "/logo-placeholder.jpg"}
+                  alt="Logo Institucional"
+                  className="tv-marketing-img"
+                />
+              </div>
             </div>
           )}
         </aside>
