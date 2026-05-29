@@ -18,6 +18,7 @@ const TvMenuBoard = ({ restauranteId }) => {
   const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
   const [isFullScreen, setIsFullScreen] = useState(false);
   const containerRef = useRef(null);
+  const anunciosVisibles = config.anuncios.filter(a => a.activo !== false);
   //usefectt para caragr datos
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
