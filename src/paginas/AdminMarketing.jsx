@@ -48,14 +48,6 @@ const AdminMarketing = ({ restauranteId }) => {
     if (exito) alert("¡Marquesina actualizada correctamente!");
   };
 
-  const handleUpdateAnuncio = async (id, camposActualizados) => {
-    const anunciosActualizados = config.anuncios.map((a) =>
-      a.id === id ? { ...a, ...camposActualizados } : a,
-    );
-    await guardarMarketingConfig(restauranteId, {
-      anuncios: anunciosActualizados,
-    });
-  };
   const handleSubirPromo = async (e) => {
     const file = e.target.files[0];
     if (!file || !restauranteId) return;
@@ -99,11 +91,6 @@ const AdminMarketing = ({ restauranteId }) => {
       anuncios: anunciosFiltrados,
     });
   };
-  // 2. Manejador para guardar el tiempo global
-  const handleGuardarConfigGlobal = async () => {
-    await guardarMarketingConfig(restauranteId, { tiempoRotacion });
-    alert("Configuración global guardada");
-  };
 
   if (!restauranteId) {
     return (
@@ -133,69 +120,41 @@ const AdminMarketing = ({ restauranteId }) => {
       <div className="admin-mkt-grid">
         {/* PANEL IZQUIERDO: TEXTO MARQUESINA */}
         <section className="admin-mkt-card">
-          <h3>⚙️ Configuración Global</h3>
-          <div className="form-group">
-            <label>Tiempo de rotación (segundos):</label>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <input
-                type="number"
-                value={tiempoRotacion}
-                onChange={(e) => setTiempoRotacion(Number(e.target.value))}
-              />
+          <h3>📢 Banner de Texto Inferior (Marquesina)</h3>
+          <form onSubmit={handleGuardarMarquesina}>
+            <div className="form-group-switch">
+              <label>Mostrar en la TV:</label>
               <button
-                onClick={handleGuardarConfigGlobal}
-                className="btn-primary"
+                type="button"
+                className={`btn-switch ${activo ? "active" : ""}`}
+                onClick={() => setActivo(!activo)}
               >
-                Guardar Tiempo
+                {activo ? "🟢 VISIBLE" : "🔴 OCULTO"}
               </button>
             </div>
+
+           <div className="form-group">
+            <label>Tiempo de rotación de anuncios (segundos):</label>
+            <input 
+              type="number" 
+              value={tiempoRotacion} 
+              onChange={(e) => setTiempoRotacion(Number(e.target.value))} 
+              min="3" 
+            />
           </div>
-
-          <h3>🖼️ Galería de Publicidad</h3>
-          <div className="upload-zone">
-            {/* ... Tu input de carga de imagen aquí ... */}
+          <div className="form-group">
+            <label>Texto Promocional para la imagen a subir:</label>
+            <input 
+              type="text" 
+              value={textoAnuncioActual} 
+              onChange={(e) => setTextoAnuncioActual(e.target.value)} 
+              placeholder="Ej: ¡Combo Familiar a solo S/ 50!" 
+            />
           </div>
-
-          <div className="admin-mkt-ads-grid">
-            {config.anuncios?.map((anuncio) => (
-              <div key={anuncio.id} className="mkt-ad-card">
-                <img src={anuncio.imagenUrl} alt="Ads" className="mkt-ad-img" />
-
-                <div className="mkt-ad-controls">
-                  <input
-                    type="text"
-                    placeholder="Texto promocional"
-                    defaultValue={anuncio.textoPromocional}
-                    onBlur={(e) =>
-                      handleUpdateAnuncio(anuncio.id, {
-                        textoPromocional: e.target.value,
-                      })
-                    }
-                  />
-
-                  <button
-                    className={`btn-toggle ${anuncio.activo !== false ? "active" : "inactive"}`}
-                    onClick={() =>
-                      handleUpdateAnuncio(anuncio.id, {
-                        activo: anuncio.activo === false,
-                      })
-                    }
-                  >
-                    {anuncio.activo !== false
-                      ? "🟢 ACTIVADO"
-                      : "🔴 DESACTIVADO"}
-                  </button>
-
-                  <button
-                    className="btn-delete-ad"
-                    onClick={() => handleEliminarAnuncio(anuncio.id)}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+             <button type="submit" className="btn-primary">
+              Actualizar Texto
+            </button>
+          </form>
         </section>
 
         {/* PANEL DERECHO: IMÁGENES ROTATIVAS */}
