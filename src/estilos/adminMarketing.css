@@ -1,333 +1,448 @@
+/* =========================================
+   PANEL DE MARKETING - ESTILO PREMIUM
+========================================= */
 .admin-mkt-container {
-  padding: 24px;
-  max-width: 1300px;
+  padding: 30px 24px;
+  max-width: 1400px;
   margin: 0 auto;
   color: #f3f4f6;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 .admin-mkt-header {
-  margin-bottom: 24px;
-  border-bottom: 1px solid #1f2937;
-  padding-bottom: 12px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .admin-mkt-header h2 {
-  font-size: 24px;
+  font-size: 28px;
   color: #ffffff;
-  margin: 0 0 4px 0;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.admin-mkt-header p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 15px;
 }
 
 .admin-mkt-header strong {
   color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-left: 6px;
 }
 
-/* PANEL GLOBAL SUPERIOR */
+/* =========================================
+   SECCIÓN SUPERIOR: CONFIGURACIÓN GLOBAL
+========================================= */
 .admin-mkt-top-panel {
-  background-color: #0b0f19;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #111827, #0b0f19);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .admin-mkt-row {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 20px;
   align-items: flex-end;
-  flex-wrap: wrap;
 }
 
 .admin-mkt-input-group {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-width: 250px;
-}
-
-.admin-mkt-input-group.admin-mkt-short {
-  flex: 0 0 130px;
-  min-width: 130px;
-}
-
-.admin-mkt-input-group.admin-mkt-toggle-wrapper {
-  flex: 0 0 150px;
-  min-width: 150px;
-}
-
-.admin-mkt-input-group.admin-mkt-action-wrapper {
-  flex: 0 0 220px;
-  min-width: 220px;
+  gap: 8px;
 }
 
 .admin-mkt-input-group label {
   font-size: 13px;
   color: #9ca3af;
-  margin-bottom: 6px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .admin-mkt-input-group input {
-  background-color: #111827;
+  background-color: #1f2937;
   border: 1px solid #374151;
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 10px;
+  padding: 14px 16px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-mkt-input-group input:focus {
   border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background-color: #111827;
 }
 
-/* SWITCHES */
+/* SWITCH GLOBAL */
 .admin-mkt-btn-switch {
   background-color: #1f2937;
   border: 1px solid #4b5563;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 10px;
   color: #9ca3af;
   cursor: pointer;
   font-weight: 700;
-  font-size: 13px;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-mkt-btn-switch.admin-mkt-active {
   background-color: rgba(16, 185, 129, 0.15);
   border-color: #10b981;
   color: #10b981;
+  box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1);
 }
 
 .admin-mkt-btn-primary {
-  background-color: #2563eb;
+  background-color: #3b82f6;
   color: #ffffff;
   border: none;
-  padding: 11px 16px;
-  border-radius: 8px;
+  padding: 14px 24px;
+  border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  height: 50px; /* Alineación perfecta con los inputs */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-mkt-btn-primary:hover {
-  background-color: #1d4ed8;
+  background-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
 }
 
-/* ZONA DE SUBIDA MEDIO */
+/* =========================================
+   ZONA DE SUBIDA MEDIO (NUEVO DISEÑO)
+========================================= */
 .admin-mkt-upload-panel {
-  background-color: #0b0f19;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 32px;
+  background: rgba(31, 41, 55, 0.4);
+  border: 1px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 40px;
+  transition: all 0.3s ease;
+}
+
+.admin-mkt-upload-panel:hover {
+  background: rgba(31, 41, 55, 0.6);
+  border-color: rgba(59, 130, 246, 0.8);
 }
 
 .admin-mkt-upload-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
+  margin: 0 0 16px 0;
+  font-size: 18px;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .admin-mkt-upload-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 16px;
+  align-items: center;
 }
 
 .admin-mkt-upload-text {
-  flex: 1;
   background-color: #111827;
   border: 1px solid #374151;
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 10px;
+  padding: 16px;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.admin-mkt-upload-text:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .admin-mkt-file-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 2px dashed #3b82f6;
-  border-radius: 8px;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 2px solid #10b981;
+  border-radius: 10px;
   padding: 0 24px;
+  height: 54px;
   cursor: pointer;
-  color: #3b82f6;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s;
+  color: #10b981;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.3s ease;
   white-space: nowrap;
+  gap: 8px;
 }
 
 .admin-mkt-file-label:hover {
-  background-color: rgba(59, 130, 246, 0.18);
+  background-color: #10b981;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
 }
 
 .admin-mkt-file-label.admin-mkt-disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  border-color: #4b5563;
-  color: #9ca3af;
+  pointer-events: none;
 }
 
-/* SECCIÓN CUADRÍCULA DE TARJETAS */
+/* =========================================
+   SECCIÓN CUADRÍCULA DE TARJETAS (NUEVO DISEÑO PREMIUM)
+========================================= */
 .admin-mkt-ads-section h3 {
-  font-size: 17px;
-  margin: 0 0 16px 0;
-  color: #9ca3af;
+  font-size: 20px;
+  margin: 0 0 24px 0;
+  color: #ffffff;
+  border-bottom: 2px solid #1f2937;
+  padding-bottom: 12px;
+  display: inline-block;
 }
 
 .admin-mkt-ads-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
-/* TARJETA INDEPENDIENTE */
 .admin-mkt-ad-card {
-  background-color: #0b0f19;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  background: linear-gradient(180deg, #1f2937, #111827);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .admin-mkt-ad-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Badge flotante de estado */
+.admin-mkt-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.badge-on {
+  background: rgba(16, 185, 129, 0.85);
+  color: #fff;
+  border: 1px solid #10b981;
+}
+.badge-off {
+  background: rgba(239, 68, 68, 0.85);
+  color: #fff;
+  border: 1px solid #ef4444;
 }
 
 .admin-mkt-card-image-wrapper {
   position: relative;
   width: 100%;
-  height: 160px;
-  background-color: #111827;
+  height: 200px; /* Más alto para que luzca premium */
+  background-color: #000;
+  overflow: hidden;
 }
 
 .admin-mkt-card-image-wrapper img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.admin-mkt-ad-card:hover .admin-mkt-card-image-wrapper img {
+  transform: scale(1.05);
 }
 
 .admin-mkt-card-body {
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   flex-grow: 1;
 }
 
 .admin-mkt-card-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .admin-mkt-card-field label {
   font-size: 12px;
   color: #9ca3af;
+  font-weight: 600;
 }
 
 .admin-mkt-card-field input {
-  background-color: #111827;
+  background-color: #0b0f19;
   border: 1px solid #374151;
-  border-radius: 6px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 12px 14px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
+  transition: all 0.2s;
 }
 
 .admin-mkt-card-field input:focus {
   border-color: #3b82f6;
+  background-color: #1f2937;
 }
 
 .admin-mkt-card-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-top: auto;
 }
 
 .admin-mkt-card-toggle {
   flex: 1;
-  border: 1px solid transparent;
-  padding: 8px;
-  border-radius: 6px;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
 .admin-mkt-card-toggle.admin-mkt-card-on {
-  background-color: rgba(16, 185, 129, 0.12);
-  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
   color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.admin-mkt-card-toggle.admin-mkt-card-on:hover {
+  background-color: rgba(16, 185, 129, 0.2);
 }
 
 .admin-mkt-card-toggle.admin-mkt-card-off {
-  background-color: rgba(239, 68, 68, 0.12);
-  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.admin-mkt-card-toggle.admin-mkt-card-off:hover {
+  background-color: rgba(239, 68, 68, 0.2);
 }
 
 .admin-mkt-card-btn-delete {
-  background-color: #1f2937;
+  background-color: rgba(239, 68, 68, 0.1);
   color: #f87171;
-  border: 1px solid #374151;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .admin-mkt-card-btn-delete:hover {
-  background-color: #dc2626;
+  background-color: #ef4444;
   color: #ffffff;
-  border-color: #dc2626;
 }
 
-/* FALLBACKS Y LOADER */
+/* =========================================
+   RESPONSIVIDAD Y ESTADOS DE CARGA
+========================================= */
+@media (max-width: 1024px) {
+  .admin-mkt-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-mkt-upload-row {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .admin-mkt-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-mkt-fallback {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 40px;
-  background-color: #0b0f19;
-  border-radius: 12px;
-  border: 1px dashed #374151;
+  padding: 60px 20px;
+  background-color: rgba(31, 41, 55, 0.3);
+  border-radius: 16px;
+  border: 1px dashed #4b5563;
 }
 
 .admin-mkt-fallback p {
-  margin: 0 0 6px 0;
+  font-size: 18px;
   color: #eab308;
+  margin: 0 0 10px 0;
 }
-
 .admin-mkt-fallback small {
-  color: #6b7280;
+  color: #9ca3af;
+  font-size: 14px;
 }
-
 .admin-mkt-loading {
-  padding: 60px;
+  padding: 80px;
   text-align: center;
   color: #9ca3af;
+  font-size: 18px;
 }
-
 .admin-mkt-error {
-  padding: 16px;
+  padding: 20px;
   background-color: rgba(220, 38, 38, 0.1);
-  border: 1px solid #dc2626;
+  border-left: 4px solid #dc2626;
   color: #f87171;
   border-radius: 8px;
-  margin: 20px;
+  margin: 24px;
+  font-weight: 600;
 }

@@ -21,7 +21,7 @@ const AdminMarketing = ({ restauranteId }) => {
       "restaurantes",
       restauranteId,
       "configuraciones",
-      "datos",
+      "datos"
     );
     const unsubscribe = onSnapshot(docRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -29,27 +29,27 @@ const AdminMarketing = ({ restauranteId }) => {
         setConfig(data);
         setTextoBanner(data.textoBanner || "");
         setActivo(data.activo || false);
-        setTiempoRotacion(data.tiempoRotacion || 6); // Extraemos el tiempo guardado
+        setTiempoRotacion(data.tiempoRotacion || 6); 
       }
     });
 
     return () => unsubscribe();
   }, [restauranteId]);
 
-  // Guardar configuración global superior (Marquesina y Temporizador)
+  // Guardar configuración global superior
   const handleGuardarConfigGlobal = async (e) => {
     e.preventDefault();
     if (!restauranteId) return;
 
     const exito = await guardarMarketingConfig(restauranteId, {
       textoBanner,
-      activo,
+      activo, // ¡Aquí se guarda la variable global que muestra/oculta el panel de la TV!
       tiempoRotacion,
     });
-    if (exito) alert("¡Configuración global actualizada con éxito!");
+    if (exito) alert("¡Configuración global actualizada y sincronizada en TV!");
   };
 
-  // Guardar un anuncio nuevo independiente
+  // Subir imagen promocional
   const handleSubirPromo = async (e) => {
     const file = e.target.files[0];
     if (!file || !restauranteId) return;
@@ -64,14 +64,14 @@ const AdminMarketing = ({ restauranteId }) => {
           imagenUrl: resCloudinary.url,
           publicId: resCloudinary.public_id,
           textoPromocional: textoAnuncioActual,
-          activo: true, // Por defecto nace encendido
+          activo: true, 
         };
 
         await guardarMarketingConfig(restauranteId, {
           anuncios: [...anunciosActuales, nuevoAnuncio],
         });
 
-        setTextoAnuncioActual(""); // Limpiamos el input de texto
+        setTextoAnuncioActual(""); 
       }
     } catch (error) {
       console.error("Error al subir anuncio:", error);
@@ -80,11 +80,11 @@ const AdminMarketing = ({ restauranteId }) => {
     }
   };
 
-  // Actualizar un campo específico de una tarjeta de anuncio (Texto o Switch de Apagado)
+  // Actualizar tarjeta individual
   const handleUpdateAnuncio = async (id, camposActualizados) => {
     if (!restauranteId) return;
     const anunciosActualizados = (config?.anuncios || []).map((anuncio) =>
-      anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio,
+      anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio
     );
 
     await guardarMarketingConfig(restauranteId, {
@@ -92,7 +92,7 @@ const AdminMarketing = ({ restauranteId }) => {
     });
   };
 
-  // Eliminar tarjeta de anuncio
+  // Eliminar tarjeta
   const handleEliminarAnuncio = async (idAnuncio) => {
     if (
       !restauranteId ||
@@ -101,7 +101,7 @@ const AdminMarketing = ({ restauranteId }) => {
       return;
 
     const anunciosFiltrados = (config?.anuncios || []).filter(
-      (a) => a.id !== idAnuncio,
+      (a) => a.id !== idAnuncio
     );
     await guardarMarketingConfig(restauranteId, {
       anuncios: anunciosFiltrados,
@@ -111,7 +111,7 @@ const AdminMarketing = ({ restauranteId }) => {
   if (!restauranteId) {
     return (
       <div className="admin-mkt-error">
-        ⚠️ Error: Falta especificar el ID del restaurante.
+        ⚠️ Error crítico: No se ha proporcionado el ID del restaurante.
       </div>
     );
   }
@@ -119,7 +119,7 @@ const AdminMarketing = ({ restauranteId }) => {
   if (!config) {
     return (
       <div className="admin-mkt-loading">
-        Cargando canales de marketing en tiempo real...
+        ⏳ Sincronizando panel de marketing en tiempo real...
       </div>
     );
   }
@@ -133,24 +133,21 @@ const AdminMarketing = ({ restauranteId }) => {
         </p>
       </header>
 
-      {/* SECCIÓN SUPERIOR: CONFIGURACIÓN GLOBAL */}
-      <form
-        onSubmit={handleGuardarConfigGlobal}
-        className="admin-mkt-top-panel"
-      >
+      {/* ⚙️ PANEL SUPERIOR: CONFIGURACIÓN GLOBAL */}
+      <form onSubmit={handleGuardarConfigGlobal} className="admin-mkt-top-panel">
         <div className="admin-mkt-row">
           <div className="admin-mkt-input-group">
-            <label>Texto Informativo (Marquesina Inferior)</label>
+            <label>📝 Texto Informativo (Marquesina TV)</label>
             <input
               type="text"
               value={textoBanner}
               onChange={(e) => setTextoBanner(e.target.value)}
-              placeholder="Escribe las promociones que correrán en el pie de pantalla..."
+              placeholder="Ej: ¡Hoy 2x1 en toda la coctelería!"
             />
           </div>
 
-          <div className="admin-mkt-input-group admin-mkt-short">
-            <label>Rotación (Segundos)</label>
+          <div className="admin-mkt-input-group">
+            <label>⏱️ Rotación (Segundos)</label>
             <input
               type="number"
               value={tiempoRotacion}
@@ -159,43 +156,40 @@ const AdminMarketing = ({ restauranteId }) => {
             />
           </div>
 
-          <div className="admin-mkt-input-group admin-mkt-toggle-wrapper">
-            <label>Estado en TV</label>
+          <div className="admin-mkt-input-group">
+            <label>📺 Visibilidad Global (Panel TV)</label>
             <button
               type="button"
               className={`admin-mkt-btn-switch ${activo ? "admin-mkt-active" : ""}`}
               onClick={() => setActivo(!activo)}
+              title="Asegúrate de presionar 'Guardar Ajustes' después de cambiar esto"
             >
-              {activo ? "🟢 VISIBLE" : "🔴 OCULTO"}
+              {activo ? "🟢 PANEL VISIBLE" : "🔴 PANEL OCULTO"}
             </button>
           </div>
 
-          <div className="admin-mkt-input-group admin-mkt-action-wrapper">
+          <div className="admin-mkt-input-group">
             <label>&nbsp;</label>
             <button type="submit" className="admin-mkt-btn-primary">
-              💾 Guardar Ajustes Globales
+              💾 Guardar Ajustes
             </button>
           </div>
         </div>
       </form>
 
-      {/* SECCIÓN INTERMEDIA: SUBIDA DE PUBLICIDAD */}
+      {/* 🖼️ PANEL INTERMEDIO: SUBIDA DE PUBLICIDAD */}
       <section className="admin-mkt-upload-panel">
-        <h3>🖼️ Agregar Nueva Publicidad Rotativa</h3>
+        <h3>✨ Agregar Nueva Publicidad Rotativa</h3>
         <div className="admin-mkt-upload-row">
           <input
             type="text"
             value={textoAnuncioActual}
             onChange={(e) => setTextoAnuncioActual(e.target.value)}
-            placeholder="Asigna un texto promocional a esta imagen (Ej: ¡Combo Familiar a solo S/ 50!)"
+            placeholder="Asigna un título o texto a la promoción (Opcional)"
             className="admin-mkt-upload-text"
           />
-          <label
-            className={`admin-mkt-file-label ${cargandoImagen ? "admin-mkt-disabled" : ""}`}
-          >
-            {cargandoImagen
-              ? "Subiendo..."
-              : "➕ Seleccionar e Inyectar Imagen"}
+          <label className={`admin-mkt-file-label ${cargandoImagen ? "admin-mkt-disabled" : ""}`}>
+            {cargandoImagen ? "⏳ Subiendo e inyectando..." : "➕ Seleccionar e Inyectar Imagen"}
             <input
               type="file"
               accept="image/*"
@@ -207,23 +201,27 @@ const AdminMarketing = ({ restauranteId }) => {
         </div>
       </section>
 
-      {/* SECCIÓN INFERIOR: CUADRÍCULA DE TARJETAS INDEPENDIENTES */}
+      {/* 🗂️ PANEL INFERIOR: TARJETAS DE ANUNCIOS */}
       <main className="admin-mkt-ads-section">
-        <h3>
-          Lista de Afiches Activos en Sistema ({config.anuncios?.length || 0})
-        </h3>
+        <h3>Lista de Afiches Activos en Sistema ({config.anuncios?.length || 0})</h3>
 
         <div className="admin-mkt-ads-grid">
           {config.anuncios && config.anuncios.length > 0 ? (
             config.anuncios.map((anuncio) => (
               <div key={anuncio.id} className="admin-mkt-ad-card">
+                
+                {/* Badge flotante que indica si se muestra o no */}
+                <div className={`admin-mkt-status-badge ${anuncio.activo !== false ? "badge-on" : "badge-off"}`}>
+                  {anuncio.activo !== false ? "En Pantalla" : "Oculto"}
+                </div>
+
                 <div className="admin-mkt-card-image-wrapper">
                   <img src={anuncio.imagenUrl} alt="Publicidad" />
                 </div>
 
                 <div className="admin-mkt-card-body">
                   <div className="admin-mkt-card-field">
-                    <label>Texto de la Tarjeta:</label>
+                    <label>📝 Texto de la Tarjeta:</label>
                     <input
                       type="text"
                       defaultValue={anuncio.textoPromocional}
@@ -246,17 +244,16 @@ const AdminMarketing = ({ restauranteId }) => {
                         })
                       }
                     >
-                      {anuncio.activo !== false
-                        ? "🟢 ACTIVADO"
-                        : "🔴 DESACTIVADO"}
+                      {anuncio.activo !== false ? "👁️ MOSTRANDO" : "🙈 OCULTO"}
                     </button>
 
                     <button
                       type="button"
                       className="admin-mkt-card-btn-delete"
                       onClick={() => handleEliminarAnuncio(anuncio.id)}
+                      title="Eliminar permanentemente"
                     >
-                      🗑️ Eliminar
+                      🗑️
                     </button>
                   </div>
                 </div>
@@ -264,10 +261,9 @@ const AdminMarketing = ({ restauranteId }) => {
             ))
           ) : (
             <div className="admin-mkt-fallback">
-              <p>No hay afiches publicitarios registrados.</p>
+              <p>No hay afiches publicitarios registrados en este momento.</p>
               <small>
-                La TV mostrará el logotipo institucional estático por defecto (
-                {config.logOut || "Logotipo"}).
+                La TV mostrará automáticamente el logotipo institucional por defecto.
               </small>
             </div>
           )}
@@ -276,5 +272,7 @@ const AdminMarketing = ({ restauranteId }) => {
     </div>
   );
 };
+
+export default AdminMarketing;
 
 export default AdminMarketing;
