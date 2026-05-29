@@ -30,9 +30,10 @@
   box-sizing: border-box;
 }
 
+/* header titulo */
 .admin-mkt-header h2 {
-  font-size: 28px;
-  color: #ffffff;
+  font-size: 26px; 
+  color: #1e293b;  
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -40,16 +41,29 @@
 
 .admin-mkt-header p {
   margin: 0;
-  color: #9ca3af;
-  font-size: 15px;
+  color: #64748b;  
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .admin-mkt-header strong {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
+  color: #041978;  
+  background: rgba(16, 185, 129, 0.12); 
   padding: 4px 10px;
   border-radius: 6px;
   margin-left: 6px;
+  font-weight: 700;
+}
+
+/* Ajustes responsivos para que se vea impecable en celulares */
+@media (max-width: 768px) {
+  .admin-mkt-header h2 {
+    font-size: 22px; /* Se reduce en móviles para evitar saltos de línea bruscos */
+  }
+  
+  .admin-mkt-header p {
+    font-size: 13px;
+  }
 }
 
 /* =========================================
