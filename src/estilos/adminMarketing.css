@@ -67,15 +67,23 @@
 }
 
 /* =========================================
-   SECCIÓN SUPERIOR: CONFIGURACIÓN GLOBAL
+   SECCIÓN SUPERIOR: CONFIGURACIÓN GLOBAL 
 ========================================= */
 .admin-mkt-top-panel {
-  background: linear-gradient(145deg, #111827, #0b0f19);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Fondo degradado sutil e idéntico a tu panel de subida */
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 32px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  /* Sombra suave y ligera para que no se vea tosco en fondo blanco */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.admin-mkt-top-panel:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
 }
 
 .admin-mkt-row {
@@ -92,19 +100,20 @@
 }
 
 .admin-mkt-input-group label {
-  font-size: 13px;
-  color: #9ca3af;
-  font-weight: 600;
+  font-size: 12px;
+  color: #64748b; /* Gris Slate-500 premium para los títulos pequeños */
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+/* INPUTS DE LA CONFIGURACIÓN GLOBAL */
 .admin-mkt-input-group input {
-  background-color: #1f2937;
-  border: 1px solid #374151;
+  background-color: #f1f5f9; /* El gris suave interactivo que unifica todo */
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 14px 16px;
-  color: #ffffff;
+  color: #0f172a; /* Texto escrito oscuro e híper legible */
   font-size: 15px;
   outline: none;
   transition: all 0.3s ease;
@@ -113,18 +122,18 @@
 }
 
 .admin-mkt-input-group input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  background-color: #111827;
+  border-color: #3b82f6; /* Enfoque azul como el botón */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  background-color: #ffffff;
 }
 
-/* SWITCH GLOBAL */
+/* SWITCH GLOBAL / ESTADO EN TV */
 .admin-mkt-btn-switch {
-  background-color: #1f2937;
-  border: 1px solid #4b5563;
+  background-color: #f1f5f9; /* Base neutra clara */
+  border: 1px solid #cbd5e1;
   padding: 14px;
   border-radius: 10px;
-  color: #9ca3af;
+  color: #64748b;
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
@@ -134,15 +143,29 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
+  height: 50px; /* Alineación simétrica */
+  box-sizing: border-box;
 }
 
+.admin-mkt-btn-switch:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+/* Cuando pasa a "PANEL VISIBLE" (Verde Esmeralda Premium) */
 .admin-mkt-btn-switch.admin-mkt-active {
-  background-color: rgba(16, 185, 129, 0.15);
+  background-color: rgba(16, 185, 129, 0.12);
   border-color: #10b981;
-  color: #10b981;
-  box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1);
+  color: #047857;
+  box-shadow: none;
 }
 
+.admin-mkt-btn-switch.admin-mkt-active:hover {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+/* BOTÓN: GUARDAR AJUSTES GLOBALES */
 .admin-mkt-btn-primary {
   background-color: #3b82f6;
   color: #ffffff;
@@ -153,18 +176,39 @@
   font-weight: 600;
   font-size: 15px;
   transition: all 0.3s ease;
-  height: 50px; /* Alineación perfecta con los inputs */
+  height: 50px; /* Match exacto en altura con inputs y switch */
   display: flex;
   align-items: center;
   gap: 8px;
+  box-sizing: border-box;
 }
 
 .admin-mkt-btn-primary:hover {
   background-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.25);
 }
 
+/* =========================================
+   RESPONSIVIDAD CONTROLADA (CELULARES)
+========================================= */
+@media (max-width: 1024px) {
+  .admin-mkt-row {
+    grid-template-columns: 1fr 1fr; /* En tablets se acomoda en parejas */
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-mkt-row {
+    grid-template-columns: 1fr; /* En celulares todo baja vertical en un bloque robusto */
+    gap: 16px;
+  }
+
+  .admin-mkt-btn-primary,
+  .admin-mkt-btn-switch {
+    width: 100%; /* Botones expandidos al 100% para presionar fácil */
+  }
+}
 /* =========================================
    ZONA DE SUBIDA DE ANUNCIOS
 ========================================= */
