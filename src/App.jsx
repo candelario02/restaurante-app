@@ -358,10 +358,12 @@ function App() {
                 }}
               />
             ) : // Si ya hay un operador validado por PIN, decidimos qué renderizar:
-
             /* 📺 INTERCEPCIÓN CRÍTICA: Si el botón presionó "tv", cargamos el JSX de la tele a pantalla completa */
             seccion === "tv" ? (
               <TvMenuBoard restauranteId={restauranteId} />
+            ) : seccion === "marketing" ? (
+              /* 📢 INTERCEPCIÓN DE MARKETING: Cargamos el panel de control de publicidad */
+              <AdminMarketing restauranteId={restauranteId} />
             ) : (
               /* De lo contrario, sigue cargando el panel administrativo normal */
               <Admin
