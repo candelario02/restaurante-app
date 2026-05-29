@@ -33,7 +33,7 @@
 /* header titulo */
 .admin-mkt-header h2 {
   font-size: 26px; 
-  color: #1e293b;  
+  color: #010914;  
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -41,7 +41,7 @@
 
 .admin-mkt-header p {
   margin: 0;
-  color: #64748b;  
+  color: #061a36;  
   font-size: 14px;
   font-weight: 500;
 }
@@ -166,44 +166,48 @@
 }
 
 /* =========================================
-   ZONA DE SUBIDA MEDIO (NUEVO DISEÑO)
+   ZONA DE SUBIDA DE ANUNCIOS
 ========================================= */
 .admin-mkt-upload-panel {
-  background: rgba(31, 41, 55, 0.4);
-  border: 1px dashed rgba(59, 130, 246, 0.4);
+  /* Fondo degradado sutil con bordes definidos y sombra suave, igual que el top-panel */
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .admin-mkt-upload-panel:hover {
-  background: rgba(31, 41, 55, 0.6);
-  border-color: rgba(59, 130, 246, 0.8);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
 }
 
 .admin-mkt-upload-panel h3 {
   margin: 0 0 16px 0;
   font-size: 18px;
-  color: #ffffff;
+  color: #1e293b; /* Texto oscuro de alta visibilidad */
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 700;
 }
 
 .admin-mkt-upload-row {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
 }
 
+/* INPUT DE TEXTO DE LA PROMOCIÓN */
 .admin-mkt-upload-text {
-  background-color: #111827;
-  border: 1px solid #374151;
+  background-color: #f1f5f9; 
+  border: 1px solid #cbd5e1;
   border-radius: 10px;
-  padding: 16px;
-  color: #ffffff;
+  padding: 14px 16px;
+  color: #0f172a; /* Texto escrito oscuro */
   font-size: 15px;
   outline: none;
   width: 100%;
@@ -211,40 +215,59 @@
   transition: all 0.3s ease;
 }
 
-.admin-mkt-upload-text:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+.admin-mkt-upload-text::placeholder {
+  color: #94a3b8; /* Color gris suave para el texto de sugerencia */
 }
 
+.admin-mkt-upload-text:focus {
+  border-color: #10b981; /* Enfoque verde esmeralda coherente */
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  background-color: #ffffff;
+}
+
+/* BOTÓN/LABEL PARA SELECCIONAR E INYECTAR IMAGEN */
 .admin-mkt-file-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(16, 185, 129, 0.1);
-  border: 2px solid #10b981;
+  background-color: #3b82f6; /* Azul premium directo, igual que el btn-primary */
+  color: #ffffff;
+  border: none;
   border-radius: 10px;
   padding: 0 24px;
-  height: 54px;
+  height: 50px; /* Alineación perfecta en altura con el input de texto */
   cursor: pointer;
-  color: #10b981;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   transition: all 0.3s ease;
   white-space: nowrap;
   gap: 8px;
+  box-sizing: border-box;
 }
 
 .admin-mkt-file-label:hover {
-  background-color: #10b981;
-  color: #ffffff;
+  background-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.25);
 }
 
 .admin-mkt-file-label.admin-mkt-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+  background-color: #94a3b8;
+}
+
+/* Adaptación fluida para celulares de la zona de subida */
+@media (max-width: 768px) {
+  .admin-mkt-upload-row {
+    grid-template-columns: 1fr; /* Se apila verticalmente en móviles */
+    gap: 14px;
+  }
+  
+  .admin-mkt-file-label {
+    width: 100%; /* El botón ocupa todo el ancho en celulares */
+  }
 }
 
 /* =========================================
