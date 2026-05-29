@@ -142,7 +142,7 @@ const AdminMarketing = ({ restauranteId }) => {
         <div className="admin-mkt-row">
           {/* 1. NUEVO: Selector de Modo de Marquesina */}
           <div className="admin-mkt-input-group">
-            <label>⚙️ Origen del Texto (Marquesina)</label>
+            <label>⚙️ Texto para pie de tv</label>
             <select
               className="admin-mkt-select" /* Puedes reusar estilos de inputs o darle una clase select */
               value={modoMarquesina || "automatico"} // Suponiendo que manejas este estado (automatico / manual)
