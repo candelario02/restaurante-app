@@ -1563,3 +1563,147 @@
   margin-top: 4px;
   border: 1px solid #fde68a;
 }
+/* =============================================
+   RESPONSIVE: PANTALLAS PEQUEÑAS (INVENTARIO E HISTORIAL)
+============================================= */
+
+@media (max-width: 768px) {
+  /* ----- INVENTARIO ----- */
+  .inventario-container {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .inventario-filtros-grupo {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .input-busqueda-insumo {
+    width: 100%;
+  }
+
+  .select-filtro-tabla {
+    width: 100%;
+  }
+
+  .tabla-insumos {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .tabla-insumos th,
+  .tabla-insumos td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .contenedor-acciones-stock {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px !important;
+  }
+
+  .select-movimiento-tipo,
+  .input-movimiento-cantidad,
+  .btn-aplicar-movimiento {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .input-movimiento-cantidad {
+    width: 100%;
+  }
+
+  .editarinsumo-btn,
+  .eliminarinsumo-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .admin-form-inventario {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-form-inventario input {
+    width: 100%;
+  }
+
+  .btn-guardar-inventario {
+    width: 100%;
+  }
+
+  /* ----- HISTORIAL ----- */
+  .hinsumos-section {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .hinsumos-filtros-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .hinsumos-select,
+  .hinsumos-filtro-fecha,
+  .hinsumos-filtro-tipo {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hinsumos-tabla {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .hinsumos-tabla th,
+  .hinsumos-tabla td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .hinsumos-resumen-container {
+    flex-direction: column;
+  }
+
+  .hinsumos-resumen-lista {
+    min-width: auto;
+  }
+
+  .hinsumos-tarjeta-financiera {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .inventario-container {
+    padding: 8px;
+  }
+
+  .tabla-insumos th,
+  .tabla-insumos td {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+
+  .badge-categoria {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+  }
+
+  .hinsumos-tabla th,
+  .hinsumos-tabla td {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+
+  .hinsumos-tarjeta-monto {
+    font-size: 20px;
+  }
+}
