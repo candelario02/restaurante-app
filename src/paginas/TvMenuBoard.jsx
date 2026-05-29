@@ -253,13 +253,13 @@ const TvMenuBoard = ({ restauranteId }) => {
       </div>
 
       {/* MARQUESINA INFERIOR AUTOMÁTICA */}
-      {config?.activo && config?.textoBanner && (
+      {config?.activo && (
         <footer className="tv-board-footer-marquee">
           <div className="tv-marquee-wrapper">
             <p className="tv-marquee-text">
-              ✨ {config.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
-              {config.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨{" "}
-              {config.textoBanner}
+              ✨ {config.textoBanner || "Bienvenidos a nuestro establecimiento"}{" "}
+              &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
+              {config.textoBanner || "Disfruta de nuestras promociones"}
             </p>
           </div>
         </footer>
