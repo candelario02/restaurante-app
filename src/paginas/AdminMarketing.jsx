@@ -10,6 +10,8 @@ const AdminMarketing = ({ restauranteId }) => {
   const [textoBanner, setTextoBanner] = useState("");
   const [activo, setActivo] = useState(false);
   const [cargandoImagen, setCargandoImagen] = useState(false);
+  const [textoAnuncioActual, setTextoAnuncioActual] = useState("");
+  const [tiempoRotacion, setTiempoRotacion] = useState(6);
 
   useEffect(() => {
     // Si no hay ID dinámico inyectado, aborta para evitar colapsar la app
@@ -60,11 +62,15 @@ const AdminMarketing = ({ restauranteId }) => {
           id: Date.now().toString(),
           imagenUrl: resCloudinary.url,
           publicId: resCloudinary.public_id,
+          textoPromocional: textoAnuncioActual, // 🔥 Guardamos el texto específico de este anuncio
         };
 
         await guardarMarketingConfig(restauranteId, {
           anuncios: [...anunciosActuales, nuevoAnuncio],
+          tiempoRotacion: tiempoRotacion, // 🔥 Guardamos el tiempo global de rotación
         });
+
+        setTextoAnuncioActual(""); // Limpiamos el input después de subir
       }
     } catch (error) {
       console.error("Error al subir anuncio:", error);
@@ -128,13 +134,21 @@ const AdminMarketing = ({ restauranteId }) => {
             </div>
 
             <div className="form-group">
-              <label>Texto Informativo:</label>
-              <textarea
-                value={textoBanner}
-                onChange={(e) => setTextoBanner(e.target.value)}
-                placeholder="Escribe las promociones que correrán en el pie de pantalla..."
-                rows={3}
-                required
+              <label>Tiempo de rotación de anuncios (segundos):</label>
+              <input
+                type="number"
+                value={tiempoRotacion}
+                onChange={(e) => setTiempoRotacion(Number(e.target.value))}
+                min="3"
+              />
+            </div>
+            <div className="form-group">
+              <label>Texto Promocional para la imagen a subir:</label>
+              <input
+                type="text"
+                value={textoAnuncioActual}
+                onChange={(e) => setTextoAnuncioActual(e.target.value)}
+                placeholder="Ej: ¡Combo Familiar a solo S/ 50!"
               />
             </div>
             <button type="submit" className="btn-primary">

@@ -18,7 +18,7 @@ const TvMenuBoard = ({ restauranteId }) => {
   const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
   const [isFullScreen, setIsFullScreen] = useState(false);
   const containerRef = useRef(null);
-
+  //usefectt para caragr datos
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
@@ -71,9 +71,12 @@ const TvMenuBoard = ({ restauranteId }) => {
       return;
     }
 
+    // 🔥 Lee el tiempo configurado en el Admin (en segundos) y lo pasa a milisegundos
+    const tiempoEnMilisegundos = (config.tiempoRotacion || 6) * 1000;
+
     const intervaloPromo = setInterval(() => {
       setIndexPromo((prev) => (prev + 1) % config.anuncios.length);
-    }, 6000); // Cambia el afiche publicitario cada 6 segundos
+    }, tiempoEnMilisegundos);
 
     return () => clearInterval(intervaloPromo);
   }, [config]);
@@ -181,7 +184,38 @@ const TvMenuBoard = ({ restauranteId }) => {
         {/* 🖼️ PANEL DERECHO PREMIUM: PUBLICIDAD ROTATIVA AUTOMÁTICA O LOGO RESPUESTO */}
         <aside className="tv-board-right-panel-premium">
           {config?.anuncios && config.anuncios.length > 0 ? (
-            <div className="tv-marketing-promo-container">
+            <div
+              className="tv-marketing-promo-container"
+              style={{ position: "relative" }}
+            >
+              {/* 🔥 EL TEXTO DEL ANUNCIO (Se muestra si el admin escribió algo para esta foto) */}
+              {config.anuncios[indexPromo].textoPromocional && (
+                <div
+                  className="tv-marketing-promo-text-overlay"
+                  style={{
+                    position: "absolute",
+                    top: "10%",
+                    left: 0,
+                    width: "100%",
+                    textAlign: "center",
+                    zIndex: 10,
+                    color: "white",
+                    textShadow: "2px 2px 8px rgba(0,0,0,0.8)",
+                    padding: "0 20px",
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: "2.5rem",
+                      fontWeight: "bold",
+                      margin: 0,
+                    }}
+                  >
+                    {config.anuncios[indexPromo].textoPromocional}
+                  </h2>
+                </div>
+              )}
+
               <img
                 src={config.anuncios[indexPromo].imagenUrl}
                 alt="Promoción Activa"
