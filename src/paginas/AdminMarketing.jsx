@@ -130,16 +130,28 @@ const AdminMarketing = ({ restauranteId }) => {
   // Eliminar tarjeta
   const handleEliminarAnuncio = async (idAnuncio) => {
     if (!restauranteId) return;
-    const confirmado = window.confirm(
-      "¿Deseas eliminar de forma permanente esta publicidad?",
-    );
-    if (!confirmado) return;
+
+    const result = await Swal.fire({
+      title: "¿Eliminar publicidad?",
+      text: "Esta acción es permanente. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!result.isConfirmed) return;
+
     const anunciosFiltrados = (config?.anuncios || []).filter(
       (a) => a.id !== idAnuncio,
     );
     await guardarMarketingConfig(restauranteId, {
       anuncios: anunciosFiltrados,
     });
+
+    Swal.fire("Eliminado", "La publicidad ha sido eliminada.", "success");
   };
 
   if (!restauranteId) {
@@ -177,14 +189,14 @@ const AdminMarketing = ({ restauranteId }) => {
           <div className="admin-mkt-input-group">
             <label>Seleccione anuncio</label>
             <select
-              className="admin-mkt-select" 
-              value={modoMarquesina || "automatico"} 
+              className="admin-mkt-select"
+              value={modoMarquesina || "automatico"}
               onChange={(e) => setModoMarquesina(e.target.value)}
             >
               <option value="automatico">✨ Auto (Textos de Afiches)</option>
               <option value="manual">✍️ Manual (Texto Fijo)</option>
             </select>
-           </div>
+          </div>
 
           {/* 2. MODIFICADO: Input Dinámico Inteligente */}
           <div className="admin-mkt-input-group" style={{ flexGrow: 2 }}>
