@@ -9,19 +9,19 @@
   margin: 0 auto;
   padding: 20px 24px;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  color: #334155; 
+  color: #334155;
 }
 
 /* 5. Adaptación para celulares (Mobile First / Responsive) */
 @media (max-width: 768px) {
   .admin-mkt-container {
-    padding: 15px 10px; 
+    padding: 15px 10px;
   }
 }
 
 .admin-mkt-header {
   margin-bottom: 30px;
-  border-bottom: 1px solid #e2e8f0; 
+  border-bottom: 1px solid #e2e8f0;
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
@@ -32,8 +32,8 @@
 
 /* header titulo */
 .admin-mkt-header h2 {
-  font-size: 26px; 
-  color: #010914;  
+  font-size: 26px;
+  color: #010914;
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -41,14 +41,14 @@
 
 .admin-mkt-header p {
   margin: 0;
-  color: #061a36;  
+  color: #061a36;
   font-size: 14px;
   font-weight: 500;
 }
 
 .admin-mkt-header strong {
-  color: #041978;  
-  background: rgba(16, 185, 129, 0.12); 
+  color: #041978;
+  background: rgba(16, 185, 129, 0.12);
   padding: 4px 10px;
   border-radius: 6px;
   margin-left: 6px;
@@ -60,7 +60,7 @@
   .admin-mkt-header h2 {
     font-size: 22px; /* Se reduce en móviles para evitar saltos de línea bruscos */
   }
-  
+
   .admin-mkt-header p {
     font-size: 13px;
   }
@@ -203,7 +203,7 @@
 
 /* INPUT DE TEXTO DE LA PROMOCIÓN */
 .admin-mkt-upload-text {
-  background-color: #f1f5f9; 
+  background-color: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
   padding: 14px 16px;
@@ -264,22 +264,22 @@
     grid-template-columns: 1fr; /* Se apila verticalmente en móviles */
     gap: 14px;
   }
-  
+
   .admin-mkt-file-label {
     width: 100%; /* El botón ocupa todo el ancho en celulares */
   }
 }
-
 /* =========================================
-   SECCIÓN CUADRÍCULA DE TARJETAS (NUEVO DISEÑO PREMIUM)
+   SECCIÓN CUADRÍCULA DE TARJETAS 
 ========================================= */
 .admin-mkt-ads-section h3 {
   font-size: 20px;
   margin: 0 0 24px 0;
-  color: #ffffff;
-  border-bottom: 2px solid #1f2937;
+  color: #1e293b; /* Gris pizarra oscuro coherente */
+  border-bottom: 2px solid #e2e8f0; /* Divisor claro */
   padding-bottom: 12px;
   display: inline-block;
+  font-weight: 700;
 }
 
 .admin-mkt-ads-grid {
@@ -289,24 +289,25 @@
 }
 
 .admin-mkt-ad-card {
-  background: linear-gradient(180deg, #1f2937, #111827);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Fondo blanco puro con degradado tenue al final para dar volumen */
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   position: relative;
 }
 
 .admin-mkt-ad-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
 }
 
-/* Badge flotante de estado */
+/* Badge flotante de estado superior ("EN PANTALLA") */
 .admin-mkt-status-badge {
   position: absolute;
   top: 12px;
@@ -317,26 +318,26 @@
   font-weight: 800;
   text-transform: uppercase;
   z-index: 10;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .badge-on {
-  background: rgba(16, 185, 129, 0.85);
-  color: #fff;
-  border: 1px solid #10b981;
+  background-color: #10b981; /* Verde esmeralda sólido */
+  color: #ffffff;
+  border: 1px solid #059669;
 }
+
 .badge-off {
-  background: rgba(239, 68, 68, 0.85);
-  color: #fff;
-  border: 1px solid #ef4444;
+  background-color: #ef4444; /* Rojo sólido para oculto */
+  color: #ffffff;
+  border: 1px solid #dc2626;
 }
 
 .admin-mkt-card-image-wrapper {
   position: relative;
   width: 100%;
-  height: 200px; /* Más alto para que luzca premium */
-  background-color: #000;
+  height: 200px;
+  background-color: #f1f5f9; /* Fondo claro por si tarda en cargar la imagen */
   overflow: hidden;
 }
 
@@ -348,7 +349,7 @@
 }
 
 .admin-mkt-ad-card:hover .admin-mkt-card-image-wrapper img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .admin-mkt-card-body {
@@ -367,24 +368,26 @@
 
 .admin-mkt-card-field label {
   font-size: 12px;
-  color: #9ca3af;
+  color: #64748b; /* Gris Slate-500 para etiquetas secundarias */
   font-weight: 600;
 }
 
+/* INPUTS DE LAS TARJETAS */
 .admin-mkt-card-field input {
-  background-color: #0b0f19;
-  border: 1px solid #374151;
+  background-color: #f1f5f9; /* Fondo idéntico al panel de subida */
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 12px 14px;
-  color: #ffffff;
+  color: #0f172a;
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
 }
 
 .admin-mkt-card-field input:focus {
-  border-color: #3b82f6;
-  background-color: #1f2937;
+  border-color: #3b82f6; /* Enfoque azul premium */
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .admin-mkt-card-actions {
@@ -393,6 +396,7 @@
   margin-top: auto;
 }
 
+/* BOTÓN DE VISIBILIDAD DE TARJETA (AZUL O NEUTRO) */
 .admin-mkt-card-toggle {
   flex: 1;
   border: none;
@@ -408,30 +412,36 @@
   gap: 6px;
 }
 
+/* Estado Mostrando: Ahora usa la paleta verde premium clara */
 .admin-mkt-card-toggle.admin-mkt-card-on {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .admin-mkt-card-toggle.admin-mkt-card-on:hover {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
 }
 
+/* Estado Oculto: Ahora usa la paleta gris/rojo suave */
 .admin-mkt-card-toggle.admin-mkt-card-off {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
 }
 
 .admin-mkt-card-toggle.admin-mkt-card-off:hover {
-  background-color: rgba(239, 68, 68, 0.2);
+  background-color: #e2e8f0;
+  color: #1e293b;
 }
 
+/* BOTÓN ELIMINAR (TARRO DE BASURA) */
 .admin-mkt-card-btn-delete {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 13px;
@@ -443,55 +453,60 @@
 .admin-mkt-card-btn-delete:hover {
   background-color: #ef4444;
   color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 /* =========================================
-   RESPONSIVIDAD Y ESTADOS DE CARGA
+   ESTADOS DE CARGA, FALLBACK Y ADAPTACIONES
 ========================================= */
-@media (max-width: 1024px) {
-  .admin-mkt-row {
-    grid-template-columns: 1fr 1fr;
-  }
-  .admin-mkt-upload-row {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 600px) {
-  .admin-mkt-row {
-    grid-template-columns: 1fr;
-  }
-}
-
 .admin-mkt-fallback {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 60px 20px;
-  background-color: rgba(31, 41, 55, 0.3);
+  padding: 50px 20px;
+  background-color: #f8fafc;
   border-radius: 16px;
-  border: 1px dashed #4b5563;
+  border: 2px dashed #cbd5e1;
 }
 
 .admin-mkt-fallback p {
   font-size: 18px;
-  color: #eab308;
-  margin: 0 0 10px 0;
+  color: #b45309; /* Ámbar/marrón oscuro para que resalte en fondo claro */
+  margin: 0 0 8px 0;
+  font-weight: 600;
 }
+
 .admin-mkt-fallback small {
-  color: #9ca3af;
+  color: #64748b;
   font-size: 14px;
 }
+
 .admin-mkt-loading {
   padding: 80px;
   text-align: center;
-  color: #9ca3af;
+  color: #64748b;
   font-size: 18px;
+  font-weight: 500;
 }
+
 .admin-mkt-error {
   padding: 20px;
-  background-color: rgba(220, 38, 38, 0.1);
+  background-color: rgba(220, 38, 38, 0.06);
   border-left: 4px solid #dc2626;
-  color: #f87171;
+  color: #b91c1c;
   border-radius: 8px;
-  margin: 24px;
+  margin: 24px 0;
   font-weight: 600;
+}
+
+/* Adaptación responsive para tablets y móviles */
+@media (max-width: 768px) {
+  .admin-mkt-ads-grid {
+    grid-template-columns: 1fr; /* Una sola columna impecable en celulares */
+    gap: 16px;
+  }
+
+  .admin-mkt-ad-card {
+    border-radius: 12px;
+  }
 }
