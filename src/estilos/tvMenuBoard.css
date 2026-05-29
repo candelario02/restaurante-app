@@ -440,3 +440,181 @@
     transform: translate3d(-33.33%, 0, 0);
   }
 }
+/* ========== RESPONSIVE: PANTALLAS MEDIANAS (tablets, laptops pequeñas) ========== */
+@media (max-width: 1024px) {
+  .tv-board-header h1 {
+    font-size: 2.2rem;
+  }
+  .tv-board-timer {
+    font-size: 2rem;
+    padding: 5px 15px;
+  }
+  .tv-board-subtitle {
+    font-size: 1rem;
+  }
+  .tv-board-hero-name {
+    font-size: 2.5rem;
+  }
+  .tv-board-hero-price {
+    font-size: 2.8rem;
+  }
+  .tv-board-card-title {
+    font-size: 1.4rem;
+  }
+  .tv-board-card-price {
+    font-size: 1.5rem;
+  }
+  .tv-board-card-description {
+    font-size: 0.9rem;
+  }
+  .tv-marketing-promo-title {
+    font-size: 1.4rem;
+  }
+  .tv-marquee-text {
+    font-size: 1.2rem;
+  }
+}
+
+/* ========== RESPONSIVE: MÓVIL (pantallas hasta 768px) ========== */
+@media (max-width: 768px) {
+  /* Contenedor principal: menos padding, sin overflow hidden para permitir scroll si es necesario */
+  .tv-board-main-container {
+    padding: 15px;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* Cambiar layout de columnas a una sola columna */
+  .tv-board-layout-body {
+    flex-direction: column;
+    gap: 20px;
+    height: auto;
+  }
+
+  /* Panel izquierdo (grilla de productos) */
+  .tv-board-left-panel-premium {
+    width: 100%;
+  }
+
+  /* La grilla de productos: en móvil, 1 o 2 columnas automáticas */
+  .tv-board-left-grid-container {
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-rows: auto;
+    gap: 12px;
+  }
+
+  /* Tarjetas de producto: ajustar altura mínima */
+  .tv-board-product-card {
+    min-height: 200px;
+  }
+
+  /* Textos más compactos */
+  .tv-board-card-title {
+    font-size: 1.2rem;
+  }
+  .tv-board-card-price {
+    font-size: 1.3rem;
+  }
+  .tv-board-card-description {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 3; /* más líneas en móvil */
+  }
+  .tv-board-card-info-content {
+    padding: 12px;
+  }
+
+  /* Panel derecho (publicidad) */
+  .tv-board-right-panel-premium {
+    width: 100%;
+    min-height: 300px;
+  }
+
+  /* Ajustes del bloque de texto promocional */
+  .tv-marketing-promo-text-block {
+    padding: 12px;
+  }
+  .tv-marketing-promo-title {
+    font-size: 1.2rem;
+  }
+
+  /* Header: reducir tamaños y márgenes */
+  .tv-board-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 15px;
+    height: auto;
+  }
+  .tv-board-branding h1 {
+    font-size: 1.8rem;
+  }
+  .tv-board-subtitle {
+    font-size: 0.8rem;
+  }
+  .tv-board-timer {
+    font-size: 1.5rem;
+    padding: 4px 12px;
+    align-self: flex-start;
+  }
+
+  /* Hero (si se usa, aunque en su código actual no veo que lo use) */
+  .tv-board-hero-name {
+    font-size: 1.8rem;
+  }
+  .tv-board-hero-price {
+    font-size: 2rem;
+  }
+  .tv-board-hero-category-badge {
+    font-size: 0.8rem;
+  }
+
+  /* Footer marquesina: más delgado, texto más pequeño */
+  .tv-board-footer-marquee {
+    position: relative; /* para que no sea fijo y permita scroll */
+    margin-top: 20px;
+    height: auto;
+    padding: 6px 0;
+  }
+  .tv-marquee-text {
+    font-size: 0.9rem;
+  }
+
+  /* Botón de pantalla completa: más pequeño y mejor posicionado */
+  .tv-fullscreen-toggle-btn {
+    top: 10px;
+    left: auto;
+    right: 10px;
+    transform: none;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+  .tv-fullscreen-toggle-btn:hover {
+    transform: scale(1.02);
+  }
+
+  /* Ajuste de la animación de marquesina para que no se salga en móvil */
+  .tv-marquee-wrapper {
+    animation: tvMarquee 15s linear infinite;
+  }
+}
+
+/* ========== PANTALLAS MUY PEQUEÑAS ( < 480px ) ========== */
+@media (max-width: 480px) {
+  .tv-board-left-grid-container {
+    grid-template-columns: 1fr; /* una sola columna */
+  }
+  .tv-board-card-title {
+    font-size: 1rem;
+  }
+  .tv-board-card-price {
+    font-size: 1.1rem;
+  }
+  .tv-branding h1 {
+    font-size: 1.4rem;
+  }
+  .tv-marketing-promo-title {
+    font-size: 1rem;
+  }
+}

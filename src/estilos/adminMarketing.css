@@ -573,11 +573,146 @@
 /* Adaptación responsive para tablets y móviles */
 @media (max-width: 768px) {
   .admin-mkt-ads-grid {
-    grid-template-columns: 1fr; /* Una sola columna impecable en celulares */
+    grid-template-columns: 1fr; 
     gap: 16px;
   }
 
   .admin-mkt-ad-card {
     border-radius: 12px;
+  }
+}
+
+/* =========================================
+   RESPONSIVE: AJUSTES ADICIONALES PARA EL PANEL DE ANUNCIOS
+========================================= */
+
+/* Tablets (pantallas entre 768px y 1024px) */
+@media (max-width: 1024px) {
+  .admin-mkt-ads-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .admin-mkt-card-body {
+    padding: 16px;
+  }
+
+  .admin-mkt-card-image-wrapper {
+    height: 180px;
+  }
+}
+
+/* Móviles grandes (hasta 768px) */
+@media (max-width: 768px) {
+  .admin-mkt-upload-panel,
+  .admin-mkt-top-panel {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .admin-mkt-upload-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .admin-mkt-file-label {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-mkt-ads-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .admin-mkt-ad-card {
+    border-radius: 12px;
+  }
+
+  .admin-mkt-card-image-wrapper {
+    height: 200px;
+  }
+
+  .admin-mkt-card-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .admin-mkt-card-field input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .admin-mkt-card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .admin-mkt-card-toggle,
+  .admin-mkt-card-btn-delete {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-mkt-ads-section h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  /* Badge flotante más pequeño */
+  .admin-mkt-status-badge {
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+}
+
+/* Móviles pequeños (hasta 480px) */
+@media (max-width: 480px) {
+  .admin-mkt-container {
+    padding: 12px 8px;
+  }
+
+  .admin-mkt-header h2 {
+    font-size: 20px;
+  }
+
+  .admin-mkt-header p {
+    font-size: 12px;
+  }
+
+  .admin-mkt-top-panel,
+  .admin-mkt-upload-panel {
+    padding: 12px;
+  }
+
+  .admin-mkt-upload-text {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .admin-mkt-file-label {
+    height: 44px;
+    font-size: 13px;
+  }
+
+  .admin-mkt-card-image-wrapper {
+    height: 160px;
+  }
+
+  .admin-mkt-card-field label {
+    font-size: 10px;
+  }
+
+  .admin-mkt-card-field input {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .admin-mkt-card-toggle,
+  .admin-mkt-card-btn-delete {
+    font-size: 11px;
+    padding: 10px;
   }
 }
