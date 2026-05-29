@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "../estilos/tvMenuBoard.css";
+
 const TvMenuBoard = ({ restauranteId }) => {
-  const [productos, setProductos] = useState([]);
   const [nombreLocal, setNombreLocal] = useState("");
   const [marketing, setMarketing] = useState({
     textoBanner: "",
