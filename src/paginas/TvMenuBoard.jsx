@@ -216,6 +216,11 @@ const TvMenuBoard = ({ restauranteId }) => {
 
                   {p.categoria && (
                     <span className="tv-board-card-badge">
+                      {/* Ícono según categoría */}
+                      {p.categoria.toLowerCase() === "comidas" && "🍽️ "}
+                      {p.categoria.toLowerCase() === "entradas" && "🥗 "}
+                      {p.categoria.toLowerCase() === "postres" && "🍰 "}
+                      {p.categoria.toLowerCase() === "bebidas" && "🥤 "}
                       {p.categoria.toUpperCase()}
                     </span>
                   )}

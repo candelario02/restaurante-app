@@ -175,7 +175,7 @@ const AdminMarketing = ({ restauranteId }) => {
         <div className="admin-mkt-row">
           {/* 1. NUEVO: Selector de Modo de Marquesina */}
           <div className="admin-mkt-input-group">
-            <label>⚙️ Texto para pie de tv</label>
+            <label>Seleccione anuncio</label>
             <select
               className="admin-mkt-select" 
               value={modoMarquesina || "automatico"} 
@@ -188,7 +188,7 @@ const AdminMarketing = ({ restauranteId }) => {
 
           {/* 2. MODIFICADO: Input Dinámico Inteligente */}
           <div className="admin-mkt-input-group" style={{ flexGrow: 2 }}>
-            <label>📝Anuncio informativo para (PIE TV)</label>
+            <label>Anuncio manual</label>
             <input
               type="text"
               value={

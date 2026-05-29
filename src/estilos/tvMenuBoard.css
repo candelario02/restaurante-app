@@ -27,6 +27,7 @@
   grid-template-rows: repeat(2, 1fr);
   gap: 20px;
 }
+/* sesion para tarjetas del plato */
 .tv-board-product-card {
   position: relative;
   background-color: #0d121f;
@@ -45,11 +46,6 @@
   width: 100%;
   height: 100%;
   z-index: 1;
-}
-.tv-board-card-bg-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .tv-board-card-gradient-overlay {
   position: absolute;
@@ -82,8 +78,13 @@
 .tv-board-card-price {
   font-size: 2rem;
   font-weight: 900;
-  color: #10b981;
+  color: #f59e0b; /* ámbar */
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
 }
 .tv-board-card-description {
   font-size: 1.1rem;
@@ -97,15 +98,38 @@
   overflow: hidden;
 }
 .tv-board-card-badge {
-  background: rgba(79, 70, 229, 0.3);
-  border: 1px solid #4f46e5;
-  color: #e0e7ff;
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  display: inline-block;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 40px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffd966;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(2px);
 }
+
+.tv-board-card-bg-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+   filter: brightness(1.1) contrast(1.15);
+  transition: filter 0.3s ease;
+}
+.tv-board-product-card:hover .tv-board-card-bg-image img {
+  transform: scale(1.02);
+  filter: brightness(1.2) contrast(1.2);
+}
+.tv-board-product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tv-board-product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
 /* 📊 BOTÓN FLOTANTE PANTALLA COMPLETA */
 .tv-fullscreen-toggle-btn {
   position: absolute;
