@@ -55,42 +55,17 @@ const AdminMarketing = ({ restauranteId }) => {
     e.preventDefault();
     if (!restauranteId) return;
 
-    // 1. Calculamos el texto de forma segura
-    let textoFinalParaTV = "";
-
-    if (modoMarquesina === "manual") {
-      textoFinalParaTV = textoBanner;
-    } else {
-      // Modo Automático: Seguridad extra para no romper si 'config' es null
-      const lista =
-        config?.publicidades || config?.anuncios || config?.afiches || [];
-      const activos = lista.filter(
-        (a) => a?.visible || a?.estado === "mostrando" || a?.activo,
-      );
-
-      textoFinalParaTV =
-        activos.length > 0
-          ? activos
-              .map((a) => a?.texto || "")
-              .filter(Boolean)
-              .join(" • ")
-          : "";
-    }
-
-    // 2. Objeto de datos estricto
+    // 1. Objeto de datos estricto (SOLO configuración global)
     const dataAEnviar = {
       modoMarquesina: modoMarquesina,
       activo: activo,
       tiempoRotacion: Number(tiempoRotacion),
-      anuncios: listaDeAfiches, // ← array con { textoPromocional, imagenUrl, activo, etc. }
     };
     if (modoMarquesina === "manual") {
       dataAEnviar.textoBanner = textoBanner;
     }
+    console.log("Enviando a Firebase:", dataAEnviar);
 
-    console.log("Enviando a Firebase:", dataAEnviar); // MIRA ESTO EN LA CONSOLA
-
-    // 3. Ejecución
     try {
       const exito = await guardarMarketingConfig(restauranteId, dataAEnviar);
       if (exito) {
