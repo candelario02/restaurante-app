@@ -2,11 +2,21 @@
    PANEL DE MARKETING - ESTILO PREMIUM
 ========================================= */
 .admin-mkt-container {
-  padding: 30px 24px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease;
   max-width: 1400px;
   margin: 0 auto;
-  color: #f3f4f6;
+  padding: 20px 24px;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  color: #334155; 
+}
+
+/* 5. Adaptación para celulares (Mobile First / Responsive) */
+@media (max-width: 768px) {
+  .admin-mkt-container {
+    padding: 15px 10px; 
+  }
 }
 
 .admin-mkt-header {
