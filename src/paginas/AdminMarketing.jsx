@@ -4,7 +4,7 @@ import { db } from "../firebase/config";
 import { guardarMarketingConfig } from "../servicios/productosServicio";
 import { subirImagen } from "../servicios/cloudinaryServicio";
 import "../estilos/adminMarketing.css";
-
+import Swal from "sweetalert2";
 const AdminMarketing = ({ restauranteId }) => {
   const [config, setConfig] = useState(null);
   const [textoBanner, setTextoBanner] = useState("");
