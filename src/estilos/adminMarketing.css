@@ -1,238 +1,330 @@
 .admin-mkt-container {
   padding: 24px;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   color: #f3f4f6;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: "Segoe UI", system-ui, sans-serif;
 }
 
 .admin-mkt-header {
   margin-bottom: 24px;
   border-bottom: 1px solid #1f2937;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
 }
 
 .admin-mkt-header h2 {
-  font-size: 26px;
+  font-size: 24px;
   color: #ffffff;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
 }
 
 .admin-mkt-header strong {
   color: #10b981;
 }
 
-.admin-mkt-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: 24px;
+/* PANEL GLOBAL SUPERIOR */
+.admin-mkt-top-panel {
+  background-color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.admin-mkt-card {
-  background-color: #0d121f;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+.admin-mkt-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
 
-.admin-mkt-card h3 {
-  margin-top: 0;
-  font-size: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: 12px;
-  color: #ffffff;
+.admin-mkt-input-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 250px;
 }
 
-.helper-text {
+.admin-mkt-input-group.admin-mkt-short {
+  flex: 0 0 130px;
+  min-width: 130px;
+}
+
+.admin-mkt-input-group.admin-mkt-toggle-wrapper {
+  flex: 0 0 150px;
+  min-width: 150px;
+}
+
+.admin-mkt-input-group.admin-mkt-action-wrapper {
+  flex: 0 0 220px;
+  min-width: 220px;
+}
+
+.admin-mkt-input-group label {
   font-size: 13px;
   color: #9ca3af;
-  margin-bottom: 16px;
-  line-height: 1.4;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #9ca3af;
-}
-
-.form-group textarea {
-  width: 100%;
-  background-color: #151b2c;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.admin-mkt-input-group input {
+  background-color: #111827;
+  border: 1px solid #374151;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   color: #ffffff;
   font-size: 14px;
-  line-height: 1.5;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.form-group textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  transition: border-color 0.2s;
 }
 
-.form-group-switch {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #151b2c;
-  padding: 14px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+.admin-mkt-input-group input:focus {
+  border-color: #3b82f6;
 }
 
-.form-group-switch label {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.btn-switch {
+/* SWITCHES */
+.admin-mkt-btn-switch {
   background-color: #1f2937;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 18px;
-  border-radius: 20px;
+  border: 1px solid #4b5563;
+  padding: 10px;
+  border-radius: 8px;
   color: #9ca3af;
   cursor: pointer;
   font-weight: 700;
-  font-size: 12px;
-  transition: all 0.2s ease-in-out;
+  font-size: 13px;
+  transition: all 0.2s ease;
 }
 
-.btn-switch.active {
-  background-color: rgba(16, 185, 129, 0.2);
+.admin-mkt-btn-switch.admin-mkt-active {
+  background-color: rgba(16, 185, 129, 0.15);
   border-color: #10b981;
   color: #10b981;
 }
 
-.btn-primary {
+.admin-mkt-btn-primary {
   background-color: #2563eb;
   color: #ffffff;
   border: none;
-  padding: 12px 20px;
+  padding: 11px 16px;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  width: 100%;
   transition: background-color 0.2s;
 }
 
-.btn-primary:hover {
+.admin-mkt-btn-primary:hover {
   background-color: #1d4ed8;
 }
 
-.upload-zone {
-  margin-bottom: 24px;
+/* ZONA DE SUBIDA MEDIO */
+.admin-mkt-upload-panel {
+  background-color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 32px;
 }
 
-.file-label {
-  display: block;
-  text-align: center;
-  background-color: rgba(37, 99, 235, 0.05);
-  border: 2px dashed rgba(37, 99, 235, 0.4);
-  padding: 26px;
+.admin-mkt-upload-panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.admin-mkt-upload-row {
+  display: flex;
+  gap: 16px;
+}
+
+.admin-mkt-upload-text {
+  flex: 1;
+  background-color: #111827;
+  border: 1px solid #374151;
   border-radius: 8px;
+  padding: 12px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+}
+
+.admin-mkt-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 2px dashed #3b82f6;
+  border-radius: 8px;
+  padding: 0 24px;
   cursor: pointer;
   color: #3b82f6;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.file-label:hover {
-  background-color: rgba(37, 99, 235, 0.1);
-  border-color: #3b82f6;
+.admin-mkt-file-label:hover {
+  background-color: rgba(59, 130, 246, 0.18);
 }
 
-.file-label.disabled {
+.admin-mkt-file-label.admin-mkt-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   border-color: #4b5563;
   color: #9ca3af;
-  background: transparent;
 }
 
-.admin-mkt-card h4 {
-  margin: 16px 0 12px 0;
-  font-size: 14px;
+/* SECCIÓN CUADRÍCULA DE TARJETAS */
+.admin-mkt-ads-section h3 {
+  font-size: 17px;
+  margin: 0 0 16px 0;
   color: #9ca3af;
 }
 
-.admin-mkt-preview-list {
+.admin-mkt-ads-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
-.admin-mkt-thumb-card {
-  position: relative;
-  border-radius: 8px;
+/* TARJETA INDEPENDIENTE */
+.admin-mkt-ad-card {
+  background-color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
   overflow: hidden;
-  background-color: #151b2c;
-  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
 }
 
-.admin-mkt-thumb-card img {
+.admin-mkt-ad-card:hover {
+  transform: translateY(-2px);
+}
+
+.admin-mkt-card-image-wrapper {
+  position: relative;
   width: 100%;
-  height: 95px;
+  height: 160px;
+  background-color: #111827;
+}
+
+.admin-mkt-card-image-wrapper img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.btn-delete-thumb {
-  width: 100%;
-  background-color: rgba(220, 38, 38, 0.15);
+.admin-mkt-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-grow: 1;
+}
+
+.admin-mkt-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-mkt-card-field label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.admin-mkt-card-field input {
+  background-color: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 13px;
+  outline: none;
+}
+
+.admin-mkt-card-field input:focus {
+  border-color: #3b82f6;
+}
+
+.admin-mkt-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.admin-mkt-card-toggle {
+  flex: 1;
+  border: 1px solid transparent;
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-mkt-card-toggle.admin-mkt-card-on {
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.admin-mkt-card-toggle.admin-mkt-card-off {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.admin-mkt-card-btn-delete {
+  background-color: #1f2937;
   color: #f87171;
-  border: none;
-  border-top: 1px solid rgba(220, 38, 38, 0.2);
-  padding: 6px;
+  border: 1px solid #374151;
+  padding: 8px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
-.btn-delete-thumb:hover {
+.admin-mkt-card-btn-delete:hover {
   background-color: #dc2626;
   color: #ffffff;
+  border-color: #dc2626;
 }
 
-.no-promos-fallback {
+/* FALLBACKS Y LOADER */
+.admin-mkt-fallback {
   grid-column: 1 / -1;
   text-align: center;
-  padding: 24px;
-  background-color: #151b2c;
-  border-radius: 8px;
-  color: #9ca3af;
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  padding: 40px;
+  background-color: #0b0f19;
+  border-radius: 12px;
+  border: 1px dashed #374151;
 }
 
-.no-promos-fallback p {
-  margin: 0 0 4px 0;
-  font-size: 14px;
+.admin-mkt-fallback p {
+  margin: 0 0 6px 0;
   color: #eab308;
 }
 
+.admin-mkt-fallback small {
+  color: #6b7280;
+}
+
 .admin-mkt-loading {
-  padding: 40px;
+  padding: 60px;
   text-align: center;
   color: #9ca3af;
-  font-size: 16px;
 }
 
 .admin-mkt-error {
-  padding: 24px;
+  padding: 16px;
   background-color: rgba(220, 38, 38, 0.1);
   border: 1px solid #dc2626;
   color: #f87171;
