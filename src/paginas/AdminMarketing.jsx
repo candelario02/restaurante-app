@@ -161,9 +161,10 @@ const AdminMarketing = ({ restauranteId }) => {
               /* Si está en automático, calculamos en tiempo real el texto unido de las tarjetas activas para mostrarlo como preview */
               value={
                 modoMarquesina === "automatico"
-                  ? anuncios
-                      .filter((a) => a.visible || a.estado === "mostrando") // Filtra solo los activos
-                      .map((a) => a.texto)
+                  ? (publicidades || [])
+                      .filter((a) => a?.visible || a?.estado === "mostrando")
+                      .map((a) => a?.texto || "")
+                      .filter(Boolean)
                       .join("  •  ") || "Sin afiches activos para mostrar"
                   : textoBanner
               }
