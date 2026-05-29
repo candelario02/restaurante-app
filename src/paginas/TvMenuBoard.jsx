@@ -10,7 +10,7 @@ const TvMenuBoard = ({ restauranteId }) => {
     imagenPublicidad: "",
     activo: false,
   });
-  const [config, setConfig] = useState(null); 
+  const [config, setConfig] = useState(null);
   const [productos, setProductos] = useState([]);
   const [indexActual, setIndexActual] = useState(0);
   const [indexPromo, setIndexPromo] = useState(0);
@@ -21,21 +21,29 @@ const TvMenuBoard = ({ restauranteId }) => {
     if (!config) return "";
     const lista =
       config?.publicidades || config?.anuncios || config?.afiches || [];
-    return lista
+    const textosActivos = lista
       .filter((a) => a?.activo !== false)
       .map((a) => a?.textoPromocional || a?.titulo || a?.nombre || "")
-      .filter(Boolean)
-      .join("  •  ");
+      .filter(Boolean);
+    if (textosActivos.length === 0) {
+      return config.nombre
+        ? `✨ BIENVENIDOS A ${config.nombre} ✨`
+        : "✨ BIENVENIDOS ✨";
+    }
+    const textosConFormato = textosActivos.map((t) => `🔥 ${t} 🔥`);
+    return textosConFormato.join("  •  ");
   }, [config]);
 
   // 🔄 Paginación automática para los productos de la izquierda (Opcional si usas indexActual)
   useEffect(() => {
     if (productos.length <= 4) return;
+    // Usa el mismo tiempo de rotación que la publicidad (en segundos)
+    const tiempoSegundos = config?.tiempoRotacion || 6;
     const intervaloProductos = setInterval(() => {
       setIndexActual((prev) => (prev + 4 >= productos.length ? 0 : prev + 4));
-    }, 8000); // Cambia de grupo cada 8 segundos sin romper el CSS
+    }, tiempoSegundos * 1000);
     return () => clearInterval(intervaloProductos);
-  }, [productos]);
+  }, [productos, config?.tiempoRotacion]);
 
   //usefectt para caragr datos
   useEffect(() => {
