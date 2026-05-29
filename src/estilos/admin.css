@@ -1592,11 +1592,12 @@
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+
   }
 
   .tabla-insumos th,
   .tabla-insumos td {
-    padding: 8px;
+    padding: 3px;
     font-size: 0.85rem;
   }
 
