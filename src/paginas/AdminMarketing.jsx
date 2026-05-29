@@ -41,6 +41,9 @@ const AdminMarketing = ({ restauranteId }) => {
         setTextoBanner(data.textoBanner || "");
         setActivo(data.activo || false);
         setTiempoRotacion(data.tiempoRotacion || 6);
+
+        // ¡AQUÍ ESTABA LA DESCOORDINACIÓN! Faltaba sincronizar esto:
+        setModoMarquesina(data.modoMarquesina || "automatico");
       }
     });
 
