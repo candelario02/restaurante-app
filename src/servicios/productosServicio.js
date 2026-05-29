@@ -55,13 +55,23 @@ export const cambiarDisponibilidad = async (id, estado, restauranteId) => {
   await updateDoc(docRef, { disponible: estado });
 };
 //✅ CAMBIAR DISPONIBILIDAD EN LA TV
-export const cambiarVisibilidadTv = async (productoId, nuevoEstado, restauranteId) => {
+export const cambiarVisibilidadTv = async (
+  productoId,
+  nuevoEstado,
+  restauranteId,
+) => {
   if (!restauranteId || !productoId) return;
-  
-  const productoRef = doc(db, "restaurantes", restauranteId, "productos", productoId);
-  
+
+  const productoRef = doc(
+    db,
+    "restaurantes",
+    restauranteId,
+    "productos",
+    productoId,
+  );
+
   return await updateDoc(productoRef, {
-    mostrarEnTv: nuevoEstado
+    mostrarEnTv: nuevoEstado,
   });
 };
 // 🕒 OBTENER PRODUCTOS
@@ -139,7 +149,14 @@ export const obtenerConfigRestaurante = async (restauranteId) => {
 //funcion para marketing
 export const guardarMarketingConfig = async (restauranteId, dataInput) => {
   try {
-    const docRef = doc(db, "restaurantes", restauranteId, "configuraciones", "datos");
+    const docRef = doc(
+      db,
+      "restaurantes",
+      restauranteId,
+      "configuraciones",
+      "datos",
+    );
+    // Al pasar dataInput tal cual, solo agregaremos el campo en la función de abajo
     await updateDoc(docRef, dataInput);
     return true;
   } catch (error) {

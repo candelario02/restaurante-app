@@ -13,7 +13,6 @@ const AdminMarketing = ({ restauranteId }) => {
   const [textoAnuncioActual, setTextoAnuncioActual] = useState("");
   const [modoMarquesina, setModoMarquesina] = useState("automatico");
   const [tiempoRotacion, setTiempoRotacion] = useState(6);
-  
 
   useEffect(() => {
     if (!restauranteId) return;
@@ -43,12 +42,58 @@ const AdminMarketing = ({ restauranteId }) => {
     e.preventDefault();
     if (!restauranteId) return;
 
-    const exito = await guardarMarketingConfig(restauranteId, {
-      textoBanner,
-      activo, // ¡Aquí se guarda la variable global que muestra/oculta el panel de la TV!
+    let textoFinalParaTV = "";
+
+    // 1. Lógica inteligente basada en el modo seleccionado
+    if (modoMarquesina === "manual") {
+      // Si es manual, usamos lo que el usuario escribió en el input
+      textoFinalParaTV = textoBanner;
+    } else {
+      // Si es automático, procesamos los anuncios
+      const listaTarjetas =
+        config?.publicidades || config?.anuncios || config?.afiches || [];
+
+      textoFinalParaTV = listaTarjetas
+        .filter((a) => a?.visible || a?.estado === "mostrando" || a?.activo)
+        .map((a) => a?.texto || "")
+        .filter(Boolean)
+        .join("  •  ");
+
+      // Fallback dinámico usando la marca desde la base de datos
+      if (!textoFinalParaTV) {
+        textoFinalParaTV = config?.nombre
+          ? `Bienvenidos a ${config.nombre}`
+          : "¡Bienvenidos!";
+      }
+    }
+
+    // 2. Preparamos el objeto para enviar a Firebase
+    const dataAEnviar = {
+      textoBanner: textoFinalParaTV,
+      modoMarquesina: modoMarquesina, // ¡Esto es vital para que la TV sepa qué hacer!
+      activo,
       tiempoRotacion,
-    });
-    if (exito) alert("¡Configuración global actualizada y sincronizada en TV!");
+    };
+
+    // 3. Ejecución y Alertas
+    const exito = await guardarMarketingConfig(restauranteId, dataAEnviar);
+
+    if (exito) {
+      Swal.fire({
+        icon: "success",
+        title: "¡Configuración Guardada!",
+        text: "La marquesina y los ajustes se han sincronizado en la TV.",
+        confirmButtonColor: "#3b82f6",
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "No se pudo sincronizar. Revisa tu conexión.",
+        confirmButtonColor: "#ef4444",
+      });
+    }
   };
 
   // Subir imagen promocional
