@@ -1,5 +1,5 @@
 import { db } from "../firebase/config";
-import { doc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import {
   collection,
   addDoc,
