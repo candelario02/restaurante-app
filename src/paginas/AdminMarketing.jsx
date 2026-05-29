@@ -13,6 +13,16 @@ const AdminMarketing = ({ restauranteId }) => {
   const [textoAnuncioActual, setTextoAnuncioActual] = useState("");
   const [modoMarquesina, setModoMarquesina] = useState("automatico");
   const [tiempoRotacion, setTiempoRotacion] = useState(6);
+  const isAuto = config?.modoMarquesina === "automatico";
+  const lista =
+    config?.publicidades || config?.anuncios || config?.afiches || [];
+  const textoAMostrar = isAuto
+    ? lista
+        .filter((a) => a?.visible || a?.estado === "mostrando" || a?.activo)
+        .map((a) => a?.texto || "")
+        .filter(Boolean)
+        .join("  •  ")
+    : config?.textoBanner || "Bienvenido";
 
   useEffect(() => {
     if (!restauranteId) return;
@@ -42,56 +52,56 @@ const AdminMarketing = ({ restauranteId }) => {
     e.preventDefault();
     if (!restauranteId) return;
 
+    // 1. Calculamos el texto
     let textoFinalParaTV = "";
 
-    // 1. Lógica inteligente basada en el modo seleccionado
     if (modoMarquesina === "manual") {
-      // Si es manual, usamos lo que el usuario escribió en el input
       textoFinalParaTV = textoBanner;
     } else {
-      // Si es automático, procesamos los anuncios
-      const listaTarjetas =
+      // Modo Automático: Obtenemos solo los anuncios visibles
+      const lista =
         config?.publicidades || config?.anuncios || config?.afiches || [];
+      const activos = lista.filter(
+        (a) => a?.visible || a?.estado === "mostrando" || a?.activo,
+      );
 
-      textoFinalParaTV = listaTarjetas
-        .filter((a) => a?.visible || a?.estado === "mostrando" || a?.activo)
-        .map((a) => a?.texto || "")
-        .filter(Boolean)
-        .join("  •  ");
-
-      // Fallback dinámico usando la marca desde la base de datos
-      if (!textoFinalParaTV) {
-        textoFinalParaTV = config?.nombre
-          ? `Bienvenidos a ${config.nombre}`
-          : "¡Bienvenidos!";
-      }
+      textoFinalParaTV =
+        activos.length > 0
+          ? activos
+              .map((a) => a?.texto || "")
+              .filter(Boolean)
+              .join(" • ")
+          : ""; // Dejamos vacío si no hay nada, el TV manejará el mensaje default
     }
 
-    // 2. Preparamos el objeto para enviar a Firebase
+    // 2. Objeto de datos estricto
     const dataAEnviar = {
-      textoBanner: textoFinalParaTV,
-      modoMarquesina: modoMarquesina, // ¡Esto es vital para que la TV sepa qué hacer!
-      activo,
-      tiempoRotacion,
+      textoBanner: textoFinalParaTV, // Este es el que el TV lee
+      modoMarquesina: modoMarquesina, // ESTO ES LA CLAVE
+      activo: activo,
+      tiempoRotacion: Number(tiempoRotacion),
     };
 
-    // 3. Ejecución y Alertas
-    const exito = await guardarMarketingConfig(restauranteId, dataAEnviar);
+    // 3. Ejecución profesional
+    try {
+      const exito = await guardarMarketingConfig(restauranteId, dataAEnviar);
 
-    if (exito) {
-      Swal.fire({
-        icon: "success",
-        title: "¡Configuración Guardada!",
-        text: "La marquesina y los ajustes se han sincronizado en la TV.",
-        confirmButtonColor: "#3b82f6",
-        timer: 2000,
-      });
-    } else {
+      if (exito) {
+        Swal.fire({
+          icon: "success",
+          title: "¡Sincronizado!",
+          text: "Los cambios se han enviado a la TV correctamente.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error("Fallo en la escritura de base de datos");
+      }
+    } catch (error) {
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text: "No se pudo sincronizar. Revisa tu conexión.",
-        confirmButtonColor: "#ef4444",
+        title: "Error de sincronización",
+        text: "No se pudo actualizar la configuración.",
       });
     }
   };
