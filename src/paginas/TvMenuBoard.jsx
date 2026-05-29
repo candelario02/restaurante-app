@@ -10,6 +10,12 @@ const TvMenuBoard = ({ restauranteId }) => {
     imagenPublicidad: "",
     activo: false,
   });
+  const lista =
+    config?.publicidades || config?.anuncios || config?.afiches || [];
+  const titulosDinamicos = lista
+    .filter((a) => a?.visible || a?.estado === "mostrando" || a?.activo)
+    .map((a) => a?.textoPromocional || a?.titulo || a?.nombre || "Promoción") // Usa el campo real de tus anuncios
+    .join("  •  ");
 
   // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
   const [productos, setProductos] = useState([]);
@@ -257,9 +263,9 @@ const TvMenuBoard = ({ restauranteId }) => {
         <footer className="tv-board-footer-marquee">
           <div className="tv-marquee-wrapper">
             <p className="tv-marquee-text">
-              ✨ {config.textoBanner || "Bienvenidos a nuestro establecimiento"}{" "}
-              &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
-              {config.textoBanner || "Disfruta de nuestras promociones"}
+              {config?.modoMarquesina === "automatico"
+                ? titulosDinamicos || "Bienvenidos a nuestro establecimiento"
+                : config?.textoBanner || "Bienvenidos"}
             </p>
           </div>
         </footer>
