@@ -55,13 +55,13 @@ const AdminMarketing = ({ restauranteId }) => {
     e.preventDefault();
     if (!restauranteId) return;
 
-    // 1. Calculamos el texto
+    // 1. Calculamos el texto de forma segura
     let textoFinalParaTV = "";
 
     if (modoMarquesina === "manual") {
       textoFinalParaTV = textoBanner;
     } else {
-      // Modo Automático: Obtenemos solo los anuncios visibles
+      // Modo Automático: Seguridad extra para no romper si 'config' es null
       const lista =
         config?.publicidades || config?.anuncios || config?.afiches || [];
       const activos = lista.filter(
@@ -74,37 +74,36 @@ const AdminMarketing = ({ restauranteId }) => {
               .map((a) => a?.texto || "")
               .filter(Boolean)
               .join(" • ")
-          : ""; // Dejamos vacío si no hay nada, el TV manejará el mensaje default
+          : "";
     }
 
     // 2. Objeto de datos estricto
     const dataAEnviar = {
-      textoBanner: textoFinalParaTV, // Este es el que el TV lee
-      modoMarquesina: modoMarquesina, // ESTO ES LA CLAVE
-      activo: activo,
+      textoBanner: textoFinalParaTV,
+      modoMarquesina: modoMarquesina || "automatico", // Aseguramos un valor por defecto
+      activo: activo, // Este es el valor de tu botón
       tiempoRotacion: Number(tiempoRotacion),
     };
 
-    // 3. Ejecución profesional
+    console.log("Enviando a Firebase:", dataAEnviar); // MIRA ESTO EN LA CONSOLA
+
+    // 3. Ejecución
     try {
       const exito = await guardarMarketingConfig(restauranteId, dataAEnviar);
-
       if (exito) {
         Swal.fire({
           icon: "success",
-          title: "¡Sincronizado!",
-          text: "Los cambios se han enviado a la TV correctamente.",
+          title: "¡Guardado!",
+          text: "Configuración actualizada.",
           timer: 1500,
-          showConfirmButton: false,
         });
-      } else {
-        throw new Error("Fallo en la escritura de base de datos");
       }
     } catch (error) {
+      console.error("Error al guardar:", error);
       Swal.fire({
         icon: "error",
-        title: "Error de sincronización",
-        text: "No se pudo actualizar la configuración.",
+        title: "Error",
+        text: "No se guardó en la base de datos.",
       });
     }
   };
