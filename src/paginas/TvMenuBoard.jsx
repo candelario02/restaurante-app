@@ -1,18 +1,16 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { doc, onSnapshot, collection, query, where } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "../estilos/tvMenuBoard.css";
 
 const TvMenuBoard = ({ restauranteId }) => {
-  // 1. ESTADOS
-  const [productos, setProductos] = useState([]);
-  const [config, setConfig] = useState(null);
-  const [indexActual, setIndexActual] = useState(0);
-  const [indexPromo, setIndexPromo] = useState(0);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const containerRef = useRef(null);
+  const [nombreLocal, setNombreLocal] = useState("");
+  const [marketing, setMarketing] = useState({
+    textoBanner: "",
+    imagenPublicidad: "",
+    activo: false,
+  });
 
-  // 2. LÓGICA DE MARQUESINA (Memoizada para evitar errores de render)
   const titulosDinamicos = useMemo(() => {
     if (!config) return "";
     const lista =
@@ -24,10 +22,28 @@ const TvMenuBoard = ({ restauranteId }) => {
       .join("  •  ");
   }, [config]);
 
-  // 3. EFECTOS (Datos y Rotación)
+  // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
+  const [productos, setProductos] = useState([]);
+  const [config, setConfig] = useState(null); // 🔥 Se mantiene null al inicio para el control de carga
+  const [indexActual, setIndexActual] = useState(0);
+  const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const containerRef = useRef(null);
+
+  // 🔄 Paginación automática para los productos de la izquierda (Opcional si usas indexActual)
+  useEffect(() => {
+    if (productos.length <= 4) return;
+    const intervaloProductos = setInterval(() => {
+      setIndexActual((prev) => (prev + 4 >= productos.length ? 0 : prev + 4));
+    }, 8000); // Cambia de grupo cada 8 segundos sin romper el CSS
+    return () => clearInterval(intervaloProductos);
+  }, [productos]);
+
+  //usefectt para caragr datos
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
+    // 1. CONFIGURACIÓN COMPLETA (Nombre, Logo, Marquesina y Anuncios Rotativos)
     const datosRef = doc(
       db,
       "restaurantes",
@@ -36,9 +52,12 @@ const TvMenuBoard = ({ restauranteId }) => {
       "datos",
     );
     const unsubDatos = onSnapshot(datosRef, (snapshot) => {
-      if (snapshot.exists()) setConfig(snapshot.data());
+      if (snapshot.exists()) {
+        setConfig(snapshot.data());
+      }
     });
 
+    // 2. PRODUCTOS AUTORIZADOS PARA LA TV
     const productosRef = collection(
       db,
       "restaurantes",
@@ -50,8 +69,12 @@ const TvMenuBoard = ({ restauranteId }) => {
       where("disponible", "==", true),
       where("mostrarEnTv", "==", true),
     );
+
     const unsubProd = onSnapshot(q, (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const lista = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setProductos(
         lista.filter((p) => p.cantidad === undefined || Number(p.cantidad) > 0),
       );
@@ -63,30 +86,69 @@ const TvMenuBoard = ({ restauranteId }) => {
     };
   }, [restauranteId]);
 
-  // Rotación de anuncios
+  // 🕒 Rotación automática de la galería de publicidad filtrando solo los ACTIVOS
   useEffect(() => {
-    if (!config?.anuncios) return;
+    if (!config || !config.anuncios) return;
+
     const anunciosVisibles = config.anuncios.filter((a) => a.activo !== false);
     if (anunciosVisibles.length <= 1) {
       setIndexPromo(0);
       return;
     }
+    const tiempoEnMilisegundos = (config.tiempoRotacion || 6) * 1000;
 
-    const tiempo = (config.tiempoRotacion || 6) * 1000;
-    const interval = setInterval(() => {
+    const intervaloPromo = setInterval(() => {
       setIndexPromo((prev) => (prev + 1) % anunciosVisibles.length);
-    }, tiempo);
-    return () => clearInterval(interval);
+    }, tiempoEnMilisegundos);
+
+    return () => clearInterval(intervaloPromo);
   }, [config]);
 
-  // 4. PANTALLA DE CARGA
+  // 🖥️ Lógica del Manejador de Pantalla Completa Nativo
+  const toggleFullScreen = async () => {
+    if (!document.fullscreenElement) {
+      try {
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        }
+        setIsFullScreen(true);
+      } catch (err) {
+        console.error("Error al activar pantalla completa:", err);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+      setIsFullScreen(false);
+    }
+  };
+
+  // Escuchar si el usuario sale con la tecla ESC
+  useEffect(() => {
+    const handleScrenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleScrenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleScrenChange);
+  }, []);
+
+  // 🛑 PANTALLA DE CARGA SEGURA: Evita que el componente intente leer datos inexistentes al arrancar
   if (!config) {
     return (
       <div className="tv-board-loading-screen">
-        <h2>Cargando Jekito...</h2>
+        <h2 className="tv-board-loading-text">
+          Conectando con el canal de marketing de Jekito Restobar...
+        </h2>
       </div>
     );
   }
+
+  // 🛡️ Una vez cargado "config", procesamos los anuncios que el administrador activó
+  const anunciosVisibles = (config.anuncios || []).filter(
+    (a) => a.activo !== false,
+  );
+
   return (
     <div ref={containerRef} className="tv-board-main-container">
       {/* 🔘 BOTÓN INTELIGENTE */}
