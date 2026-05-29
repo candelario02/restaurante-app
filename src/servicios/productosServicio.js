@@ -136,3 +136,14 @@ export const obtenerConfigRestaurante = async (restauranteId) => {
     return null;
   }
 };
+//funcion para marketing
+export const guardarMarketingConfig = async (restauranteId, dataInput) => {
+  try {
+    const docRef = doc(db, "restaurantes", restauranteId, "configuraciones", "datos");
+    await updateDoc(docRef, dataInput);
+    return true;
+  } catch (error) {
+    console.error("Error en guardarMarketingConfig:", error);
+    return false;
+  }
+};

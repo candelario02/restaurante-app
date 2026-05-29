@@ -12,14 +12,17 @@ const TvMenuBoard = ({ restauranteId }) => {
   });
 
   // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
+  const [productos, setProductos] = useState([]);
+  const [config, setConfig] = useState(null); // 🔄 Centraliza nombreLocal, logOut y marketing multipunto
   const [indexActual, setIndexActual] = useState(0);
+  const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
   const [isFullScreen, setIsFullScreen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     if (!restauranteId || restauranteId === "undefined") return;
 
-    // 1. NOMBRE DEL RESTAURANTE
+    // 1. CONFIGURACIÓN COMPLETA (Nombre, Logo, Marquesina y Anuncios Rotativos)
     const datosRef = doc(
       db,
       "restaurantes",
@@ -29,7 +32,7 @@ const TvMenuBoard = ({ restauranteId }) => {
     );
     const unsubDatos = onSnapshot(datosRef, (snapshot) => {
       if (snapshot.exists()) {
-        setNombreLocal(snapshot.data().nombre || "MENÚ DIGITAL");
+        setConfig(snapshot.data());
       }
     });
 
@@ -56,40 +59,24 @@ const TvMenuBoard = ({ restauranteId }) => {
       );
     });
 
-    // 3. ANUNCIOS Y MARKETING
-    const configTvRef = doc(
-      db,
-      "restaurantes",
-      restauranteId,
-      "configuraciones",
-      "tv",
-    );
-    const unsubTv = onSnapshot(configTvRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setMarketing(snapshot.data());
-      }
-    });
-
     return () => {
       unsubDatos();
       unsubProd();
-      unsubTv();
     };
   }, [restauranteId]);
-
-  // 🕒 Rotación automática individual (Estilo cadena de comida rápida)
+  // 🕒 Rotación automática de la galería de publicidad (Panel Derecho)
   useEffect(() => {
-    if (productos.length <= 1) {
-      setIndexActual(0);
+    if (!config || !config.anuncios || config.anuncios.length <= 1) {
+      setIndexPromo(0);
       return;
     }
 
-    const intervalo = setInterval(() => {
-      setIndexActual((prev) => (prev + 1) % productos.length);
-    }, 7000); // Cambia de plato cada 7 segundos
+    const intervaloPromo = setInterval(() => {
+      setIndexPromo((prev) => (prev + 1) % config.anuncios.length);
+    }, 6000); // Cambia el afiche publicitario cada 6 segundos
 
-    return () => clearInterval(intervalo);
-  }, [productos]);
+    return () => clearInterval(intervaloPromo);
+  }, [config]);
 
   // 🖥️ Lógica del Manejador de Pantalla Completa Nativo
   const toggleFullScreen = async () => {
@@ -124,7 +111,7 @@ const TvMenuBoard = ({ restauranteId }) => {
 
   return (
     <div ref={containerRef} className="tv-board-main-container">
-      {/* 🔘 BOTÓN INTELIGENTE: Cambia dinámicamente de estilo y añade la "✕" al estar en Fullscreen */}
+      {/* 🔘 BOTÓN INTELIGENTE */}
       <button onClick={toggleFullScreen} className="tv-fullscreen-toggle-btn">
         {isFullScreen ? "✕ Salir Vista TV" : "📺 Pantalla Completa"}
       </button>
@@ -132,7 +119,7 @@ const TvMenuBoard = ({ restauranteId }) => {
       {/* HEADER SUPERIOR */}
       <header className="tv-board-header">
         <div className="tv-board-branding">
-          <h1>{nombreLocal.toUpperCase()}</h1>
+          <h1>{(config?.nombre || "MENÚ DIGITAL").toUpperCase()}</h1>
           <span className="tv-board-subtitle">Menú del Día en Tiempo Real</span>
         </div>
         <div className="tv-board-timer">
@@ -144,58 +131,83 @@ const TvMenuBoard = ({ restauranteId }) => {
         </div>
       </header>
 
-      {/* CUERPO DIVIDIDO */}
-      {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS CON FOTO DE FONDO Y DESCRIPCIÓN */}
-      <main className="tv-board-left-grid-container">
-        {productos.length === 0 ? (
-          <div className="tv-board-no-products">
-            <p>📺 No hay productos autorizados para mostrar en la TV.</p>
-            <small>Activa "Mostrar en TV" en el panel de administración.</small>
-          </div>
-        ) : (
-          productos.slice(0, 4).map((p) => (
-            <div key={p.id} className="tv-board-product-card">
-              {/* 🔥 CORREGIDO: Ahora lee 'imagenUrl' exactamente como está en tu Firestore */}
-              {p.imagenUrl && (
-                <div className="tv-board-card-bg-image">
-                  <img src={p.imagenUrl} alt={p.nombre} />
-                  <div className="tv-board-card-gradient-overlay"></div>
-                </div>
-              )}
-
-              {/* CONTENIDO DE LA TARJETA */}
-              <div className="tv-board-card-info-content">
-                <div className="tv-board-card-top-row">
-                  <h3 className="tv-board-card-title">{p.nombre}</h3>
-                  <span className="tv-board-card-price">
-                    S/ {Number(p.precio).toFixed(2)}
-                  </span>
-                </div>
-
-                {/* DESCRIPCIÓN DEL PLATO */}
-                {p.descripcion && (
-                  <p className="tv-board-card-description">{p.descripcion}</p>
-                )}
-
-                {p.categoria && (
-                  <span className="tv-board-card-badge">
-                    {p.categoria.toUpperCase()}
-                  </span>
-                )}
-              </div>
+      {/* CUERPO DIVIDIDO DE LA PANTALLA */}
+      <div
+        className="tv-board-columns-wrapper"
+        style={{ display: "flex", flex: 1, width: "100%", overflow: "hidden" }}
+      >
+        {/* PANEL IZQUIERDO: GRILLA DE 4 TARJETAS */}
+        <main className="tv-board-left-grid-container" style={{ flex: 1 }}>
+          {productos.length === 0 ? (
+            <div className="tv-board-no-products">
+              <p>📺 No hay productos autorizados para mostrar en la TV.</p>
+              <small>
+                Activa "Mostrar en TV" en el panel de administración.
+              </small>
             </div>
-          ))
-        )}
-      </main>
+          ) : (
+            productos.slice(0, 4).map((p) => (
+              <div key={p.id} className="tv-board-product-card">
+                {p.imagenUrl && (
+                  <div className="tv-board-card-bg-image">
+                    <img src={p.imagenUrl} alt={p.nombre} />
+                    <div className="tv-board-card-gradient-overlay"></div>
+                  </div>
+                )}
 
-      {/* MARQUESINA INFERIOR */}
-      {marketing.activo && marketing.textoBanner && (
+                <div className="tv-board-card-info-content">
+                  <div className="tv-board-card-top-row">
+                    <h3 className="tv-board-card-title">{p.nombre}</h3>
+                    <span className="tv-board-card-price">
+                      S/ {Number(p.precio).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {p.descripcion && (
+                    <p className="tv-board-card-description">{p.descripcion}</p>
+                  )}
+
+                  {p.categoria && (
+                    <span className="tv-board-card-badge">
+                      {p.categoria.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </main>
+
+        {/* 🖼️ PANEL DERECHO PREMIUM: PUBLICIDAD ROTATIVA AUTOMÁTICA O LOGO RESPUESTO */}
+        <aside className="tv-board-right-panel-premium">
+          {config?.anuncios && config.anuncios.length > 0 ? (
+            <div className="tv-marketing-promo-container">
+              <img
+                src={config.anuncios[indexPromo].imagenUrl}
+                alt="Promoción Activa"
+                className="tv-marketing-img"
+              />
+            </div>
+          ) : (
+            <div className="tv-marketing-promo-container">
+              <img
+                src={config?.logOut || "/logo-placeholder.jpg"}
+                alt="Logo Institucional"
+                className="tv-marketing-img"
+              />
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {/* MARQUESINA INFERIOR AUTOMÁTICA */}
+      {config?.activo && config?.textoBanner && (
         <footer className="tv-board-footer-marquee">
           <div className="tv-marquee-wrapper">
             <p className="tv-marquee-text">
-              ✨ {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
-              {marketing.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨{" "}
-              {marketing.textoBanner}
+              ✨ {config.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; 🔥{" "}
+              {config.textoBanner} &nbsp;&nbsp;&nbsp;&nbsp; ✨{" "}
+              {config.textoBanner}
             </p>
           </div>
         </footer>
