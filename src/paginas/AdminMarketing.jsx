@@ -13,6 +13,7 @@ const AdminMarketing = ({ restauranteId }) => {
   const [textoAnuncioActual, setTextoAnuncioActual] = useState("");
   const [modoMarquesina, setModoMarquesina] = useState("automatico");
   const [tiempoRotacion, setTiempoRotacion] = useState(6);
+  
 
   useEffect(() => {
     if (!restauranteId) return;
@@ -161,8 +162,16 @@ const AdminMarketing = ({ restauranteId }) => {
               /* Si está en automático, calculamos en tiempo real el texto unido de las tarjetas activas para mostrarlo como preview */
               value={
                 modoMarquesina === "automatico"
-                  ? (publicidades || [])
-                      .filter((a) => a?.visible || a?.estado === "mostrando")
+                  ? (
+                      config?.publicidades ||
+                      config?.anuncios ||
+                      config?.afiches ||
+                      []
+                    )
+                      .filter(
+                        (a) =>
+                          a?.visible || a?.estado === "mostrando" || a?.activo,
+                      )
                       .map((a) => a?.texto || "")
                       .filter(Boolean)
                       .join("  •  ") || "Sin afiches activos para mostrar"
