@@ -263,7 +263,7 @@ const AdminMarketing = ({ restauranteId }) => {
               onClick={() => setActivo(!activo)}
               title="Asegúrate de presionar 'Guardar Ajustes' después de cambiar esto"
             >
-              {activo ? "🟢 PANEL VISIBLE" : "🔴 PANEL OCULTO"}
+              {activo ? "👁️ PANEL VISIBLE" : "🙈 PANEL OCULTO"}
             </button>
           </div>
 
@@ -328,7 +328,7 @@ const AdminMarketing = ({ restauranteId }) => {
 
                 <div className="admin-mkt-card-body">
                   <div className="admin-mkt-card-field">
-                    <label>📝 Texto de la Tarjeta:</label>
+                    <label>Ingrse texto aqui si se olvido:</label>
                     <input
                       type="text"
                       defaultValue={anuncio.textoPromocional}
