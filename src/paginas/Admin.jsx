@@ -974,6 +974,11 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
       }
     });
   };
+  // para forzar la primera letra mayuscula
+  const capitalizeFirstLetter = (str) => {
+    if (!str) return ""; // Si está vacío, no hace nada
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   if (!restauranteId || !rolUsuario) {
     return (
@@ -1100,7 +1105,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               required
               maxLength={45}
               value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              onChange={(e) => setNombre(capitalizeFirstLetter(e.target.value))}
               placeholder="Nombre del plato (Máx. 45 caracteres)"
             />
 
@@ -1139,8 +1144,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               className="textarea-pro"
               maxLength={150}
               value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción del producto o ingredientes del plato... (Máx. 150 caracteres)"
+              onChange={(e) =>
+                setDescripcion(capitalizeFirstLetter(e.target.value))
+              }
+              placeholder="Descripción del producto... (Máx. 150 caracteres)"
               rows={3}
             />
 
