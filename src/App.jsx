@@ -5,7 +5,7 @@ import Admin from "./paginas/Admin";
 import Login from "./paginas/Login";
 import LoginPin from "./paginas/LoginPin";
 import TvMenuBoard from "./paginas/TvMenuBoard";
-import AdminMrketing from "./paginas/AdminMarketing";
+import AdminMaketing from "./paginas/AdminMarketing";
 import { auth, db } from "./firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
