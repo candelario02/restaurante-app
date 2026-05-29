@@ -157,7 +157,8 @@ export const guardarMarketingConfig = async (restauranteId, dataInput) => {
       "datos",
     );
     // Al pasar dataInput tal cual, solo agregaremos el campo en la función de abajo
-    await updateDoc(docRef, dataInput);
+   await setDoc(docRef, dataInput, { merge: true });
+
     return true;
   } catch (error) {
     console.error("Error en guardarMarketingConfig:", error);

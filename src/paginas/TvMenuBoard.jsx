@@ -10,25 +10,23 @@ const TvMenuBoard = ({ restauranteId }) => {
     imagenPublicidad: "",
     activo: false,
   });
+  const [config, setConfig] = useState(null); 
+  const [productos, setProductos] = useState([]);
+  const [indexActual, setIndexActual] = useState(0);
+  const [indexPromo, setIndexPromo] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const containerRef = useRef(null);
 
   const titulosDinamicos = useMemo(() => {
     if (!config) return "";
     const lista =
       config?.publicidades || config?.anuncios || config?.afiches || [];
     return lista
-      .filter((a) => a?.activo !== false) // Solo activos
+      .filter((a) => a?.activo !== false)
       .map((a) => a?.textoPromocional || a?.titulo || a?.nombre || "")
       .filter(Boolean)
       .join("  •  ");
   }, [config]);
-
-  // 🔄 Paginación: 1 solo plato de alto impacto por pantalla
-  const [productos, setProductos] = useState([]);
-  const [config, setConfig] = useState(null); // 🔥 Se mantiene null al inicio para el control de carga
-  const [indexActual, setIndexActual] = useState(0);
-  const [indexPromo, setIndexPromo] = useState(0); // 🖼️ Índice para rotar las imágenes publicitarias
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const containerRef = useRef(null);
 
   // 🔄 Paginación automática para los productos de la izquierda (Opcional si usas indexActual)
   useEffect(() => {

@@ -79,11 +79,14 @@ const AdminMarketing = ({ restauranteId }) => {
 
     // 2. Objeto de datos estricto
     const dataAEnviar = {
-      textoBanner: textoFinalParaTV,
-      modoMarquesina: modoMarquesina || "automatico", // Aseguramos un valor por defecto
-      activo: activo, // Este es el valor de tu botón
+      modoMarquesina: modoMarquesina,
+      activo: activo,
       tiempoRotacion: Number(tiempoRotacion),
+      anuncios: listaDeAfiches, // ← array con { textoPromocional, imagenUrl, activo, etc. }
     };
+    if (modoMarquesina === "manual") {
+      dataAEnviar.textoBanner = textoBanner;
+    }
 
     console.log("Enviando a Firebase:", dataAEnviar); // MIRA ESTO EN LA CONSOLA
 
@@ -114,26 +117,42 @@ const AdminMarketing = ({ restauranteId }) => {
     if (!file || !restauranteId) return;
 
     setCargandoImagen(true);
+    let urlCloudinary = null;
+    let publicIdCloudinary = null;
+
     try {
+      // 1. Subir imagen a Cloudinary (esto no va en transacción)
       const resCloudinary = await subirImagen(file);
-      if (resCloudinary) {
-        const anunciosActuales = config?.anuncios || [];
-        const nuevoAnuncio = {
-          id: Date.now().toString(),
-          imagenUrl: resCloudinary.url,
-          publicId: resCloudinary.public_id,
-          textoPromocional: textoAnuncioActual,
-          activo: true,
-        };
+      if (!resCloudinary) throw new Error("Fallo subida a Cloudinary");
 
-        await guardarMarketingConfig(restauranteId, {
-          anuncios: [...anunciosActuales, nuevoAnuncio],
-        });
+      urlCloudinary = resCloudinary.url;
+      publicIdCloudinary = resCloudinary.public_id;
+      const texto = textoAnuncioActual.trim();
 
-        setTextoAnuncioActual("");
+      // 2. Actualizar Firestore con transacción
+      const exito = await actualizarAnuncios(
+        restauranteId,
+        (anunciosActuales) => {
+          const nuevoAnuncio = {
+            id: Date.now().toString(),
+            imagenUrl: urlCloudinary,
+            publicId: publicIdCloudinary,
+            textoPromocional: texto,
+            activo: true,
+          };
+          return [...anunciosActuales, nuevoAnuncio];
+        },
+      );
+
+      if (exito) {
+        setTextoAnuncioActual(""); // Limpiar solo si éxito
+        // Opcional: recargar datos o mostrar mensaje
+      } else {
+        throw new Error("No se pudo guardar en Firebase");
       }
     } catch (error) {
       console.error("Error al subir anuncio:", error);
+      Swal.fire("Error", "No se pudo crear el anuncio", "warning");
     } finally {
       setCargandoImagen(false);
     }
@@ -142,29 +161,40 @@ const AdminMarketing = ({ restauranteId }) => {
   // Actualizar tarjeta individual
   const handleUpdateAnuncio = async (id, camposActualizados) => {
     if (!restauranteId) return;
-    const anunciosActualizados = (config?.anuncios || []).map((anuncio) =>
-      anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio,
+
+    const exito = await actualizarAnuncios(
+      restauranteId,
+      (anunciosActuales) => {
+        return anunciosActuales.map((anuncio) =>
+          anuncio.id === id ? { ...anuncio, ...camposActualizados } : anuncio,
+        );
+      },
     );
 
-    await guardarMarketingConfig(restauranteId, {
-      anuncios: anunciosActualizados,
-    });
+    if (!exito) {
+      Swal.fire("Error", "No se pudo actualizar el anuncio", "warning");
+    }
   };
 
   // Eliminar tarjeta
   const handleEliminarAnuncio = async (idAnuncio) => {
-    if (
-      !restauranteId ||
-      !window.confirm("¿Deseas eliminar de forma permanente esta publicidad?")
-    )
-      return;
+    if (!restauranteId) return;
 
-    const anunciosFiltrados = (config?.anuncios || []).filter(
-      (a) => a.id !== idAnuncio,
+    const confirmado = window.confirm(
+      "¿Deseas eliminar de forma permanente esta publicidad?",
     );
-    await guardarMarketingConfig(restauranteId, {
-      anuncios: anunciosFiltrados,
-    });
+    if (!confirmado) return;
+
+    const exito = await actualizarAnuncios(
+      restauranteId,
+      (anunciosActuales) => {
+        return anunciosActuales.filter((a) => a.id !== idAnuncio);
+      },
+    );
+
+    if (!exito) {
+      Swal.fire("Error", "No se pudo eliminar el anuncio", "warning");
+    }
   };
 
   if (!restauranteId) {
