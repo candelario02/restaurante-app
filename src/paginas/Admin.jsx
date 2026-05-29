@@ -207,8 +207,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [insumos, setInsumos] = useState([]);
   const [nuevoInsumo, setNuevoInsumo] = useState({
     nombre: "",
-    stock_actual: 0,
-    precio: 0,
+    stock_actual: "",
+    precio: "",
     stock_minimo: 0,
     unidad_medida: "",
   });
@@ -481,11 +481,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   };
   //Funcion insumos
   const registrarNuevoInsumo = async () => {
-    // Validación básica de UI
     if (
       !nuevoInsumo.nombre ||
-      !nuevoInsumo.stock_actual ||
-      !nuevoInsumo.precio
+      nuevoInsumo.stock_actual === "" ||
+      nuevoInsumo.precio === ""
     ) {
       return Swal.fire(
         "Campos Vacíos",
@@ -493,15 +492,34 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
         "warning",
       );
     }
+    const stockNum = Number(nuevoInsumo.stock_actual);
+    const precioNum = parseFloat(nuevoInsumo.precio);
+
+    if (isNaN(stockNum) || isNaN(precioNum)) {
+      return Swal.fire(
+        "Error",
+        "Stock y precio deben ser números válidos.",
+        "error",
+      );
+    }
 
     try {
-      await crearInsumo(restauranteId, nuevoInsumo);
+      await crearInsumo(restauranteId, {
+        nombre: nuevoInsumo.nombre,
+        stock_actual: stockNum,
+        precio: precioNum,
+        unidad_medida: nuevoInsumo.unidad_medida,
+        stock_minimo: nuevoInsumo.stock_minimo,
+      });
+
       setNuevoInsumo({
         nombre: "",
         stock_actual: "",
         precio: "",
+        stock_minimo: 0,
         unidad_medida: "kg",
       });
+
       Swal.fire({
         icon: "success",
         title: "¡Insumo Registrado!",
