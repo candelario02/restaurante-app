@@ -1370,9 +1370,40 @@
   text-transform: capitalize;
 }
 
-.celda-stock-valor {
+/* Clase base para la celda de stock en el inventario */
+.celda-stock-valor-invent {
   font-weight: 600;
-  color: #334155;
+  color: #334155; /* Color por defecto por si acaso */
+}
+
+/* Variantes dinámicas para el inventario (Iguales al menú) */
+.celda-stock-valor-invent .stock-disponible {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.celda-stock-valor-invent .stock-agotado {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Alerta con parpadeo para los números negativos */
+.celda-stock-valor-invent .stock-negativo-alerta {
+  color: #ef4444;
+  font-weight: 800;
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  animation: pulsar-alerta 2s infinite ease-in-out;
+}
+
+/* Texto de ayuda para cuando no hay entradas registradas */
+.celda-stock-valor-invent .stock-vacio {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 /* 🏷️ BADGES DE TIPO DE ELEMENTO */

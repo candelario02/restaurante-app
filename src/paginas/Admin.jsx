@@ -1306,7 +1306,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                             p.cantidad > 0
                               ? "stock-disponible"
                               : p.cantidad < 0
-                                ? "stock-negativo-alerta" 
+                                ? "stock-negativo-alerta"
                                 : "stock-agotado"
                           }
                         >
@@ -1653,8 +1653,25 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           {item.esInsumo ? "Materia Prima" : item.categoria}
                         </span>
                       </td>
-                      <td className="celda-stock-valor">
-                        {stockNumerico} {item.unidad_medida || "und"}
+                      <td className="celda-stock-valor-invent">
+                        {stockNumerico !== undefined &&
+                        stockNumerico !== null ? (
+                          <span
+                            className={
+                              stockNumerico > 0
+                                ? "stock-disponible"
+                                : stockNumerico < 0
+                                  ? "stock-negativo-alerta"
+                                  : "stock-agotado"
+                            }
+                          >
+                            {stockNumerico} {item.unidad_medida || "und"}
+                          </span>
+                        ) : (
+                          <span className="stock-vacio">
+                            0 und (Sin Entrada)
+                          </span>
+                        )}
                       </td>
                       <td>S/. {precioItem.toFixed(2)}</td>
                       <td>
