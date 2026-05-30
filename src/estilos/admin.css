@@ -199,15 +199,53 @@
 }
 .stock-disponible {
   color: #10b981;
+  font-weight: 600;
 }
+
 .stock-agotado {
   color: #ef4444;
+  font-weight: 600;
 }
+
+/* Nueva clase profesional para el stock negativo descuidando */
+.stock-negativo-alerta {
+  color: #ef4444;
+  font-weight: 800; /* Más grueso para que resalte */
+  background-color: rgba(
+    239,
+    68,
+    68,
+    0.1
+  ); /* Un fondo rojizo muy suave detrás del texto */
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  animation: pulsar-alerta 2s infinite ease-in-out; /* Hace que palpite infinitamente */
+}
+
 .stock-vacio {
   color: #9ca3af;
   font-style: italic;
   font-size: 12px;
-  font-weight: 400; /* Letra normal para el texto de ayuda */
+  font-weight: 400;
+}
+
+/* Animación profesional de pulsación (cambia la opacidad suavemente) */
+@keyframes pulsar-alerta {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5; /* Se desvanece un poco */
+    transform: scale(
+      1.05
+    ); /* Agranda un pelín casi imperceptible para llamar la atención */
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Forzamos a la imagen y al texto del plato a alinearse perfectamente en el centro */

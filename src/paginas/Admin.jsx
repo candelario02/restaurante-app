@@ -1305,7 +1305,9 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           className={
                             p.cantidad > 0
                               ? "stock-disponible"
-                              : "stock-agotado"
+                              : p.cantidad < 0
+                                ? "stock-negativo-alerta" 
+                                : "stock-agotado"
                           }
                         >
                           {p.cantidad} und
