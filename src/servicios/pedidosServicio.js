@@ -159,7 +159,7 @@ export const actualizarEstadoPedido = async (
   }
 };
 
-// 🔍 FUNCIÓN AUXILIAR PROFESIONAL: Resuelve el ID real de Firestore usando el nombre del plato
+// 🔍 FUNCIÓN AUXILIAR Resuelve el ID real de Firestore usando el nombre del plato
 const buscarIdProductoPorNombre = async (restauranteId, nombre) => {
   try {
     if (!nombre) return null;

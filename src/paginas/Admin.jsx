@@ -196,6 +196,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   const [userPass, setUserPass] = useState("");
   const [verPassword, setVerPassword] = useState({});
   const [userRol, setUserRol] = useState("");
+  const [fechaEspecifica, setFechaEspecifica] = useState("");
   const [filtroCaja, setFiltroCaja] = useState("dia");
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [busqueda, setBusqueda] = useState("");
@@ -869,15 +870,19 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
     }
   };
   //funcion de caja
-  const obtenerEstadisticasCaja = (listaPedidos, periodo) => {
+  const obtenerEstadisticasCaja = (listaPedidos, periodo, fechaFiltro = "") => {
     const ahora = new Date();
-    const filtrados = listaPedidos.filter((p) => {
+
+    // 1. Primero filtramos según las condiciones de fecha y estado
+    let filtrados = listaPedidos.filter((p) => {
       const estadosValidos = ["entregado", "finalizado", "cancelado"];
       if (!estadosValidos.includes(p.estado) || !p.fecha?.toDate) return false;
+
       const fechaP = p.fecha.toDate();
 
-      if (periodo === "dia")
+      if (periodo === "dia") {
         return fechaP.toDateString() === ahora.toDateString();
+      }
       if (periodo === "semana") {
         const sieteDias = new Date();
         sieteDias.setDate(ahora.getDate() - 7);
@@ -889,25 +894,36 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           fechaP.getFullYear() === ahora.getFullYear()
         );
       }
-      if (periodo === "anio")
-        return fechaP.getFullYear() === coordinator.getFullYear();
+      if (periodo === "anio") {
+        // FIX: Estaba usando "coordinator.getFullYear()", lo cambié a "ahora"
+        return fechaP.getFullYear() === ahora.getFullYear();
+      }
+      if (periodo === "fecha_especifica" && fechaFiltro) {
+        // Compara la fecha del calendario con la de Firebase de forma segura
+        const [year, month, day] = fechaFiltro.split("-");
+        return (
+          fechaP.getFullYear() === Number(year) &&
+          fechaP.getMonth() === Number(month) - 1 &&
+          fechaP.getDate() === Number(day)
+        );
+      }
+      // Si es "cancelados" o "total", deja pasar todas las fechas por ahora
       return true;
     });
+
+    // 2. Si el selector es "cancelados", filtramos la lista final
     if (periodo === "cancelados") {
-      const soloCancelados = filtrados.filter((p) => p.estado === "cancelado");
-      return {
-        monto: "0.00",
-        cantidad: soloCancelados.length,
-        filtrados: soloCancelados,
-      };
+      filtrados = filtrados.filter((p) => p.estado === "cancelado");
     }
+
+    // 3. Calculamos la matemática respetando si está cancelado
+    const cantidad = filtrados.length;
     const monto = filtrados
       .reduce(
-        (acc, p) => acc + (p.estado === "cancelado" ? 0 : Number(p.total)),
+        (acc, p) => acc + (p.estado === "cancelado" ? 0 : Number(p.total || 0)),
         0,
       )
       .toFixed(2);
-    const cantidad = filtrados.length;
 
     return { monto, cantidad, filtrados };
   };
@@ -915,12 +931,14 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
   //funcion de exporta a excel
   const exportarCajaExcel = (datos, nombreArchivo) => {
     const dataFormateada = datos.map((p) => ({
-      Fecha: p.fecha?.toDate()?.toLocaleString() || "N/A",
-      Cliente: p.cliente?.nombre || "Anonimo",
+      Fecha: p.fecha?.toDate()?.toLocaleString("es-PE") || "N/A",
+      Cliente: p.cliente?.nombre || "Anónimo",
       Tipo: p.cliente?.tipo || "N/A",
       Referencia: p.cliente?.referencia || "N/A",
       Items: p.items?.map((i) => `${i.cantidad}x ${i.nombre}`).join(", "),
-      Total: Number(p.total),
+      // FIX: Ahora si está cancelado, el Excel dirá 0
+      Total: p.estado === "cancelado" ? 0 : Number(p.total),
+      Estado: p.estado?.toUpperCase() || "N/A",
       Rating: p.rating || 0,
     }));
 
@@ -2141,7 +2159,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
             <div className="filtro-admin-wrapper">
               <label className="label-filtro">Filtrar ventas por:</label>
-              <div className="filtros-caja-container">
+              <div
+                className="filtros-caja-container"
+                style={{ display: "flex", gap: "10px", alignItems: "center" }}
+              >
                 <select
                   value={filtroCaja}
                   onChange={(e) => setFiltroCaja(e.target.value)}
@@ -2152,12 +2173,34 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   <option value="mes">Mes Actual</option>
                   <option value="total">Ventas Total</option>
                   <option value="cancelados">❌ Solo Cancelados</option>
+                  {/* Nueva Opción del Calendario */}
+                  <option value="fecha_especifica">
+                    📅 Por Día Específico
+                  </option>
                 </select>
+
+                {/* Aparece mágicamente solo si elige "Por Día Específico" */}
+                {filtroCaja === "fecha_especifica" && (
+                  <input
+                    type="date"
+                    value={fechaEspecifica}
+                    onChange={(e) => setFechaEspecifica(e.target.value)}
+                    className="input-admin-fecha"
+                    style={{
+                      padding: "8px",
+                      borderRadius: "5px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                )}
+
                 <button
                   onClick={() => {
+                    // Ahora le pasamos la "fechaEspecifica" a la función
                     const { filtrados } = obtenerEstadisticasCaja(
                       pedidos,
                       filtroCaja,
+                      fechaEspecifica,
                     );
                     exportarCajaExcel(filtrados, `Reporte_Caja_${filtroCaja}`);
                   }}
