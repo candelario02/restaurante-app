@@ -322,7 +322,7 @@ function App() {
                     className="btn-nav-admin"
                     onClick={() => setOperador(null)}
                   >
-                    🔒 Cambiar Operador
+                    🔒 Cambiar Usuario
                   </button>
                 )}
                 <button
