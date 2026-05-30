@@ -1402,162 +1402,181 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </h2>
 
           <div className="admin-form-inventario">
-             <label>🍽️ Nombre del insumo</label>
-            <input
-              type="text"
-              placeholder="Nombre del insumo (Ej: Cebolla)"
-              value={
-                editandoInsumoId
-                  ? valoresEditadosInsumo.nombre || ""
-                  : nuevoInsumo.nombre || ""
-              }
-              onChange={(e) =>
-                editandoInsumoId
-                  ? setValoresEditadosInsumo({
-                      ...valoresEditadosInsumo,
-                      nombre: e.target.value,
-                    })
-                  : setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
-              }
-            />
-             <label>📦 Stock actual (kg o und)</label>
-            <input
-              type="number"
-              min="0"
-              onKeyDown={(e) =>
-                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
-              }
-              placeholder="Stock Inicial"
-              value={
-                editandoInsumoId
-                  ? (valoresEditadosInsumo.stock_actual ?? "")
-                  : (nuevoInsumo.stock_actual ?? "")
-              }
-              onChange={(e) => {
-                const val =
-                  e.target.value === ""
-                    ? ""
-                    : parseInt(e.target.value, 10) || 0;
-                editandoInsumoId
-                  ? setValoresEditadosInsumo({
-                      ...valoresEditadosInsumo,
-                      stock_actual: val,
-                    })
-                  : setNuevoInsumo({ ...nuevoInsumo, stock_actual: val });
-              }}
-            />
-              <label>💰 Precio unitario (S/.)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              onKeyDown={(e) =>
-                ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
-              }
-              placeholder="Precio Unitario (S/.)"
-              value={
-                editandoInsumoId
-                  ? (valoresEditadosInsumo.precio_unitario ?? "")
-                  : (nuevoInsumo.precio ?? "")
-              }
-              onChange={(e) => {
-                const val =
-                  e.target.value === "" ? "" : parseFloat(e.target.value) || 0;
-                editandoInsumoId
-                  ? setValoresEditadosInsumo({
-                      ...valoresEditadosInsumo,
-                      precio_unitario: val,
-                    })
-                  : setNuevoInsumo({ ...nuevoInsumo, precio: val });
-              }}
-            />
-
-            <div className="selector-unidad-registro">
-              <label>
-                  <label>Unidad medida (S/.)</label>
-                <input
-                  type="radio"
-                  name="unidad"
-                  value="kg"
-                  checked={
-                    editandoInsumoId
-                      ? valoresEditadosInsumo.unidad_medida === "kg"
-                      : nuevoInsumo.unidad_medida === "kg"
-                  }
-                  onChange={(e) =>
-                    editandoInsumoId
-                      ? setValoresEditadosInsumo({
-                          ...valoresEditadosInsumo,
-                          unidad_medida: e.target.value,
-                        })
-                      : setNuevoInsumo({
-                          ...nuevoInsumo,
-                          unidad_medida: e.target.value,
-                        })
-                  }
-                />{" "}
-                kg
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="unidad"
-                  value="und"
-                  checked={
-                    editandoInsumoId
-                      ? valoresEditadosInsumo.unidad_medida === "und"
-                      : nuevoInsumo.unidad_medida === "und"
-                  }
-                  onChange={(e) =>
-                    editandoInsumoId
-                      ? setValoresEditadosInsumo({
-                          ...valoresEditadosInsumo,
-                          unidad_medida: e.target.value,
-                        })
-                      : setNuevoInsumo({
-                          ...nuevoInsumo,
-                          unidad_medida: e.target.value,
-                        })
-                  }
-                />{" "}
-                und
-              </label>
+            {/* CAJA 1: NOMBRE */}
+            <div className="form-group-inventario">
+              <label>🍽️ Nombre del insumo</label>
+              <input
+                type="text"
+                placeholder="Nombre del insumo (Ej: Cebolla)"
+                value={
+                  editandoInsumoId
+                    ? valoresEditadosInsumo.nombre || ""
+                    : nuevoInsumo.nombre || ""
+                }
+                onChange={(e) =>
+                  editandoInsumoId
+                    ? setValoresEditadosInsumo({
+                        ...valoresEditadosInsumo,
+                        nombre: e.target.value,
+                      })
+                    : setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
+                }
+              />
             </div>
 
-            {editandoInsumoId ? (
-              <div className="contenedor-botones-edicion-inventario">
-                <button
-                  type="button"
-                  className="btn-guardar-inventario"
-                  onClick={() => guardarCambiosInsumo(editandoInsumoId)}
-                >
-                  💾 Guardar Cambios
-                </button>
-                <button
-                  type="button"
-                  className="btn-guardar-inventario"
-                  onClick={() => {
-                    setEditandoInsumoId(null);
-                    setValoresEditadosInsumo({
-                      nombre: "",
-                      stock_actual: "",
-                      precio_unitario: "",
-                      unidad_medida: "kg",
-                    });
-                  }}
-                >
-                  Cancelar
-                </button>
+            {/* CAJA 2: STOCK */}
+            <div className="form-group-inventario">
+              <label>📦 Stock actual</label>
+              <input
+                type="number"
+                min="0"
+                onKeyDown={(e) =>
+                  ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+                }
+                placeholder="Stock Inicial"
+                value={
+                  editandoInsumoId
+                    ? (valoresEditadosInsumo.stock_actual ?? "")
+                    : (nuevoInsumo.stock_actual ?? "")
+                }
+                onChange={(e) => {
+                  const val =
+                    e.target.value === ""
+                      ? ""
+                      : parseInt(e.target.value, 10) || 0;
+                  editandoInsumoId
+                    ? setValoresEditadosInsumo({
+                        ...valoresEditadosInsumo,
+                        stock_actual: val,
+                      })
+                    : setNuevoInsumo({ ...nuevoInsumo, stock_actual: val });
+                }}
+              />
+            </div>
+
+            {/* CAJA 3: PRECIO */}
+            <div className="form-group-inventario">
+              <label>💰 Precio unitario (S/.)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                onKeyDown={(e) =>
+                  ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()
+                }
+                placeholder="Precio Unitario (S/.)"
+                value={
+                  editandoInsumoId
+                    ? (valoresEditadosInsumo.precio_unitario ?? "")
+                    : (nuevoInsumo.precio ?? "")
+                }
+                onChange={(e) => {
+                  const val =
+                    e.target.value === ""
+                      ? ""
+                      : parseFloat(e.target.value) || 0;
+                  editandoInsumoId
+                    ? setValoresEditadosInsumo({
+                        ...valoresEditadosInsumo,
+                        precio_unitario: val,
+                      })
+                    : setNuevoInsumo({ ...nuevoInsumo, precio: val });
+                }}
+              />
+            </div>
+
+            {/* CAJA 4: UNIDAD DE MEDIDA */}
+            <div className="form-group-inventario">
+              <label>📏 Unidad medida</label>
+              <div className="selector-unidad-registro">
+                <label className="radio-label-inventario">
+                  <input
+                    type="radio"
+                    name="unidad"
+                    value="kg"
+                    checked={
+                      editandoInsumoId
+                        ? valoresEditadosInsumo.unidad_medida === "kg"
+                        : nuevoInsumo.unidad_medida === "kg"
+                    }
+                    onChange={(e) =>
+                      editandoInsumoId
+                        ? setValoresEditadosInsumo({
+                            ...valoresEditadosInsumo,
+                            unidad_medida: e.target.value,
+                          })
+                        : setNuevoInsumo({
+                            ...nuevoInsumo,
+                            unidad_medida: e.target.value,
+                          })
+                    }
+                  />{" "}
+                  kg
+                </label>
+                <label className="radio-label-inventario">
+                  <input
+                    type="radio"
+                    name="unidad"
+                    value="und"
+                    checked={
+                      editandoInsumoId
+                        ? valoresEditadosInsumo.unidad_medida === "und"
+                        : nuevoInsumo.unidad_medida === "und"
+                    }
+                    onChange={(e) =>
+                      editandoInsumoId
+                        ? setValoresEditadosInsumo({
+                            ...valoresEditadosInsumo,
+                            unidad_medida: e.target.value,
+                          })
+                        : setNuevoInsumo({
+                            ...nuevoInsumo,
+                            unidad_medida: e.target.value,
+                          })
+                    }
+                  />{" "}
+                  und
+                </label>
               </div>
-            ) : (
-              <button
-                type="button"
-                className="btn-guardar-inventario"
-                onClick={registrarNuevoInsumo}
-              >
-                Registrar Insumo
-              </button>
-            )}
+            </div>
+
+            {/* CAJA 5: BOTONES DE ACCIÓN */}
+            <div className="form-group-inventario caja-botones-finales">
+              {editandoInsumoId ? (
+                <div className="contenedor-botones-edicion-inventario">
+                  <button
+                    type="button"
+                    className="btn-guardar-inventario"
+                    onClick={() => guardarCambiosInsumo(editandoInsumoId)}
+                  >
+                    💾 Guardar Cambios
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-guardar-inventario btn-cancelar-inventario"
+                    onClick={() => {
+                      setEditandoInsumoId(null);
+                      setValoresEditadosInsumo({
+                        nombre: "",
+                        stock_actual: "",
+                        precio_unitario: "",
+                        unidad_medida: "kg",
+                      });
+                    }}
+                  >
+                    ❌ Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-guardar-inventario"
+                  onClick={registrarNuevoInsumo}
+                >
+                  Registrar Insumo
+                </button>
+              )}
+            </div>
           </div>
 
           {/* FILTROS Y BUSQUEDA */}
@@ -1589,8 +1608,8 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
               <tr>
                 <th>PRODUCTO / INSUMO</th>
                 <th>CATEGORÍA</th>
-                <th>PRECIO UNITARIO</th>
                 <th>STOCK ACTUAL</th>
+                <th>PRECIO UNITARIO</th>
                 <th>ACCIONES DE MOVIMIENTO</th>
               </tr>
             </thead>
@@ -1632,10 +1651,10 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                           {item.esInsumo ? "Materia Prima" : item.categoria}
                         </span>
                       </td>
-                      <td>S/. {precioItem.toFixed(2)}</td>
                       <td className="celda-stock-valor">
                         {stockNumerico} {item.unidad_medida || "und"}
                       </td>
+                      <td>S/. {precioItem.toFixed(2)}</td>
                       <td>
                         <div className="contenedor-acciones-stock">
                           <select

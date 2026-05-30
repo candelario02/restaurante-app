@@ -1165,28 +1165,64 @@
 /* =============================================
     6. SECCIÓN GESTIÓN DE INVENTARIO DE PRODUCTOS
 ============================================= */
-.inventario-container {
-  padding: 20px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
+/* Contenedor principal del formulario */
 .admin-form-inventario {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap; /* Permite que los elementos bajen de línea si no hay espacio */
+  gap: 15px;
   margin-bottom: 20px;
-  align-items: center;
+  align-items: flex-end; /* Alinea todos los inputs por la base */
 }
 
-.admin-form-inventario input {
+/* El nuevo div que envuelve cada Label + Input */
+.form-group-inventario {
+  display: flex;
+  flex-direction: column; /* Pone el label arriba y el input abajo */
+  gap: 5px;
+}
+
+/* Para que el input de Nombre ocupe más espacio si es necesario */
+.form-group-inventario:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Estilos de las etiquetas (labels) principales */
+.form-group-inventario label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Estilos compartidos para los inputs de texto y número */
+.admin-form-inventario input[type="text"],
+.admin-form-inventario input[type="number"] {
   padding: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  flex: 1;
   font-size: 0.95rem;
+  height: 42px; /* Misma altura que el botón para que se vean alineados */
+  box-sizing: border-box;
 }
 
+/* Contenedor de los radios de Kg y Und */
+.selector-unidad-registro {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  height: 42px; /* Alinea la caja de radios con la altura de los inputs */
+}
+
+/* Labels específicos para los radio buttons (para que no choquen con el global) */
+.radio-label-inventario {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: normal !important;
+  cursor: pointer;
+}
+
+/* Botón principal (El que me compartiste) */
 .btn-guardar-inventario {
   background-color: #10b981;
   color: white;
@@ -1197,10 +1233,43 @@
   cursor: pointer;
   transition: background-color 0.2s;
   height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
 .btn-guardar-inventario:hover {
   background-color: #059669;
+}
+
+/* El nuevo contenedor de botones cuando se está editando */
+.contenedor-botones-edicion-inventario {
+  display: flex;
+  gap: 10px;
+}
+
+/* Botón de cancelar con un color diferente (gris) */
+.btn-cancelar-inventario {
+  background-color: #64748b;
+}
+
+.btn-cancelar-inventario:hover {
+  background-color: #475569;
+}
+.inventario-container {
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.admin-form-inventario input {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  flex: 1;
+  font-size: 0.95rem;
 }
 
 /* 🎛️ CONTENEDOR DE FILTROS Y GRUPO DE BÚSQUEDA */
@@ -1594,7 +1663,6 @@
   .tabla-insumos {
     display: block;
     overflow-x: auto;
-
   }
 
   .tabla-insumos th,
@@ -1604,7 +1672,7 @@
   }
   .tabla-insumos th,
   .tabla-insumos td {
-    padding: 4px 6px; 
+    padding: 4px 6px;
     font-size: 0.75rem;
   }
 
