@@ -1402,6 +1402,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
           </h2>
 
           <div className="admin-form-inventario">
+             <label>🍽️ Nombre del insumo</label>
             <input
               type="text"
               placeholder="Nombre del insumo (Ej: Cebolla)"
@@ -1419,6 +1420,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   : setNuevoInsumo({ ...nuevoInsumo, nombre: e.target.value })
               }
             />
+             <label>📦 Stock actual (kg o und)</label>
             <input
               type="number"
               min="0"
@@ -1444,6 +1446,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
                   : setNuevoInsumo({ ...nuevoInsumo, stock_actual: val });
               }}
             />
+              <label>💰 Precio unitario (S/.)</label>
             <input
               type="number"
               min="0"
@@ -1471,6 +1474,7 @@ const Admin = ({ seccion, setSeccion, restauranteId, rolUsuario }) => {
 
             <div className="selector-unidad-registro">
               <label>
+                  <label>Unidad medida (S/.)</label>
                 <input
                   type="radio"
                   name="unidad"
